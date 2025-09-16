@@ -5,6 +5,7 @@ import { useState } from 'react';
 export default function App() {
   const [reportTypeSelected, setReportTypeSelected] = useState(true);
   const [compsSelected, setCompsSelected] = useState(true);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-kairos-chalk">
@@ -29,18 +30,73 @@ export default function App() {
         {/* Input Interface with Inline Toggles */}
         <div className="w-full max-w-2xl">
           <div className="relative bg-kairos-white-porcelain border-2 border-kairos-white-grey rounded-2xl shadow-sm focus-within:border-kairos-charcoal transition-colors duration-200 pb-4">
-            <input
-              type="text"
-              placeholder="Enter property address..."
-              className="w-full h-16 px-6 pr-32 text-lg bg-transparent border-none outline-none placeholder:text-kairos-charcoal/40"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Enter property address..."
+                className="w-full h-16 px-6 pr-32 text-lg bg-transparent border-none outline-none placeholder:text-kairos-charcoal/40"
+              />
+
+              {/* Report Type Dropdown */}
+              {isDropdownOpen && (
+                <div
+                  className="absolute top-full left-0 right-0 mt-2 z-50 bg-[#FFFFFC] border border-[#E5E4E6] rounded-lg shadow-lg"
+                  role="listbox"
+                  aria-label="Select report type"
+                >
+                  <button
+                    type="button"
+                    className="w-full p-4 hover:bg-[#E7E7EB] border-b border-[#E5E4E6] flex items-center justify-between text-left"
+                    role="option"
+                    aria-selected="false"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    <span className="font-['Futura']">Property Report</span>
+                    <span className="font-['Avenir'] text-sm text-[#7A7873]">View sample here • approx. 28 pgs</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="w-full p-4 hover:bg-[#E7E7EB] border-b border-[#E5E4E6] flex items-center justify-between text-left"
+                    role="option"
+                    aria-selected="false"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    <span className="font-['Futura']">Seller's Report</span>
+                    <span className="font-['Avenir'] text-sm text-[#7A7873]">View sample here • approx. 61 pgs</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="w-full p-4 hover:bg-[#E7E7EB] border-b border-[#E5E4E6] flex items-center justify-between text-left"
+                    role="option"
+                    aria-selected="false"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    <span className="font-['Futura']">Market Activity Report</span>
+                    <span className="font-['Avenir'] text-sm text-[#7A7873]">View sample here • approx. 15 pgs</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="w-full p-4 hover:bg-[#E7E7EB] flex items-center justify-between text-left"
+                    role="option"
+                    aria-selected="false"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    <span className="font-['Futura']">Neighborhood Report</span>
+                    <span className="font-['Avenir'] text-sm text-[#7A7873]">View sample here • approx. 12 pgs</span>
+                  </button>
+                </div>
+              )}
+            </div>
             
             {/* Toggle Buttons at Bottom */}
             <div className="px-6 flex gap-2">
               <InlineToggle
                 label="Report Type"
                 isSelected={reportTypeSelected}
-                onToggle={() => setReportTypeSelected(!reportTypeSelected)}
+                onToggle={() => {
+                  setReportTypeSelected(!reportTypeSelected);
+                  setIsDropdownOpen((prev) => !prev);
+                }}
               />
               <InlineToggle
                 label="Comparisons"
@@ -80,10 +136,8 @@ export default function App() {
       <div 
         className="fixed inset-0 pointer-events-none opacity-[0.02] z-0"
         style={{
-          backgroundImage: `
-            linear-gradient(to right, #2C2C2C 1px, transparent 1px),
-            linear-gradient(to bottom, #2C2C2C 1px, transparent 1px)
-          `,
+          backgroundImage:
+            "linear-gradient(to right, #2C2C2C 1px, transparent 1px), linear-gradient(to bottom, #2C2C2C 1px, transparent 1px)",
           backgroundSize: '24px 24px'
         }}
       />
