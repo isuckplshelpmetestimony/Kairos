@@ -10,7 +10,7 @@ export default function App() {
     <div className="min-h-screen bg-kairos-chalk">
       {/* Header with Logo */}
       <header className="w-full py-6 px-8">
-        <KairosLogo />
+        <KairosLogo iconSize="lg" labelSize="lg" />
       </header>
 
       {/* Main Content */}
