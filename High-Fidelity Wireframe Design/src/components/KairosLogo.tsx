@@ -30,14 +30,14 @@ function labelSizeToClasses(size: NonNullable<KairosLogoProps['labelSize']>) {
   }
 }
 
-const CatLogoPath = "/kairos-logo.svg";
+import CatLogo from "../../Untitled.svg";
 
 export function KairosLogo({ className = "", iconSize = 'md', labelSize = 'md' }: KairosLogoProps) {
   return (
     <div className={`flex items-center gap-3 ${className}`}>
       {/* SVG logo image */}
       <div className={`${iconSizeToClasses(iconSize)} flex items-center justify-center`}>
-        <img src={CatLogoPath} alt="Kairos logo" className="w-full h-full object-contain" draggable={false} />
+        <img src={CatLogo} alt="Kairos logo" className="w-full h-full object-contain" draggable={false} />
       </div>
       <span className={`font-semibold text-kairos-charcoal tracking-wide ${labelSizeToClasses(labelSize)}`}>Kairos</span>
     </div>
