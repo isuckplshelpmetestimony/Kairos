@@ -6,6 +6,12 @@ export default function App() {
   const [reportTypeSelected, setReportTypeSelected] = useState(true);
   const [compsSelected, setCompsSelected] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedReports, setSelectedReports] = useState({
+    property: true,
+    seller: true,
+    market: true,
+    neighborhood: true,
+  });
 
   return (
     <div className="min-h-screen bg-kairos-chalk">
@@ -88,46 +94,66 @@ export default function App() {
                 role="listbox"
                 aria-label="Select report type"
               >
-                <button
-                  type="button"
-                  className="w-full p-4 hover:bg-[#E7E7EB] border-b border-[#E5E4E6] flex items-center justify-between text-left"
-                  role="option"
-                  aria-selected="false"
-                  onClick={() => setIsDropdownOpen(false)}
-                >
-                  <span className="font-['Futura']">Property Report</span>
+                <div className="w-full p-4 hover:bg-[#E7E7EB] border-b border-[#E5E4E6] flex items-center justify-between text-left">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedReports.property}
+                      onChange={(e) =>
+                        setSelectedReports((prev) => ({ ...prev, property: e.target.checked }))
+                      }
+                      aria-label="Select Property Report"
+                      className="w-4 h-4 rounded border-[#E5E4E6] text-kairos-charcoal"
+                    />
+                    <span className="font-['Futura']">Property Report</span>
+                  </div>
                   <span className="font-['Avenir'] text-sm text-[#7A7873]">View sample here • approx. 28 pgs</span>
-                </button>
-                <button
-                  type="button"
-                  className="w-full p-4 hover:bg-[#E7E7EB] border-b border-[#E5E4E6] flex items-center justify-between text-left"
-                  role="option"
-                  aria-selected="false"
-                  onClick={() => setIsDropdownOpen(false)}
-                >
-                  <span className="font-['Futura']">Seller's Report</span>
+                </div>
+                <div className="w-full p-4 hover:bg-[#E7E7EB] border-b border-[#E5E4E6] flex items-center justify-between text-left">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedReports.seller}
+                      onChange={(e) =>
+                        setSelectedReports((prev) => ({ ...prev, seller: e.target.checked }))
+                      }
+                      aria-label="Select Seller's Report"
+                      className="w-4 h-4 rounded border-[#E5E4E6] text-kairos-charcoal"
+                    />
+                    <span className="font-['Futura']">Seller's Report</span>
+                  </div>
                   <span className="font-['Avenir'] text-sm text-[#7A7873]">View sample here • approx. 61 pgs</span>
-                </button>
-                <button
-                  type="button"
-                  className="w-full p-4 hover:bg-[#E7E7EB] border-b border-[#E5E4E6] flex items-center justify-between text-left"
-                  role="option"
-                  aria-selected="false"
-                  onClick={() => setIsDropdownOpen(false)}
-                >
-                  <span className="font-['Futura']">Market Activity Report</span>
+                </div>
+                <div className="w-full p-4 hover:bg-[#E7E7EB] border-b border-[#E5E4E6] flex items-center justify-between text-left">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedReports.market}
+                      onChange={(e) =>
+                        setSelectedReports((prev) => ({ ...prev, market: e.target.checked }))
+                      }
+                      aria-label="Select Market Activity Report"
+                      className="w-4 h-4 rounded border-[#E5E4E6] text-kairos-charcoal"
+                    />
+                    <span className="font-['Futura']">Market Activity Report</span>
+                  </div>
                   <span className="font-['Avenir'] text-sm text-[#7A7873]">View sample here • approx. 15 pgs</span>
-                </button>
-                <button
-                  type="button"
-                  className="w-full p-4 hover:bg-[#E7E7EB] flex items-center justify-between text-left"
-                  role="option"
-                  aria-selected="false"
-                  onClick={() => setIsDropdownOpen(false)}
-                >
-                  <span className="font-['Futura']">Neighborhood Report</span>
+                </div>
+                <div className="w-full p-4 hover:bg-[#E7E7EB] flex items-center justify-between text-left">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedReports.neighborhood}
+                      onChange={(e) =>
+                        setSelectedReports((prev) => ({ ...prev, neighborhood: e.target.checked }))
+                      }
+                      aria-label="Select Neighborhood Report"
+                      className="w-4 h-4 rounded border-[#E5E4E6] text-kairos-charcoal"
+                    />
+                    <span className="font-['Futura']">Neighborhood Report</span>
+                  </div>
                   <span className="font-['Avenir'] text-sm text-[#7A7873]">View sample here • approx. 12 pgs</span>
-                </button>
+                </div>
               </div>
             )}
           </div>
