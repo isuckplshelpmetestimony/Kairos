@@ -43,7 +43,7 @@ export default function App() {
                 onToggle={() => setReportTypeSelected(!reportTypeSelected)}
               />
               <InlineToggle
-                label="Comps"
+                label="Comparisons"
                 isSelected={compsSelected}
                 onToggle={() => setCompsSelected(!compsSelected)}
               />
