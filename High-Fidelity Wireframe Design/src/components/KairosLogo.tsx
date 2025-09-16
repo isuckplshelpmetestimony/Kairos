@@ -26,7 +26,7 @@ function labelSizeToClasses(size: NonNullable<KairosLogoProps['labelSize']>) {
     case 'lg':
       return 'text-lg';
     case 'xl':
-      return 'text-2xl md:text-3xl lg:text-4xl';
+      return 'text-5xl';
   }
 }
 
@@ -39,7 +39,7 @@ export function KairosLogo({ className = "", iconSize = 'md', labelSize = 'md' }
       <div className={`${iconSizeToClasses(iconSize)} flex items-center justify-center`}>
         <img src={CatLogo} alt="Kairos logo" className="w-full h-full object-contain" draggable={false} />
       </div>
-      <span className={`font-semibold text-kairos-charcoal tracking-wide ${labelSizeToClasses(labelSize)}`}>Kairos</span>
+      <span className={`font-semibold text-kairos-charcoal tracking-wide ${labelSizeToClasses(labelSize)}`} style={{ fontSize: 35 }}>Kairos</span>
     </div>
   );
 }
