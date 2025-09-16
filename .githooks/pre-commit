@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Prevent committing directly to protected branches
+branch="$(git rev-parse --abbrev-ref HEAD)"
+
+if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+  echo "\n[HOOK] Direct commits to '$branch' are blocked. Create a feature branch instead (e.g., 'timeline').\n" 1>&2
+  exit 1
+fi
+
+exit 0
+
+
