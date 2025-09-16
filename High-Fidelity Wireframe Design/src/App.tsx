@@ -103,7 +103,8 @@ export default function App() {
                         setSelectedReports((prev) => ({ ...prev, property: e.target.checked }))
                       }
                       aria-label="Select Property Report"
-                      className="w-4 h-4 rounded border-[#E5E4E6] text-kairos-charcoal"
+                      className="w-4 h-4 rounded border-[#E5E4E6]"
+                      style={{ accentColor: '#E5FFCC' }}
                     />
                     <span className="font-['Futura']">Property Report</span>
                   </div>
@@ -118,7 +119,8 @@ export default function App() {
                         setSelectedReports((prev) => ({ ...prev, seller: e.target.checked }))
                       }
                       aria-label="Select Seller's Report"
-                      className="w-4 h-4 rounded border-[#E5E4E6] text-kairos-charcoal"
+                      className="w-4 h-4 rounded border-[#E5E4E6]"
+                      style={{ accentColor: '#E5FFCC' }}
                     />
                     <span className="font-['Futura']">Seller's Report</span>
                   </div>
@@ -133,7 +135,8 @@ export default function App() {
                         setSelectedReports((prev) => ({ ...prev, market: e.target.checked }))
                       }
                       aria-label="Select Market Activity Report"
-                      className="w-4 h-4 rounded border-[#E5E4E6] text-kairos-charcoal"
+                      className="w-4 h-4 rounded border-[#E5E4E6]"
+                      style={{ accentColor: '#E5FFCC' }}
                     />
                     <span className="font-['Futura']">Market Activity Report</span>
                   </div>
@@ -148,7 +151,8 @@ export default function App() {
                         setSelectedReports((prev) => ({ ...prev, neighborhood: e.target.checked }))
                       }
                       aria-label="Select Neighborhood Report"
-                      className="w-4 h-4 rounded border-[#E5E4E6] text-kairos-charcoal"
+                      className="w-4 h-4 rounded border-[#E5E4E6]"
+                      style={{ accentColor: '#E5FFCC' }}
                     />
                     <span className="font-['Futura']">Neighborhood Report</span>
                   </div>
