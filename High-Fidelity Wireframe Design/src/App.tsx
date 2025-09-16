@@ -10,14 +10,14 @@ export default function App() {
     <div className="min-h-screen bg-kairos-chalk">
       {/* Header with Logo */}
       <header className="w-full py-6 px-8">
-        <KairosLogo className="scale-110 md:scale-125" />
+        <KairosLogo />
       </header>
 
       {/* Main Content */}
       <main className="flex flex-col items-center justify-center px-8 py-16 max-w-4xl mx-auto">
         {/* Hero Section */}
         <div className="text-center mb-16 max-w-3xl">
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-semibold text-kairos-charcoal mb-6 leading-tight">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-kairos-charcoal mb-6 leading-tight">
             Generate Comparative Market Analysis and Pricing Reports in minutes
           </h1>
           <p className="text-lg md:text-xl text-kairos-charcoal/70 leading-relaxed max-w-2xl mx-auto">
