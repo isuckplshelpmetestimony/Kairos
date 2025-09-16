@@ -34,7 +34,7 @@ import CatLogo from "../../Untitled.svg";
 
 export function KairosLogo({ className = "", iconSize = 'md', labelSize = 'md' }: KairosLogoProps) {
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className={`flex items-center gap-0 ${className}`}>
       {/* SVG logo image */}
       <div className={`${iconSizeToClasses(iconSize)} flex items-center justify-center`}>
         <img src={CatLogo} alt="Kairos logo" className="w-full h-full object-contain" draggable={false} />
