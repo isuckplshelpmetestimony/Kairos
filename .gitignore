@@ -1,0 +1,4 @@
+# Ignore node modules and lockfiles in design workspace
+High-Fidelity Wireframe Design/node_modules/
+High-Fidelity Wireframe Design/package-lock.json
+.cursor/
