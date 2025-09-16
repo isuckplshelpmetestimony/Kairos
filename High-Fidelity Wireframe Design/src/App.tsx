@@ -47,6 +47,8 @@ export default function App() {
                   setReportTypeSelected(!reportTypeSelected);
                   setIsDropdownOpen((prev) => !prev);
                 }}
+                showDropdownChevron
+                isOpen={isDropdownOpen}
               />
               <InlineToggle
                 label="Comparisons"
