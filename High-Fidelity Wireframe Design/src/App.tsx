@@ -108,7 +108,13 @@ export default function App() {
                     />
                     <span className="font-['Futura']">Property Report</span>
                   </div>
-                  <span className="font-['Avenir'] text-sm text-[#7A7873]">View sample here • approx. 28 pgs</span>
+                  <a
+                    href="#"
+                    onClick={(e) => e.preventDefault()}
+                    className="font-['Avenir'] text-sm text-[#7A7873] hover:text-kairos-charcoal hover:underline underline-offset-2"
+                  >
+                    View sample here
+                  </a>
                 </div>
                 <div className="w-full p-4 hover:bg-[#E7E7EB] border-b border-[#E5E4E6] flex items-center justify-between text-left">
                   <div className="flex items-center gap-3">
@@ -124,7 +130,13 @@ export default function App() {
                     />
                     <span className="font-['Futura']">Seller's Report</span>
                   </div>
-                  <span className="font-['Avenir'] text-sm text-[#7A7873]">View sample here • approx. 61 pgs</span>
+                  <a
+                    href="#"
+                    onClick={(e) => e.preventDefault()}
+                    className="font-['Avenir'] text-sm text-[#7A7873] hover:text-kairos-charcoal hover:underline underline-offset-2"
+                  >
+                    View sample here
+                  </a>
                 </div>
                 <div className="w-full p-4 hover:bg-[#E7E7EB] border-b border-[#E5E4E6] flex items-center justify-between text-left">
                   <div className="flex items-center gap-3">
@@ -140,7 +152,13 @@ export default function App() {
                     />
                     <span className="font-['Futura']">Market Activity Report</span>
                   </div>
-                  <span className="font-['Avenir'] text-sm text-[#7A7873]">View sample here • approx. 15 pgs</span>
+                  <a
+                    href="#"
+                    onClick={(e) => e.preventDefault()}
+                    className="font-['Avenir'] text-sm text-[#7A7873] hover:text-kairos-charcoal hover:underline underline-offset-2"
+                  >
+                    View sample here
+                  </a>
                 </div>
                 <div className="w-full p-4 hover:bg-[#E7E7EB] flex items-center justify-between text-left">
                   <div className="flex items-center gap-3">
@@ -156,7 +174,13 @@ export default function App() {
                     />
                     <span className="font-['Futura']">Neighborhood Report</span>
                   </div>
-                  <span className="font-['Avenir'] text-sm text-[#7A7873]">View sample here • approx. 12 pgs</span>
+                  <a
+                    href="#"
+                    onClick={(e) => e.preventDefault()}
+                    className="font-['Avenir'] text-sm text-[#7A7873] hover:text-kairos-charcoal hover:underline underline-offset-2"
+                  >
+                    View sample here
+                  </a>
                 </div>
               </div>
             )}
