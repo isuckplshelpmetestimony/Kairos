@@ -109,8 +109,9 @@ export default function App() {
                     <span className="font-['Futura']">Property Report</span>
                   </div>
                   <a
-                    href="#"
-                    onClick={(e) => e.preventDefault()}
+                    href={"./Sample Property Report.pdf"}
+                    target="_blank"
+                    rel="noreferrer"
                     className="font-['Avenir'] text-sm text-[#7A7873] hover:text-kairos-charcoal hover:underline underline-offset-2"
                   >
                     View sample here
@@ -131,8 +132,9 @@ export default function App() {
                     <span className="font-['Futura']">Seller's Report</span>
                   </div>
                   <a
-                    href="#"
-                    onClick={(e) => e.preventDefault()}
+                    href={"./Sample Seller’s Report.pdf"}
+                    target="_blank"
+                    rel="noreferrer"
                     className="font-['Avenir'] text-sm text-[#7A7873] hover:text-kairos-charcoal hover:underline underline-offset-2"
                   >
                     View sample here
@@ -153,8 +155,9 @@ export default function App() {
                     <span className="font-['Futura']">Market Activity Report</span>
                   </div>
                   <a
-                    href="#"
-                    onClick={(e) => e.preventDefault()}
+                    href={"./Sample Market Activity Report.pdf"}
+                    target="_blank"
+                    rel="noreferrer"
                     className="font-['Avenir'] text-sm text-[#7A7873] hover:text-kairos-charcoal hover:underline underline-offset-2"
                   >
                     View sample here
@@ -175,8 +178,9 @@ export default function App() {
                     <span className="font-['Futura']">Neighborhood Report</span>
                   </div>
                   <a
-                    href="#"
-                    onClick={(e) => e.preventDefault()}
+                    href={"./Sample Neighborhood Report.pdf"}
+                    target="_blank"
+                    rel="noreferrer"
                     className="font-['Avenir'] text-sm text-[#7A7873] hover:text-kairos-charcoal hover:underline underline-offset-2"
                   >
                     View sample here
