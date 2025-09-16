@@ -1806,6 +1806,12 @@
     line-height: var(--tw-leading, var(--text-4xl--line-height));
   }
 
+  /* Custom utility for 35px wordmark size */
+  .text-35px {
+    font-size: 35px;
+    line-height: 1;
+  }
+
   .text-base {
     font-size: var(--text-base);
     line-height: var(--tw-leading, var(--text-base--line-height));
