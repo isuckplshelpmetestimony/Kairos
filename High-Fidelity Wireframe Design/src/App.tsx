@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 export default function App() {
   const [reportTypeSelected, setReportTypeSelected] = useState(true);
-  const [compsSelected, setCompsSelected] = useState(false);
+  const [compsSelected, setCompsSelected] = useState(true);
 
   return (
     <div className="min-h-screen bg-kairos-chalk">
@@ -40,24 +40,27 @@ export default function App() {
               <InlineToggle
                 label="Report Type"
                 isSelected={reportTypeSelected}
-                onToggle={() => {
-                  setReportTypeSelected(true);
-                  setCompsSelected(false);
-                }}
+                onToggle={() => setReportTypeSelected(!reportTypeSelected)}
               />
               <InlineToggle
                 label="Comps"
                 isSelected={compsSelected}
-                onToggle={() => {
-                  setCompsSelected(true);
-                  setReportTypeSelected(false);
-                }}
+                onToggle={() => setCompsSelected(!compsSelected)}
               />
             </div>
+            <p className="px-6 mt-1 text-xs text-kairos-charcoal/60">Select one or both.</p>
             
             {/* Prominent Search Button */}
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <button className="flex items-center gap-2 px-4 py-2 bg-kairos-soft-black hover:bg-kairos-charcoal text-kairos-chalk rounded-xl shadow-md transition-all duration-200 hover:shadow-lg">
+              <button
+                disabled={!reportTypeSelected && !compsSelected}
+                aria-disabled={!reportTypeSelected && !compsSelected}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl shadow-md transition-all duration-200 ${
+                  !reportTypeSelected && !compsSelected
+                    ? 'bg-kairos-white-grey text-kairos-charcoal/40 cursor-not-allowed'
+                    : 'bg-kairos-soft-black hover:bg-kairos-charcoal text-kairos-chalk hover:shadow-lg'
+                }`}
+              >
                 <span className="text-sm font-medium">
                   Search
                 </span>
