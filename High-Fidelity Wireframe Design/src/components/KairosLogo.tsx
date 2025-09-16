@@ -1,7 +1,7 @@
 interface KairosLogoProps {
   className?: string;
   iconSize?: 'sm' | 'md' | 'lg' | 'xl';
-  labelSize?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  labelSize?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 function iconSizeToClasses(size: NonNullable<KairosLogoProps['iconSize']>) {
@@ -26,8 +26,6 @@ function labelSizeToClasses(size: NonNullable<KairosLogoProps['labelSize']>) {
     case 'lg':
       return 'text-lg';
     case 'xl':
-      return 'text-xl';
-    case '2xl':
       return 'text-2xl';
   }
 }
