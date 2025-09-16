@@ -26,7 +26,7 @@ export function InlineToggle({ label, isSelected, onToggle, selectedIcon, ariaRo
       }}
       className={`inline-flex items-center gap-1.5 px-1.5 py-1 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kairos-charcoal/20 text-kairos-charcoal/80 hover:text-kairos-charcoal`}
     >
-      <span className="hover:underline underline-offset-2 decoration-kairos-charcoal/40">{label}</span>
+      <span style={{ fontWeight: '700', textShadow: '0.5px 0 0 currentColor' }} className="hover:underline underline-offset-2 decoration-kairos-charcoal/40">{label}</span>
       {showDropdownChevron && (
         <svg
           aria-hidden="true"
