@@ -48,7 +48,7 @@ export default function App() {
                 onToggle={() => setCompsSelected(!compsSelected)}
               />
             </div>
-            <p className="px-6 mt-1 text-xs text-kairos-charcoal/60">Select one or both.</p>
+            <p className="px-6 mt-4 text-sm font-medium text-kairos-charcoal/80">Select one or both.</p>
             
             {/* Prominent Search Button */}
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
