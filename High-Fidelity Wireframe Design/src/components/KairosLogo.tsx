@@ -26,7 +26,7 @@ function labelSizeToClasses(size: NonNullable<KairosLogoProps['labelSize']>) {
     case 'lg':
       return 'text-lg';
     case 'xl':
-      return 'text-2xl';
+      return 'text-2xl md:text-3xl lg:text-4xl';
   }
 }
 
