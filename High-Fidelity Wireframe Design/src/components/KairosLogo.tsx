@@ -35,7 +35,7 @@ export function KairosLogo({ className = "", iconSize = 'md', labelSize = 'md' }
     <div className={`flex items-center gap-3 ${className}`}>
       {/* Black silhouette cat with yellow glowing eyes */}
       <div className={`${iconSizeToClasses(iconSize)} flex items-center justify-center`}>
-        <svg className="w-[80%] h-[80%]" viewBox="0 0 32 32" fill="none">
+        <svg className="w-full h-full" viewBox="0 0 32 32" fill="none">
           {/* Cat silhouette body */}
           <path 
             d="M16 28c-6 0-10-4-10-9s3-8 6-9c1-2 2-3 4-3s3 1 4 3c3 1 6 4 6 9s-4 9-10 9z" 
