@@ -6,6 +6,7 @@ export default function App() {
   const [reportTypeSelected, setReportTypeSelected] = useState(true);
   const [compsSelected, setCompsSelected] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isComparisonsOpen, setIsComparisonsOpen] = useState(false);
   const [selectedReports, setSelectedReports] = useState({
     property: true,
     seller: true,
@@ -59,10 +60,54 @@ export default function App() {
               <InlineToggle
                 label="Comparisons"
                 isSelected={compsSelected}
-                onToggle={() => setCompsSelected(!compsSelected)}
+                onToggle={() => {
+                  setCompsSelected(!compsSelected);
+                  setIsComparisonsOpen((prev) => !prev);
+                }}
+                showDropdownChevron
+                isOpen={isComparisonsOpen}
               />
             </div>
             <p className="px-6 mt-4 text-sm font-medium text-kairos-charcoal/80">Select one or both.</p>
+            
+            {/* Comparisons Dropdown */}
+            {isComparisonsOpen && (
+              <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-[#FFFFFC] border border-[#E5E4E6] rounded-lg shadow-lg">
+                {/* Property Type Section */}
+                <div className="p-4 border-b border-[#E5E4E6]">
+                  <label className="font-['Futura'] text-sm text-[#3B3832] mb-2 block">
+                    Select Property Type
+                  </label>
+                  <select className="w-full p-2 border border-[#E5E4E6] rounded bg-[#F3F3F2]">
+                    <option value="">Choose property type...</option>
+                    <option value="residential">Residential</option>
+                    <option value="commercial">Commercial</option>
+                    <option value="land">Land</option>
+                  </select>
+                </div>
+                
+                {/* Location Section */}
+                <div className="p-4 border-b border-[#E5E4E6]">
+                  <label className="font-['Futura'] text-sm text-[#3B3832] mb-2 block">
+                    Select Location
+                  </label>
+                  <select className="w-full p-2 border border-[#E5E4E6] rounded bg-[#F3F3F2]">
+                    <option value="">Choose location...</option>
+                    <option value="downtown">Downtown</option>
+                    <option value="suburbs">Suburbs</option>
+                    <option value="waterfront">Waterfront</option>
+                  </select>
+                </div>
+                
+                {/* Results Section */}
+                <div className="flex justify-between items-center p-4">
+                  <span className="text-sm text-[#3B3832]">0 Matches</span>
+                  <button className="px-4 py-2 bg-[#3B3832] text-white rounded-lg text-sm font-medium hover:bg-[#2A2824] transition-colors">
+                    View Results
+                  </button>
+                </div>
+              </div>
+            )}
             
             {/* Prominent Search Button */}
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
