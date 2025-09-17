@@ -64,6 +64,11 @@ export default function App() {
                 onToggle={() => {
                   setReportTypeSelected(!reportTypeSelected);
                   setIsDropdownOpen((prev) => !prev);
+                  // Close Comparisons dropdown when Report Type opens
+                  if (!isDropdownOpen) {
+                    setIsComparisonsOpen(false);
+                    setCompsSelected(false);
+                  }
                 }}
                 showDropdownChevron
                 isOpen={isDropdownOpen}
@@ -74,6 +79,11 @@ export default function App() {
                 onToggle={() => {
                   setCompsSelected(!compsSelected);
                   setIsComparisonsOpen((prev) => !prev);
+                  // Close Report Type dropdown when Comparisons opens
+                  if (!isComparisonsOpen) {
+                    setIsDropdownOpen(false);
+                    setReportTypeSelected(false);
+                  }
                 }}
                 showDropdownChevron
                 isOpen={isComparisonsOpen}
@@ -111,55 +121,42 @@ export default function App() {
                 </div>
                 
                 {/* Results Section */}
-                <div className="flex justify-between items-center p-4">
-                  <span className="text-sm text-[#3B3832]">0 Matches</span>
+                <div className="flex justify-between items-center px-4 pt-4 no-bottom-padding">
+                  <div className="flex gap-4">
+                    <button 
+                      className="text-sm text-[#3B3832] hover:underline"
+                      onClick={() => {
+                        const newStatuses = { ...propertyStatuses };
+                        Object.keys(newStatuses).forEach(key => {
+                          newStatuses[key].selected = true;
+                        });
+                        setPropertyStatuses(newStatuses);
+                      }}
+                    >
+                      Select All
+                    </button>
+                    <button 
+                      className="text-sm text-[#3B3832] hover:underline"
+                      onClick={() => {
+                        const newStatuses = { ...propertyStatuses };
+                        Object.keys(newStatuses).forEach(key => {
+                          newStatuses[key].selected = false;
+                        });
+                        setPropertyStatuses(newStatuses);
+                      }}
+                    >
+                      Select None
+                    </button>
+                  </div>
                   <button className="px-4 py-2 bg-[#3B3832] text-white rounded-lg text-sm font-medium hover:bg-[#2A2824] transition-colors">
                     View Results
                   </button>
                 </div>
                 
                 {/* Status - Dates or Days Section */}
-                <div className="border-t border-[#E5E4E6]">
-                  {/* Header */}
-                  <div className="bg-teal-500 text-white px-4 py-2 flex justify-between items-center">
-                    <span className="font-medium">Status - Dates or Days</span>
-                    <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs font-bold">?</span>
-                    </div>
-                  </div>
-                  
-                  {/* Select All/None Links */}
-                  <div className="px-4 py-2 border-b border-[#E5E4E6]">
-                    <div className="flex gap-4">
-                      <button 
-                        className="text-sm text-[#3B3832] hover:underline"
-                        onClick={() => {
-                          const newStatuses = { ...propertyStatuses };
-                          Object.keys(newStatuses).forEach(key => {
-                            newStatuses[key].selected = true;
-                          });
-                          setPropertyStatuses(newStatuses);
-                        }}
-                      >
-                        Select All
-                      </button>
-                      <button 
-                        className="text-sm text-[#3B3832] hover:underline"
-                        onClick={() => {
-                          const newStatuses = { ...propertyStatuses };
-                          Object.keys(newStatuses).forEach(key => {
-                            newStatuses[key].selected = false;
-                          });
-                          setPropertyStatuses(newStatuses);
-                        }}
-                      >
-                        Select None
-                      </button>
-                    </div>
-                  </div>
-                  
+                <div>
                   {/* Status List */}
-                  <div className="p-4 space-y-2">
+                  <div className="px-4 py-2 space-y-1">
                     {Object.entries(propertyStatuses).map(([status, { selected, dateRange }]) => (
                       <div key={status} className={`flex items-center gap-3 p-2 rounded ${selected ? 'bg-blue-50' : ''}`}>
                         <input
@@ -171,7 +168,8 @@ export default function App() {
                               [status]: { ...prev[status], selected: e.target.checked }
                             }));
                           }}
-                          className="w-4 h-4 text-[#3B3832] border-[#E5E4E6] rounded focus:ring-[#3B3832]"
+                          className="w-4 h-4 rounded border-[#E5E4E6]"
+                          style={{ accentColor: '#E5FFCC' }}
                         />
                         <span className="text-sm text-[#3B3832] flex-1">{status}</span>
                         <input

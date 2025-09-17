@@ -163,6 +163,11 @@
   .border-kairos-white-grey { border-color: var(--kairos-white-grey); }
   .border-kairos-charcoal { border-color: var(--kairos-charcoal); }
   .border-kairos-soft-black { border-color: var(--kairos-soft-black); }
+  
+  /* Custom utility classes for spacing fixes */
+  .no-bottom-padding {
+    padding-bottom: 0 !important;
+  }
 }
 
 /**
