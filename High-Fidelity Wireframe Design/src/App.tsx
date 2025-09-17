@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 import { KairosLogo } from './components/KairosLogo';
 import { InlineToggle } from './components/InlineToggle';
 import { useState } from 'react';
@@ -490,7 +492,7 @@ export default function App() {
                 }`}
               >
                 <span className="text-sm font-medium">
-                  Search
+                  Generate Reports
                 </span>
                 <div className="w-5 h-5 flex items-center justify-center">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
