@@ -163,13 +163,30 @@
   .border-kairos-white-grey { border-color: var(--kairos-white-grey); }
   .border-kairos-charcoal { border-color: var(--kairos-charcoal); }
   .border-kairos-soft-black { border-color: var(--kairos-soft-black); }
+  
+  /* Custom utility classes for spacing fixes */
+  .no-bottom-padding {
+    padding-bottom: 0 !important;
+  }
+  
+  .description-spacing {
+    margin-bottom: 1rem !important;
+  }
+  
+  .section-header-spacing {
+    margin-top: 1.5rem !important;
+  }
+  
+  .font-bold-custom {
+    font-weight: 600 !important;
+  }
 }
 
 /**
  * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
  */
 /* Kairos Typography System */
-@import url('https://fonts.googleapis.com/css2?family=Avenir:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Avenir:wght@400;500;600;700&display=swap');
 
 @layer base {
   :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
@@ -203,12 +220,6 @@
       line-height: 1.5;
     }
 
-    p {
-      font-family: 'Avenir', system-ui, sans-serif;
-      font-size: var(--text-base);
-      font-weight: var(--font-weight-normal);
-      line-height: 1.6;
-    }
 
     label {
       font-family: 'Avenir', system-ui, sans-serif;
