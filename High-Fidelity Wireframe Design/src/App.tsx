@@ -89,7 +89,6 @@ export default function App() {
                 isOpen={isComparisonsOpen}
               />
             </div>
-            <p className="px-6 mt-4 text-sm font-medium text-kairos-charcoal/80">Select one or both.</p>
             
             {/* Comparisons Dropdown */}
             {isComparisonsOpen && (
@@ -157,40 +156,176 @@ export default function App() {
                 <div>
                   {/* Status List */}
                   <div className="px-4 py-2 space-y-1">
-                    {Object.entries(propertyStatuses).map(([status, { selected, dateRange }]) => (
-                      <div key={status} className={`flex items-center gap-3 p-2 rounded ${selected ? 'bg-blue-50' : ''}`}>
-                        <input
-                          type="checkbox"
-                          checked={selected}
-                          onChange={(e) => {
-                            setPropertyStatuses(prev => ({
-                              ...prev,
-                              [status]: { ...prev[status], selected: e.target.checked }
-                            }));
-                          }}
-                          className="w-4 h-4 rounded border-[#E5E4E6]"
-                          style={{ accentColor: '#E5FFCC' }}
-                        />
-                        <span className="text-sm text-[#3B3832] flex-1">{status}</span>
-                        <input
-                          type="text"
-                          value={dateRange}
-                          onChange={(e) => {
-                            setPropertyStatuses(prev => ({
-                              ...prev,
-                              [status]: { ...prev[status], dateRange: e.target.value }
-                            }));
-                          }}
-                          placeholder="Enter range..."
-                          className="w-20 px-2 py-1 text-sm border border-[#E5E4E6] rounded bg-white"
-                        />
-                        <div className="w-4 h-4 text-gray-400">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                        </div>
+                    {/* Active Market Data Section */}
+                    <div className="mb-2">
+                      <div className="text-xs text-[#7A7873] mb-2">
+                        <strong style={{ fontWeight: 900 }}>Active Market Data:</strong>
                       </div>
-                    ))}
+                      {Object.entries(propertyStatuses).filter(([status]) => 
+                        ['Coming Soon', 'Active', 'Active Under Contract'].includes(status)
+                      ).map(([status, { selected, dateRange }]) => (
+                        <div key={status} className={`flex items-center gap-3 p-2 rounded ${selected ? 'bg-blue-50' : ''}`}>
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            onChange={(e) => {
+                              setPropertyStatuses(prev => ({
+                                ...prev,
+                                [status]: { ...prev[status], selected: e.target.checked }
+                              }));
+                            }}
+                            className="w-4 h-4 rounded border-[#E5E4E6]"
+                            style={{ accentColor: '#E5FFCC' }}
+                          />
+                          <span className="text-sm text-[#3B3832] flex-1">{status}</span>
+                          <input
+                            type="text"
+                            value={dateRange}
+                            onChange={(e) => {
+                              setPropertyStatuses(prev => ({
+                                ...prev,
+                                [status]: { ...prev[status], dateRange: e.target.value }
+                              }));
+                            }}
+                            placeholder="Enter range..."
+                            className="w-20 px-2 py-1 text-sm border border-[#E5E4E6] rounded bg-white"
+                          />
+                          <div className="w-4 h-4 text-gray-400">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                        </div>
+                      ))}
+                      <p className="text-xs text-[#7A7873] ml-6 description-spacing">shows current market conditions and pricing trends</p>
+                    </div>
+
+                    {/* Recent Market Activity Section */}
+                    <div className="mb-2 section-header-spacing">
+                      <div className="text-xs text-[#7A7873] mb-2">
+                        <strong style={{ fontWeight: 900 }}>Recent Market Activity:</strong>
+                      </div>
+                      {Object.entries(propertyStatuses).filter(([status]) => 
+                        ['Temporary Off Market', 'Pending'].includes(status)
+                      ).map(([status, { selected, dateRange }]) => (
+                        <div key={status} className={`flex items-center gap-3 p-2 rounded ${selected ? 'bg-blue-50' : ''}`}>
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            onChange={(e) => {
+                              setPropertyStatuses(prev => ({
+                                ...prev,
+                                [status]: { ...prev[status], selected: e.target.checked }
+                              }));
+                            }}
+                            className="w-4 h-4 rounded border-[#E5E4E6]"
+                            style={{ accentColor: '#E5FFCC' }}
+                          />
+                          <span className="text-sm text-[#3B3832] flex-1">{status}</span>
+                          <input
+                            type="text"
+                            value={dateRange}
+                            onChange={(e) => {
+                              setPropertyStatuses(prev => ({
+                                ...prev,
+                                [status]: { ...prev[status], dateRange: e.target.value }
+                              }));
+                            }}
+                            placeholder="Enter range..."
+                            className="w-20 px-2 py-1 text-sm border border-[#E5E4E6] rounded bg-white"
+                          />
+                          <div className="w-4 h-4 text-gray-400">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                        </div>
+                      ))}
+                      <p className="text-xs text-[#7A7873] ml-6 description-spacing">indicates recent market activity</p>
+                    </div>
+
+
+                    {/* Historical Sales Data Section */}
+                    <div className="mb-2 section-header-spacing">
+                      <div className="text-xs text-[#7A7873] mb-2">
+                        <strong style={{ fontWeight: 900 }}>Historical Sales Data:</strong>
+                      </div>
+                      {Object.entries(propertyStatuses).filter(([status]) => 
+                        ['Closed'].includes(status)
+                      ).map(([status, { selected, dateRange }]) => (
+                        <div key={status} className={`flex items-center gap-3 p-2 rounded ${selected ? 'bg-blue-50' : ''}`}>
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            onChange={(e) => {
+                              setPropertyStatuses(prev => ({
+                                ...prev,
+                                [status]: { ...prev[status], selected: e.target.checked }
+                              }));
+                            }}
+                            className="w-4 h-4 rounded border-[#E5E4E6]"
+                            style={{ accentColor: '#E5FFCC' }}
+                          />
+                          <span className="text-sm text-[#3B3832] flex-1">{status}</span>
+                          <input
+                            type="text"
+                            value={dateRange}
+                            onChange={(e) => {
+                              setPropertyStatuses(prev => ({
+                                ...prev,
+                                [status]: { ...prev[status], dateRange: e.target.value }
+                              }));
+                            }}
+                            placeholder="Enter range..."
+                            className="w-20 px-2 py-1 text-sm border border-[#E5E4E6] rounded bg-white"
+                          />
+                          <div className="w-4 h-4 text-gray-400">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                            {/* Other Statuses */}
+                            {Object.entries(propertyStatuses).filter(([status]) => 
+                              !['Coming Soon', 'Active', 'Active Under Contract', 'Temporary Off Market', 'Pending', 'Closed'].includes(status)
+                            ).map(([status, { selected, dateRange }]) => (
+                              <div key={status} className={`flex items-center gap-3 p-2 rounded ${selected ? 'bg-blue-50' : ''}`}>
+                                <input
+                                  type="checkbox"
+                                  checked={selected}
+                                  onChange={(e) => {
+                                    setPropertyStatuses(prev => ({
+                                      ...prev,
+                                      [status]: { ...prev[status], selected: e.target.checked }
+                                    }));
+                                  }}
+                                  className="w-4 h-4 rounded border-[#E5E4E6]"
+                                  style={{ accentColor: '#E5FFCC' }}
+                                />
+                                <span className="text-sm text-[#3B3832] flex-1">{status}</span>
+                                <input
+                                  type="text"
+                                  value={dateRange}
+                                  onChange={(e) => {
+                                    setPropertyStatuses(prev => ({
+                                      ...prev,
+                                      [status]: { ...prev[status], dateRange: e.target.value }
+                                    }));
+                                  }}
+                                  placeholder="Enter range..."
+                                  className="w-20 px-2 py-1 text-sm border border-[#E5E4E6] rounded bg-white"
+                                />
+                                <div className="w-4 h-4 text-gray-400">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                  </svg>
+                                </div>
+                              </div>
+                            ))}
+                            <p className="text-xs text-[#7A7873] ml-6 description-spacing">provides completed transaction data for comparison</p>
                   </div>
                 </div>
               </div>
