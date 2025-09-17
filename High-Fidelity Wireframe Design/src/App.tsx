@@ -13,6 +13,17 @@ export default function App() {
     market: true,
     neighborhood: true,
   });
+  const [propertyStatuses, setPropertyStatuses] = useState({
+    'Coming Soon': { selected: false, dateRange: '' },
+    'Active': { selected: true, dateRange: '' },
+    'Active Under Contract': { selected: true, dateRange: '' },
+    'Temporary Off Market': { selected: true, dateRange: '' },
+    'Pending': { selected: true, dateRange: '' },
+    'Withdrawn': { selected: false, dateRange: '' },
+    'Closed': { selected: true, dateRange: '0-180' },
+    'Expired': { selected: false, dateRange: '' },
+    'Canceled': { selected: false, dateRange: '' },
+  });
 
   return (
     <div className="min-h-screen bg-kairos-chalk">
@@ -105,6 +116,84 @@ export default function App() {
                   <button className="px-4 py-2 bg-[#3B3832] text-white rounded-lg text-sm font-medium hover:bg-[#2A2824] transition-colors">
                     View Results
                   </button>
+                </div>
+                
+                {/* Status - Dates or Days Section */}
+                <div className="border-t border-[#E5E4E6]">
+                  {/* Header */}
+                  <div className="bg-teal-500 text-white px-4 py-2 flex justify-between items-center">
+                    <span className="font-medium">Status - Dates or Days</span>
+                    <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">?</span>
+                    </div>
+                  </div>
+                  
+                  {/* Select All/None Links */}
+                  <div className="px-4 py-2 border-b border-[#E5E4E6]">
+                    <div className="flex gap-4">
+                      <button 
+                        className="text-sm text-[#3B3832] hover:underline"
+                        onClick={() => {
+                          const newStatuses = { ...propertyStatuses };
+                          Object.keys(newStatuses).forEach(key => {
+                            newStatuses[key].selected = true;
+                          });
+                          setPropertyStatuses(newStatuses);
+                        }}
+                      >
+                        Select All
+                      </button>
+                      <button 
+                        className="text-sm text-[#3B3832] hover:underline"
+                        onClick={() => {
+                          const newStatuses = { ...propertyStatuses };
+                          Object.keys(newStatuses).forEach(key => {
+                            newStatuses[key].selected = false;
+                          });
+                          setPropertyStatuses(newStatuses);
+                        }}
+                      >
+                        Select None
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Status List */}
+                  <div className="p-4 space-y-2">
+                    {Object.entries(propertyStatuses).map(([status, { selected, dateRange }]) => (
+                      <div key={status} className={`flex items-center gap-3 p-2 rounded ${selected ? 'bg-blue-50' : ''}`}>
+                        <input
+                          type="checkbox"
+                          checked={selected}
+                          onChange={(e) => {
+                            setPropertyStatuses(prev => ({
+                              ...prev,
+                              [status]: { ...prev[status], selected: e.target.checked }
+                            }));
+                          }}
+                          className="w-4 h-4 text-[#3B3832] border-[#E5E4E6] rounded focus:ring-[#3B3832]"
+                        />
+                        <span className="text-sm text-[#3B3832] flex-1">{status}</span>
+                        <input
+                          type="text"
+                          value={dateRange}
+                          onChange={(e) => {
+                            setPropertyStatuses(prev => ({
+                              ...prev,
+                              [status]: { ...prev[status], dateRange: e.target.value }
+                            }));
+                          }}
+                          placeholder="Enter range..."
+                          className="w-20 px-2 py-1 text-sm border border-[#E5E4E6] rounded bg-white"
+                        />
+                        <div className="w-4 h-4 text-gray-400">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
