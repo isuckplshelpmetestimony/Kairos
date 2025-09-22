@@ -1,0 +1,9 @@
+[build]
+  base = "High-Fidelity Wireframe Design"
+  command = "npm run build"
+  publish = "High-Fidelity Wireframe Design/dist"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
