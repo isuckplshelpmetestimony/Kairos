@@ -1,0 +1,7 @@
+[build]
+  # Netlify may already have these set in the UI; keeping this minimal
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
