@@ -1,7 +1,7 @@
 [build]
   base = "High-Fidelity Wireframe Design"
   command = "npm run build"
-  publish = "High-Fidelity Wireframe Design/build"
+  publish = "build"
 
 [[redirects]]
   from = "/*"
