@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, Send, FileText, Home, TrendingUp } from 'lucide-react';
 
@@ -8,19 +7,65 @@ import { ArrowLeft, Send, FileText, Home, TrendingUp } from 'lucide-react';
 // - Kairos colors: #FFFFFC, #F8FBF8, #DCDDDD, #3B3832, inputs #F3F3F2
 // - Typography expectations: Futura (headings), Avenir (body) should be provided globally
 
-const BRAND = {
-  chalk: '#FFFFFC',
-  mist: '#F8FBF8',
-  grey: '#DCDDDD',
-  charcoal: '#3B3832',
-  input: '#F3F3F2',
-};
+// Type definitions
+interface Message {
+  role: 'user' | 'ai';
+  text: string;
+}
 
-const MOCK_STEPS = [
+interface Property {
+  address: string;
+  listPrice: string;
+  beds: number;
+  baths: number;
+  sqft: number;
+  lot: string;
+  yearBuilt: number;
+}
+
+interface Comparable {
+  address: string;
+  price: string;
+  beds: number;
+  baths: number;
+  sqft: number;
+  date: string;
+  distance: string;
+}
+
+interface Analysis {
+  pricingTrend: string;
+  dom: string;
+  recommendation: string;
+}
+
+interface Summary {
+  suggestedPrice: string;
+  rationale: string;
+}
+
+interface Document {
+  property: Property | null;
+  comparables: Comparable[];
+  analysis: Analysis | null;
+  summary: Summary | null;
+}
+
+interface MockStep {
+  user: string;
+  ai: string;
+  update: (doc: Document) => Document;
+}
+
+interface CMAGeneratorProps {
+  onBack?: () => void;
+}
+
+const MOCK_STEPS: MockStep[] = [
   {
     user: '123 Main St, Springfield, list price around $850k',
     ai: 'Got it. I will start your CMA with the property details and location context.',
-    update: (doc) => ({
+    update: (doc: Document) => ({
       ...doc,
       property: {
         address: '123 Main St, Springfield',
@@ -36,7 +81,7 @@ const MOCK_STEPS = [
   {
     user: 'Focus on comps within 0.5 miles, last 180 days',
     ai: 'Understood. Filtering comparables within 0.5 miles and last 180 days.',
-    update: (doc) => ({
+    update: (doc: Document) => ({
       ...doc,
       comparables: [
         { address: '117 Oak Ave', price: '$830,000', beds: 4, baths: 3, sqft: 2380, date: '2025-06-22', distance: '0.3 mi' },
@@ -48,7 +93,7 @@ const MOCK_STEPS = [
   {
     user: 'Emphasize pricing trends and days on market',
     ai: 'Adding market trend analysis with pricing and DOM insights.',
-    update: (doc) => ({
+    update: (doc: Document) => ({
       ...doc,
       analysis: {
         pricingTrend: 'Stable to slightly upward (+1.8% QoQ) in the submarket.',
@@ -60,7 +105,7 @@ const MOCK_STEPS = [
   {
     user: 'Great. Draft final summary and suggested list price.',
     ai: 'Here is the summary and suggested list price based on comps and trends.',
-    update: (doc) => ({
+    update: (doc: Document) => ({
       ...doc,
       summary: {
         suggestedPrice: '$855,000',
@@ -70,34 +115,34 @@ const MOCK_STEPS = [
   },
 ];
 
-function sanitizeInput(value) {
+function sanitizeInput(value: string | number | null | undefined): string {
   return String(value || '').slice(0, 500);
 }
 
-export default function CMAGenerator({ onBack }) {
-  const [messages, setMessages] = useState([
+export default function CMAGenerator({ onBack }: CMAGeneratorProps) {
+  const [messages, setMessages] = useState<Message[]>([
     { role: 'ai', text: 'Welcome to Kairos CMA Generator. Provide a target property to begin.' },
   ]);
-  const [input, setInput] = useState('');
-  const [isSending, setIsSending] = useState(false);
-  const [stepIndex, setStepIndex] = useState(0);
+  const [input, setInput] = useState<string>('');
+  const [isSending, setIsSending] = useState<boolean>(false);
+  const [stepIndex, setStepIndex] = useState<number>(0);
   // Desktop-first: always show split. Mobile behavior deferred per request.
 
-  const [doc, setDoc] = useState({
+  const [doc, setDoc] = useState<Document>({
     property: null,
     comparables: [],
     analysis: null,
     summary: null,
   });
 
-  const chatEndRef = useRef(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const canAdvance = useMemo(() => stepIndex < MOCK_STEPS.length, [stepIndex]);
 
-  const handleSend = () => {
+  const handleSend = (): void => {
     if (isSending) return;
     const clean = sanitizeInput(input);
     if (!clean) return;

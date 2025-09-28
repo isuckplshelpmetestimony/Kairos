@@ -1,3 +1,6 @@
+import React from 'react';
+import CatLogo from "../../Untitled.svg";
+
 interface KairosLogoProps {
   className?: string;
   iconSize?: 'sm' | 'md' | 'lg' | 'xl';
@@ -17,22 +20,7 @@ function iconSizeToClasses(size: NonNullable<KairosLogoProps['iconSize']>) {
   }
 }
 
-function labelSizeToClasses(size: NonNullable<KairosLogoProps['labelSize']>) {
-  switch (size) {
-    case 'sm':
-      return 'text-sm';
-    case 'md':
-      return 'text-base';
-    case 'lg':
-      return 'text-lg';
-    case 'xl':
-      return 'text-5xl';
-  }
-}
-
-import CatLogo from "../../Untitled.svg";
-
-export function KairosLogo({ className = "", iconSize = 'md', labelSize = 'md' }: KairosLogoProps) {
+export function KairosLogo({ className = "", iconSize = 'md' }: KairosLogoProps) {
   return (
     <div className={`flex items-center gap-0 ${className}`}>
       {/* SVG logo image */}

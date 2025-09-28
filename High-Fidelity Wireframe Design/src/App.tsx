@@ -1,8 +1,6 @@
-/* eslint-disable */
-// @ts-nocheck
+import React, { useState } from 'react';
 import { KairosLogo } from './components/KairosLogo';
 import { InlineToggle } from './components/InlineToggle';
-import { useState } from 'react';
 import CMAGenerator from './components/CMAGenerator';
 
 export default function App() {
@@ -17,7 +15,7 @@ export default function App() {
     market: true,
     neighborhood: true,
   });
-  const [propertyStatuses, setPropertyStatuses] = useState({
+  const [propertyStatuses, setPropertyStatuses] = useState<Record<string, { selected: boolean; dateRange: string }>>({
     'Coming Soon': { selected: false, dateRange: '0-90' },
     'Active': { selected: true, dateRange: '0-90' },
     'Active Under Contract': { selected: true, dateRange: '0-90' },
@@ -46,7 +44,7 @@ export default function App() {
   };
 
   // Close dropdown when clicking outside
-  const handleClickOutside = (e: React.MouseEvent) => {
+  const handleClickOutside = (e: React.MouseEvent<HTMLDivElement>) => {
     if (openCalendarDropdown && !(e.target as HTMLElement).closest('.calendar-dropdown')) {
       setOpenCalendarDropdown(null);
     }
@@ -194,7 +192,9 @@ export default function App() {
                       </div>
                       {Object.entries(propertyStatuses).filter(([status]) => 
                         ['Coming Soon', 'Active', 'Active Under Contract'].includes(status)
-                      ).map(([status, { selected, dateRange }]) => (
+                      ).map(([status, statusData]) => {
+                        const { selected, dateRange } = statusData as { selected: boolean; dateRange: string };
+                        return (
                         <div key={status} className={`flex items-center gap-3 p-2 rounded ${selected ? 'bg-blue-50' : ''}`}>
                           <input
                             type="checkbox"
@@ -258,7 +258,8 @@ export default function App() {
                             )}
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                       <p className="text-xs text-[#7A7873] ml-6 description-spacing">shows current market conditions and pricing trends</p>
                     </div>
 
@@ -269,7 +270,9 @@ export default function App() {
                       </div>
                       {Object.entries(propertyStatuses).filter(([status]) => 
                         ['Temporary Off Market', 'Pending'].includes(status)
-                      ).map(([status, { selected, dateRange }]) => (
+                      ).map(([status, statusData]) => {
+                        const { selected, dateRange } = statusData as { selected: boolean; dateRange: string };
+                        return (
                         <div key={status} className={`flex items-center gap-3 p-2 rounded ${selected ? 'bg-blue-50' : ''}`}>
                           <input
                             type="checkbox"
@@ -333,7 +336,8 @@ export default function App() {
                             )}
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                       <p className="text-xs text-[#7A7873] ml-6 description-spacing">indicates recent market activity</p>
                     </div>
 
@@ -345,7 +349,9 @@ export default function App() {
                       </div>
                       {Object.entries(propertyStatuses).filter(([status]) => 
                         ['Closed'].includes(status)
-                      ).map(([status, { selected, dateRange }]) => (
+                      ).map(([status, statusData]) => {
+                        const { selected, dateRange } = statusData as { selected: boolean; dateRange: string };
+                        return (
                         <div key={status} className={`flex items-center gap-3 p-2 rounded ${selected ? 'bg-blue-50' : ''}`}>
                           <input
                             type="checkbox"
@@ -409,13 +415,16 @@ export default function App() {
                             )}
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
 
                             {/* Other Statuses */}
                             {Object.entries(propertyStatuses).filter(([status]) => 
                               !['Coming Soon', 'Active', 'Active Under Contract', 'Temporary Off Market', 'Pending', 'Closed'].includes(status)
-                            ).map(([status, { selected, dateRange }]) => (
+                            ).map(([status, statusData]) => {
+                              const { selected, dateRange } = statusData as { selected: boolean; dateRange: string };
+                              return (
                               <div key={status} className={`flex items-center gap-3 p-2 rounded ${selected ? 'bg-blue-50' : ''}`}>
                                 <input
                                   type="checkbox"
@@ -479,7 +488,8 @@ export default function App() {
                                   )}
                                 </div>
                               </div>
-                            ))}
+                              );
+                            })}
                             <p className="text-xs text-[#7A7873] ml-6 description-spacing">provides completed transaction data for comparison</p>
                   </div>
                 </div>

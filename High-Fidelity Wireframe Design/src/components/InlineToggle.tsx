@@ -1,14 +1,15 @@
+import React from 'react';
+
 interface InlineToggleProps {
   label: string;
   isSelected: boolean;
   onToggle: () => void;
-  selectedIcon?: React.ReactNode;
   ariaRole?: 'checkbox' | 'switch';
   showDropdownChevron?: boolean;
   isOpen?: boolean;
 }
 
-export function InlineToggle({ label, isSelected, onToggle, selectedIcon, ariaRole = 'checkbox', showDropdownChevron = false, isOpen = false }: InlineToggleProps) {
+export function InlineToggle({ label, isSelected, onToggle, ariaRole = 'checkbox', showDropdownChevron = false, isOpen = false }: InlineToggleProps) {
   return (
     <button
       type="button"
