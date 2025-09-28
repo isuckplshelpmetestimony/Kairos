@@ -1,18 +1,13 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, Send, FileText, Home, TrendingUp } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, FileText, Home, TrendingUp } from 'lucide-react';
 
-// Kairos CMA Generator – split layout (chat left, document right)
+// Kairos CMA Generator – clean component ready for API integration
 // Notes:
 // - Tailwind-only styling per requirements
 // - Kairos colors: #FFFFFC, #F8FBF8, #DCDDDD, #3B3832, inputs #F3F3F2
 // - Typography expectations: Futura (headings), Avenir (body) should be provided globally
 
 // Type definitions
-interface Message {
-  role: 'user' | 'ai';
-  text: string;
-}
-
 interface Property {
   address: string;
   listPrice: string;
@@ -51,123 +46,34 @@ interface Document {
   summary: Summary | null;
 }
 
-interface MockStep {
-  user: string;
-  ai: string;
-  update: (doc: Document) => Document;
-}
-
 interface CMAGeneratorProps {
   onBack?: () => void;
 }
 
-const MOCK_STEPS: MockStep[] = [
-  {
-    user: '123 Main St, Springfield, list price around $850k',
-    ai: 'Got it. I will start your CMA with the property details and location context.',
-    update: (doc: Document) => ({
-      ...doc,
-      property: {
-        address: '123 Main St, Springfield',
-        listPrice: '$850,000',
-        beds: 4,
-        baths: 3,
-        sqft: 2450,
-        lot: '7,800 sqft',
-        yearBuilt: 1998,
-      },
-    }),
-  },
-  {
-    user: 'Focus on comps within 0.5 miles, last 180 days',
-    ai: 'Understood. Filtering comparables within 0.5 miles and last 180 days.',
-    update: (doc: Document) => ({
-      ...doc,
-      comparables: [
-        { address: '117 Oak Ave', price: '$830,000', beds: 4, baths: 3, sqft: 2380, date: '2025-06-22', distance: '0.3 mi' },
-        { address: '89 Pine Ct', price: '$865,000', beds: 4, baths: 3, sqft: 2520, date: '2025-05-09', distance: '0.4 mi' },
-        { address: '14 Cedar Ln', price: '$812,000', beds: 3, baths: 3, sqft: 2310, date: '2025-04-15', distance: '0.5 mi' },
-      ],
-    }),
-  },
-  {
-    user: 'Emphasize pricing trends and days on market',
-    ai: 'Adding market trend analysis with pricing and DOM insights.',
-    update: (doc: Document) => ({
-      ...doc,
-      analysis: {
-        pricingTrend: 'Stable to slightly upward (+1.8% QoQ) in the submarket.',
-        dom: 'Median 18 days (last 90 days).',
-        recommendation: 'List at $845,000–$865,000 to position competitively given size and recency.',
-      },
-    }),
-  },
-  {
-    user: 'Great. Draft final summary and suggested list price.',
-    ai: 'Here is the summary and suggested list price based on comps and trends.',
-    update: (doc: Document) => ({
-      ...doc,
-      summary: {
-        suggestedPrice: '$855,000',
-        rationale: 'Aligned with recent comps, home condition, and slight upward trend.',
-      },
-    }),
-  },
-];
-
-function sanitizeInput(value: string | number | null | undefined): string {
-  return String(value || '').slice(0, 500);
-}
-
 export default function CMAGenerator({ onBack }: CMAGeneratorProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'ai', text: 'Welcome to Kairos CMA Generator. Provide a target property to begin.' },
-  ]);
   const [input, setInput] = useState<string>('');
-  const [isSending, setIsSending] = useState<boolean>(false);
-  const [stepIndex, setStepIndex] = useState<number>(0);
-  // Desktop-first: always show split. Mobile behavior deferred per request.
-
-  const [doc, setDoc] = useState<Document>({
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [doc] = useState<Document>({
     property: null,
     comparables: [],
     analysis: null,
     summary: null,
   });
 
-  const chatEndRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  const canAdvance = useMemo(() => stepIndex < MOCK_STEPS.length, [stepIndex]);
-
-  const handleSend = (): void => {
-    if (isSending) return;
-    const clean = sanitizeInput(input);
-    if (!clean) return;
-    setMessages((prev) => [...prev, { role: 'user', text: clean }]);
-    setInput('');
-    setIsSending(true);
-
-    // Simulate AI delay 1–2s
-    const delay = 900 + Math.floor(Math.random() * 900);
-    setTimeout(() => {
-      if (canAdvance) {
-        const step = MOCK_STEPS[stepIndex];
-        // If user input roughly matches expected instruction, proceed, otherwise still proceed
-        const updated = step.update(doc);
-        setDoc(updated);
-        setMessages((prev) => [...prev, { role: 'ai', text: step.ai }]);
-        setStepIndex((i) => i + 1);
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          { role: 'ai', text: 'The CMA draft is complete. You can refine any section or export.' },
-        ]);
-      }
-      setIsSending(false);
-    }, delay);
+  const handleSubmit = async (): Promise<void> => {
+    if (!input.trim() || isLoading) return;
+    
+    setIsLoading(true);
+    try {
+      // TODO: Replace with actual API call
+      // const result = await generateCMA(input);
+      // setDoc(result);
+    } catch {
+      // TODO: Add proper error handling
+      window.alert('Failed to generate CMA. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const containerBase = 'bg-kairos-chalk text-kairos-charcoal';
@@ -194,58 +100,37 @@ export default function CMAGenerator({ onBack }: CMAGeneratorProps) {
 
       {/* Main Split */}
       <div className="flex-1 flex flex-row gap-6 px-6 pt-6 pb-0 items-stretch min-h-0 w-full">
-        {/* Chat Panel – fixed 40% width on desktop */}
-        <section className={`${panelBase} overflow-hidden flex-none basis-[40%] h-full flex flex-col`} aria-label="Chat Panel">
+        {/* Input Panel – fixed 40% width on desktop */}
+        <section className={`${panelBase} overflow-hidden flex-none basis-[40%] h-full flex flex-col`} aria-label="Input Panel">
           <div className="flex-1 flex flex-col">
             <div className={`px-4 py-3 border-b border-[#DCDDDD] ${headingFont} flex items-center gap-2`}>
               <FileText className="w-4 h-4" />
-              <span>Conversation</span>
+              <span>Property Input</span>
             </div>
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-              {messages.map((m, idx) => (
-                <div key={idx} className={`max-w-[85%] ${m.role === 'ai' ? '' : 'ml-auto'}`}>
-                  <div
-                    className={`${bodyFont} text-sm px-3 py-2 rounded-lg border ${
-                      m.role === 'ai' ? 'bg-white border-[#DCDDDD]' : 'bg-[#F3F3F2] border-[#DCDDDD]'
-                    }`}
-                  >
-                    {m.text}
-                  </div>
+            <div className="flex-1 p-4">
+              <div className="space-y-4">
+                <div>
+                  <label className={`${bodyFont} text-sm text-[#3B3832] mb-2 block`}>
+                    Property Address
+                  </label>
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Enter property address..."
+                    className={`${bodyFont} w-full px-3 py-2 text-sm rounded-md border border-[#DCDDDD] bg-[#F3F3F2] outline-none focus:ring-1 focus:ring-[#DCDDDD] focus:border-[#3B3832]`}
+                  />
                 </div>
-              ))}
-              {isSending && (
-                <div className="max-w-[60%]">
-                  <div className={`${bodyFont} text-sm px-3 py-2 rounded-lg border bg-white border-[#DCDDDD] text-[#7A7873]`}>
-                    Typing...
-                  </div>
-                </div>
-              )}
-              <div ref={chatEndRef} />
-            </div>
-            <div className="sticky bottom-0 p-3 border-t border-[#DCDDDD] bg-[#F8FBF8]">
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(sanitizeInput(e.target.value))}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSend();
-                  }}
-                  placeholder={canAdvance ? 'Type your next instruction...' : 'CMA ready. Refine or export.'}
-                  autoFocus
-                  className={`${bodyFont} flex-1 px-3 py-2 text-sm rounded-md border border-[#DCDDDD] bg-[#F3F3F2] outline-none focus:ring-1 focus:ring-[#DCDDDD] focus:border-[#3B3832]`}
-                />
                 <button
-                  disabled={isSending || !input}
-                  onClick={handleSend}
-                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-md border ${
-                    isSending || !input
+                  onClick={handleSubmit}
+                  disabled={!input.trim() || isLoading}
+                  className={`w-full px-4 py-2 rounded-md border ${
+                    !input.trim() || isLoading
                       ? 'bg-[#EAEAEA] text-[#9C9C9C] border-[#E0E0E0] cursor-not-allowed'
                       : 'bg-[#DCDDDD] text-[#3B3832] hover:bg-[#cfcfcf] border-[#D0D0D0]'
                   }`}
                 >
-                  <Send className="w-4 h-4" />
-                  <span className="text-sm">Send</span>
+                  {isLoading ? 'Generating...' : 'Generate CMA'}
                 </button>
               </div>
             </div>
@@ -258,18 +143,15 @@ export default function CMAGenerator({ onBack }: CMAGeneratorProps) {
             <div className={`px-4 py-3 border-b border-[#DCDDDD] ${headingFont} flex items-center justify-between`}>
               <div className="flex items-center gap-2">
                 <Home className="w-4 h-4" />
-                <span>Live CMA Preview</span>
+                <span>CMA Preview</span>
               </div>
-              <a
-                href={"./Sample Full Report.pdf"}
-                target="_blank"
-                rel="noreferrer"
+              <button
                 className={`${bodyFont} inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-md border border-[#E5E4E6] bg-white hover:bg-[#F8FBF8]`}
-                aria-label="Export CMA (opens sample full report PDF)"
+                disabled={!doc.property}
               >
                 <FileText className="w-4 h-4" />
                 <span>Export</span>
-              </a>
+              </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
               {/* Property Details */}
@@ -290,7 +172,7 @@ export default function CMAGenerator({ onBack }: CMAGeneratorProps) {
                       <div><span className="text-[#7A7873]">Year Built</span><div className="font-medium">{doc.property.yearBuilt}</div></div>
                     </div>
                   ) : (
-                    <div className={`${bodyFont} text-sm text-[#7A7873]`}>Provide a property to begin.</div>
+                    <div className={`${bodyFont} text-sm text-[#7A7873]`}>Enter a property address to begin.</div>
                   )}
                 </div>
               </div>
@@ -302,7 +184,7 @@ export default function CMAGenerator({ onBack }: CMAGeneratorProps) {
                   <span>Comparables</span>
                 </div>
                 <div className="p-4">
-                  {doc.comparables && doc.comparables.length ? (
+                  {doc.comparables && doc.comparables.length > 0 ? (
                     <div className="space-y-3">
                       {doc.comparables.map((c, i) => (
                         <div key={i} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-md border border-[#DCDDDD] bg-[#FFFFFC]">
@@ -319,7 +201,7 @@ export default function CMAGenerator({ onBack }: CMAGeneratorProps) {
                       ))}
                     </div>
                   ) : (
-                    <div className={`${bodyFont} text-sm text-[#7A7873]`}>No comparables yet. Specify radius and timeframe.</div>
+                    <div className={`${bodyFont} text-sm text-[#7A7873]`}>No comparables yet. Generate a CMA to see results.</div>
                   )}
                 </div>
               </div>
@@ -347,7 +229,7 @@ export default function CMAGenerator({ onBack }: CMAGeneratorProps) {
                       </div>
                     </div>
                   ) : (
-                    <div className={`${bodyFont} text-sm text-[#7A7873]`}>Ask for pricing trends to populate analysis.</div>
+                    <div className={`${bodyFont} text-sm text-[#7A7873]`}>Generate a CMA to see market analysis.</div>
                   )}
                 </div>
               </div>
@@ -371,7 +253,7 @@ export default function CMAGenerator({ onBack }: CMAGeneratorProps) {
                       </div>
                     </div>
                   ) : (
-                    <div className={`${bodyFont} text-sm text-[#7A7873]`}>Provide a final instruction to generate a summary.</div>
+                    <div className={`${bodyFont} text-sm text-[#7A7873]`}>Generate a CMA to see pricing summary.</div>
                   )}
                 </div>
               </div>
@@ -382,5 +264,3 @@ export default function CMAGenerator({ onBack }: CMAGeneratorProps) {
     </div>
   );
 }
-
-
