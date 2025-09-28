@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { KairosLogo } from './components/KairosLogo';
 import { InlineToggle } from './components/InlineToggle';
-import CMAGenerator from './components/CMAGenerator';
 
 export default function App() {
   const [reportTypeSelected, setReportTypeSelected] = useState(true);
   const [compsSelected, setCompsSelected] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isComparisonsOpen, setIsComparisonsOpen] = useState(false);
-  const [showCMA, setShowCMA] = useState(false);
   const [selectedReports, setSelectedReports] = useState({
     property: true,
     seller: true,
@@ -50,9 +48,6 @@ export default function App() {
     }
   };
 
-  if (showCMA) {
-    return <CMAGenerator onBack={() => setShowCMA(false)} />;
-  }
 
   return (
     <div className="min-h-screen bg-kairos-chalk" onClick={handleClickOutside}>
@@ -507,9 +502,7 @@ export default function App() {
                     : 'bg-kairos-soft-black hover:bg-kairos-charcoal text-kairos-chalk hover:shadow-lg'
                 }`}
                 onClick={() => {
-                  if (reportTypeSelected || compsSelected) {
-                    setShowCMA(true);
-                  }
+                  // Button does nothing - CMA Generator removed
                 }}
               >
                 <span className="text-sm font-medium">
