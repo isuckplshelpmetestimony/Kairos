@@ -40,11 +40,27 @@ def scraper(province, property_type, num):
     page = requests.get(URL, headers=headers, timeout=15)
     soup = bs(page.content, 'html.parser')
     div = soup.find('div', class_='BaseSection Pagination')
-    # Guard: if pagination container is missing, assume single page
+    # Primary: use pagination container's data attribute
     try:
         max_page_num = int(div.get('data-pagination-end')) if div else 1
     except Exception:
         max_page_num = 1
+    # Fallback: scan for page links like ?page=2 and take the max
+    if max_page_num == 1:
+        try:
+            page_hrefs = [a.get('href', '') for a in soup.find_all('a', href=True)]
+            page_numbers = []
+            for href in page_hrefs:
+                if 'page=' in href:
+                    try:
+                        num = int(re.findall(r'[?&]page=(\d+)', href)[0])
+                        page_numbers.append(num)
+                    except Exception:
+                        pass
+            if len(page_numbers):
+                max_page_num = max(1, max(page_numbers))
+        except Exception:
+            pass
 
     for page_num in range(1, max_page_num + 1):
         try:
@@ -57,9 +73,33 @@ def scraper(province, property_type, num):
             soup = bs(page.content, 'html.parser')
             results_link = soup.find_all("div", attrs={"class": "row ListingCell-row ListingCell-agent-redesign"})
             results_sku = soup.find_all("div", attrs={"class": "ListingCell-MainImage"})
-            print(f"Found {len(results_sku)} results on page {page_num}...")
-            # Short-circuit if page 1 has zero listings
-            if page_num == 1 and len(results_sku) == 0:
+            primary_count = len(results_sku)
+            print(f"Found {primary_count} results on page {page_num} (primary selectors)...")
+
+            # Fallback strategy: select by presence of data-sku and find first child link
+            fallback_pairs = []
+            if primary_count == 0:
+                sku_nodes = soup.select('[data-sku]')
+                for node in sku_nodes:
+                    try:
+                        sku_val = node.get('data-sku')
+                        if not sku_val:
+                            continue
+                        a_tag = node.find('a', href=True)
+                        if not a_tag:
+                            continue
+                        href = a_tag.get('href')
+                        if not href:
+                            continue
+                        # Only accept lamudi property paths (absolute or relative)
+                        if ('lamudi.com.ph' in href) or href.startswith('/'):
+                            fallback_pairs.append((sku_val, href))
+                    except Exception:
+                        continue
+
+            total_candidates = primary_count if primary_count else len(fallback_pairs)
+            # Short-circuit if page 1 has zero listings after fallback
+            if page_num == 1 and total_candidates == 0:
                 try:
                     status_code = getattr(page, 'status_code', None)
                 except Exception:
@@ -79,16 +119,26 @@ def scraper(province, property_type, num):
             print(f"Error on page {page_num}: {e}")
             continue  # Continue to the next page instead of breaking
 
-        for sku_tag, link_tag in zip(results_sku, results_link):
-            sku = sku_tag.find('div')["data-sku"]
-            if sku in skus:  # If SKU is already in the set, skip it
-                continue
-            skus.add(sku)  # Add SKU to the set
-            link = link_tag.find('a')['href']
-            listing.append([sku, link])
-            count += 1
-            if count >= num:
-                break
+        if len(results_sku) and len(results_link):
+            for sku_tag, link_tag in zip(results_sku, results_link):
+                sku = sku_tag.find('div')["data-sku"]
+                if sku in skus:  # If SKU is already in the set, skip it
+                    continue
+                skus.add(sku)  # Add SKU to the set
+                link = link_tag.find('a')['href']
+                listing.append([sku, link])
+                count += 1
+                if count >= num:
+                    break
+        elif len(fallback_pairs):
+            for sku, link in fallback_pairs:
+                if sku in skus:
+                    continue
+                skus.add(sku)
+                listing.append([sku, link])
+                count += 1
+                if count >= num:
+                    break
 
         if count >= num:
             break
