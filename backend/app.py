@@ -11,6 +11,7 @@ from flask_cors import CORS
 import pandas as pd
 
 from psgc_mapper import to_lamudi_province, is_supported
+from src.adapters.lamudi_adapter import scrape_and_normalize
 
 # -----------------------------------------------------------------------------
 # Flask app setup
@@ -121,9 +122,9 @@ def cma() -> Any:
                 "data_source": "live",
             })
 
-        # Compute stats on a price-like column if present; fall back to count-only
+        # Compute stats with preferred column order: price, then TCP, then amount
         price_col = None
-        for cand in ["price", "Price", "amount", "Amount"]:
+        for cand in ["price", "TCP", "amount"]:
             if cand in df.columns:
                 price_col = cand
                 break
@@ -132,17 +133,20 @@ def cma() -> Any:
         if price_col:
             series = pd.to_numeric(df[price_col], errors="coerce").dropna()
             if len(series) > 0:
-                stats.update(
-                    {
-                        "avg": float(series.mean()),
-                        "median": float(series.median()),
-                        "min": float(series.min()),
-                        "max": float(series.max()),
-                    }
-                )
+                stats.update({
+                    "avg": float(series.mean()),
+                    "median": float(series.median()),
+                    "min": float(series.min()),
+                    "max": float(series.max()),
+                })
 
-        # Prepare top 10 properties as list of dicts
-        properties: List[Dict[str, Any]] = df.head(10).to_dict(orient="records")
+        # Prefer adapter-normalized properties in-memory; fallback to CSV rows
+        properties: List[Dict[str, Any]]
+        try:
+            adapter_props, _ = scrape_and_normalize(province, property_type, count)
+            properties = adapter_props if adapter_props else df.head(10).to_dict(orient="records")
+        except Exception:
+            properties = df.head(10).to_dict(orient="records")
 
         duration_ms = int((time.time() - start_time) * 1000)
         # Minimal observability (no raw CSV contents)
