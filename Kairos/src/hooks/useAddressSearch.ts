@@ -179,8 +179,8 @@ function getCachedResult(query: string): AddressSearchResponse | null {
     }
     
     return data;
-  } catch (error) {
-    console.error('Cache read error:', error);
+  } catch {
+    // Cache read error - fail silently and return null
     return null;
   }
 }
@@ -195,9 +195,8 @@ function setCachedResult(query: string, data: AddressSearchResponse): void {
       timestamp: Date.now()
     };
     localStorage.setItem(CACHE_KEY_PREFIX + query, JSON.stringify(cached));
-  } catch (error) {
-    console.error('Cache write error:', error);
-    // Non-critical error, continue without caching
+  } catch {
+    // Cache write error - non-critical, continue without caching
   }
 }
 
@@ -270,7 +269,7 @@ export function useAddressSearch(
           setCachedResult(query, response);
           setIsLoading(false);
         }
-      } catch (err) {
+      } catch {
         // Only update error if this is still the latest query
         if (latestQueryRef.current === query) {
           setError({
