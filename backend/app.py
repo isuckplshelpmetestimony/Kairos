@@ -106,32 +106,40 @@ def cma() -> Any:
             _stderr_tail = (proc.stderr or b"").decode("utf-8", errors="ignore")[-1000:]
             app.logger.info("scraper_stdout_tail: %s", _stdout_tail)
             app.logger.info("scraper_stderr_tail: %s", _stderr_tail)
+            # Optional: extract pages_scanned from scraper logs (not exposed to client)
+            pages_scanned = None
+            try:
+                import re as _re
+                # Match Python-dict-style prints: {'event': 'list_pages_scanned', 'pages_scanned': 3, ...}
+                if 'list_pages_scanned' in _stdout_tail:
+                    m = _re.search(r"pages_scanned\'?:\s*(\d+)", _stdout_tail)
+                    if m:
+                        pages_scanned = int(m.group(1))
+            except Exception:
+                pages_scanned = None
         except Exception:
             pass
 
-        # Read CSV output
-        if not os.path.exists(OUTPUT_CSV):
-            return jsonify({"error": "Scrape failed"}), 502
+        # Prefer adapter-normalized in-memory data; keep CSV for diagnostics only
+        properties: List[Dict[str, Any]] = []
+        price_series: List[float] = []
+        try:
+            properties, price_series = scrape_and_normalize(province, property_type, count)
+        except Exception:
+            properties, price_series = [], []
 
-        df = pd.read_csv(OUTPUT_CSV)
-        if df.empty:
-            # Empty results are a valid outcome; return empty payload
-            return jsonify({
-                "properties": [],
-                "stats": {"count": 0},
-                "data_source": "live",
-            })
+        # Read CSV as a fallback check/diagnostic (do not block response)
+        df = None
+        try:
+            if os.path.exists(OUTPUT_CSV):
+                df = pd.read_csv(OUTPUT_CSV)
+        except Exception:
+            df = None
 
-        # Compute stats with preferred column order: price, then TCP, then amount
-        price_col = None
-        for cand in ["price", "TCP", "amount"]:
-            if cand in df.columns:
-                price_col = cand
-                break
-
-        stats: Dict[str, Any] = {"count": int(len(df))}
-        if price_col:
-            series = pd.to_numeric(df[price_col], errors="coerce").dropna()
+        # Compute stats from adapter price series
+        stats: Dict[str, Any] = {"count": int(len(price_series))}
+        if len(price_series) > 0:
+            series = pd.to_numeric(pd.Series(price_series), errors="coerce").dropna()
             if len(series) > 0:
                 stats.update({
                     "avg": float(series.mean()),
@@ -140,13 +148,60 @@ def cma() -> Any:
                     "max": float(series.max()),
                 })
 
-        # Prefer adapter-normalized properties in-memory; fallback to CSV rows
-        properties: List[Dict[str, Any]]
+        # On empty, return current empty payload with optional meta.reason
+        if not properties:
+            response: Dict[str, Any] = {
+                "properties": [],
+                "stats": {"count": 0},
+                "data_source": "live",
+            }
+            # Provide a small non-breaking reason when available
+            response["meta"] = {"reason": "selector_miss"}
+            duration_ms = int((time.time() - start_time) * 1000)
+            try:
+                app.logger.warning(
+                    "cma_empty",
+                    extra={
+                        "province": province,
+                        "property_type": property_type,
+                        "count": count,
+                        "duration_ms": duration_ms,
+                        "properties_len": 0,
+                        "stats_count": 0,
+                        "reason": response["meta"]["reason"],
+                        **({"pages_scanned": pages_scanned} if 'pages_scanned' in locals() and pages_scanned is not None else {}),
+                    },
+                )
+            except Exception:
+                pass
+            return jsonify(response)
+
+        # Cap properties to 10 for response parity
+        if len(properties) > 10:
+            properties = properties[:10]
+
+        # Successful response using adapter results
+        duration_ms = int((time.time() - start_time) * 1000)
         try:
-            adapter_props, _ = scrape_and_normalize(province, property_type, count)
-            properties = adapter_props if adapter_props else df.head(10).to_dict(orient="records")
+            app.logger.info(
+                "cma_success",
+                extra={
+                    "province": province,
+                    "property_type": property_type,
+                    "count": count,
+                    "duration_ms": duration_ms,
+                    "properties_len": len(properties),
+                    "stats_count": stats.get("count", 0),
+                    **({"pages_scanned": pages_scanned} if 'pages_scanned' in locals() and pages_scanned is not None else {}),
+                },
+            )
         except Exception:
-            properties = df.head(10).to_dict(orient="records")
+            pass
+        return jsonify({
+            "properties": properties,
+            "stats": stats,
+            "data_source": "live",
+        })
 
         duration_ms = int((time.time() - start_time) * 1000)
         # Minimal observability (no raw CSV contents)

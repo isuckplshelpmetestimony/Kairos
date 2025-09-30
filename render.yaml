@@ -5,6 +5,15 @@ services:
     buildCommand: pip install -r backend/requirements.txt
     startCommand: gunicorn backend.app:app
     plan: free
+    envVars:
+      - key: SCRAPER_MAX_PAGES
+        value: 10
+      - key: SCRAPER_MAX_COUNT
+        value: 100
+      - key: SCRAPER_TIMEOUT_SEC
+        value: 600
+      - key: FRONTEND_ORIGIN
+        value: "*"
 
   - type: static
     name: kairos-frontend

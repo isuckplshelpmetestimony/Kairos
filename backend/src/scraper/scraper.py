@@ -53,8 +53,8 @@ def scraper(province, property_type, num):
             for href in page_hrefs:
                 if 'page=' in href:
                     try:
-                        num = int(re.findall(r'[?&]page=(\d+)', href)[0])
-                        page_numbers.append(num)
+                        page_num_candidate = int(re.findall(r'[?&]page=(\d+)', href)[0])
+                        page_numbers.append(page_num_candidate)
                     except Exception:
                         pass
             if len(page_numbers):
@@ -62,7 +62,18 @@ def scraper(province, property_type, num):
         except Exception:
             pass
 
-    for page_num in range(1, max_page_num + 1):
+    # Apply soft cap for pages to scan via env SCRAPER_MAX_PAGES (default 5)
+    try:
+        max_pages_cap = int(os.getenv('SCRAPER_MAX_PAGES', '10'))
+        if max_pages_cap < 1:
+            max_pages_cap = 1
+    except Exception:
+        max_pages_cap = 10
+    capped_max_page_num = min(max_page_num, max_pages_cap)
+
+    pages_scanned = 0
+
+    for page_num in range(1, capped_max_page_num + 1):
         try:
             if page_num == 1:
                 URL = base_list_url
@@ -70,34 +81,83 @@ def scraper(province, property_type, num):
                 URL = f'https://www.lamudi.com.ph/buy/{province}/{property_type}/?page={page_num}'
             print(f"Scraping page {page_num}...")
             page = requests.get(URL, headers=headers, timeout=15)
+            pages_scanned += 1
             soup = bs(page.content, 'html.parser')
             results_link = soup.find_all("div", attrs={"class": "row ListingCell-row ListingCell-agent-redesign"})
             results_sku = soup.find_all("div", attrs={"class": "ListingCell-MainImage"})
             primary_count = len(results_sku)
             print(f"Found {primary_count} results on page {page_num} (primary selectors)...")
 
-            # Fallback strategy: select by presence of data-sku and find first child link
+            # Fallback strategy: attribute/URL-based
+            # 1) Attributes: [data-sku] or [data-listing-id] + first child <a>
+            # 2) URL-based: anchors whose href contains '/property/' → derive SKU from href
             fallback_pairs = []
-            if primary_count == 0:
-                sku_nodes = soup.select('[data-sku]')
-                for node in sku_nodes:
-                    try:
-                        sku_val = node.get('data-sku')
-                        if not sku_val:
-                            continue
-                        a_tag = node.find('a', href=True)
-                        if not a_tag:
-                            continue
-                        href = a_tag.get('href')
-                        if not href:
-                            continue
-                        # Only accept lamudi property paths (absolute or relative)
-                        if ('lamudi.com.ph' in href) or href.startswith('/'):
-                            fallback_pairs.append((sku_val, href))
-                    except Exception:
+            sku_nodes = []
+            try:
+                sku_nodes = soup.select('[data-sku], [data-listing-id]')
+            except Exception:
+                sku_nodes = []
+            for node in sku_nodes:
+                try:
+                    sku_val = node.get('data-sku') or node.get('data-listing-id')
+                    if not sku_val:
                         continue
+                    a_tag = node.find('a', href=True)
+                    if not a_tag:
+                        continue
+                    href = a_tag.get('href')
+                    if not href:
+                        continue
+                    # Only accept lamudi property paths (absolute or relative)
+                    if ('lamudi.com.ph' in href) or href.startswith('/'):
+                        # Normalize relative URL to absolute
+                        if href.startswith('/'):
+                            href = f'https://www.lamudi.com.ph{href}'
+                        fallback_pairs.append((sku_val, href))
+                except Exception:
+                    continue
 
-            total_candidates = primary_count if primary_count else len(fallback_pairs)
+            # URL-based anchor scan (always, to capture extra links on page)
+            try:
+                anchors = soup.find_all('a', href=True)
+                for a in anchors:
+                    href = a.get('href') or ''
+                    if '/property/' not in href:
+                        continue
+                    # Normalize
+                    if href.startswith('/'):
+                        href_abs = f'https://www.lamudi.com.ph{href}'
+                    elif href.startswith('http'):
+                        href_abs = href
+                    else:
+                        continue
+                    # Derive a basic SKU: last numeric token in the URL
+                    match = re.findall(r'(\d+)(?:/)?$', href_abs)
+                    if not match:
+                        continue
+                    sku_val = match[-1]
+                    fallback_pairs.append((sku_val, href_abs))
+            except Exception:
+                pass
+
+            # Merge primary + fallback for candidates count only; dedupe via skus on insert
+            merged_candidates = []
+            try:
+                if len(results_sku) and len(results_link):
+                    merged_candidates.extend([(getattr(sku_tag.find('div'), 'get', lambda *_: None)('data-sku'), link_tag.find('a')['href']) for sku_tag, link_tag in zip(results_sku, results_link)])
+            except Exception:
+                pass
+            merged_candidates.extend(fallback_pairs)
+            total_candidates = len(merged_candidates)
+            try:
+                print({
+                    'level': 'info',
+                    'event': 'list_page_candidates',
+                    'page': page_num,
+                    'candidates_on_page': total_candidates,
+                })
+            except Exception:
+                pass
             # Short-circuit if page 1 has zero listings after fallback
             if page_num == 1 and total_candidates == 0:
                 try:
@@ -111,6 +171,7 @@ def scraper(province, property_type, num):
                     'status_code': status_code,
                     'url': URL,
                     'reason': 'selector_miss',
+                    'pages_scanned': pages_scanned,
                 })
                 # Return empty DataFrame immediately
                 empty = pd.DataFrame(columns=['SKU','Name','Location','City/Town','TCP','Floor_Area'])
@@ -130,7 +191,8 @@ def scraper(province, property_type, num):
                 count += 1
                 if count >= num:
                     break
-        elif len(fallback_pairs):
+        # Always consider fallback-derived candidates as well
+        if count < num and len(fallback_pairs):
             for sku, link in fallback_pairs:
                 if sku in skus:
                     continue
@@ -145,6 +207,18 @@ def scraper(province, property_type, num):
 
     # Convert the listing list to a DataFrame
     listing_df = pd.DataFrame(listing, columns=['SKU', 'link'])
+    # Log pages_scanned for observability (server logs only)
+    try:
+        print({
+            'level': 'info',
+            'event': 'list_pages_scanned',
+            'pages_scanned': pages_scanned,
+            'capped_max_page_num': capped_max_page_num,
+            'requested_num': int(num),
+            'collected_links': int(len(listing_df)),
+        })
+    except Exception:
+        pass
     # If no listings found, write empty CSVs and return empty DataFrame
     if listing_df.empty:
         os.makedirs("data/scraped/full", exist_ok=True)
@@ -208,6 +282,26 @@ def scraper(province, property_type, num):
                 except:
                     price = 0
 
+        # Fallback for price: attribute-based (data-price) or scoped numeric near Title-pdp-price
+        if not price or price == 0:
+            try:
+                node = soup.select_one('[data-price]')
+                if node:
+                    raw = str(node.get('data-price', '')).replace(',', '').strip()
+                    if raw:
+                        price = int(float(raw))
+            except Exception:
+                pass
+        if not price or price == 0:
+            try:
+                price_container = soup.find('div', attrs={'class': 'Title-pdp-price'})
+                if price_container:
+                    m = re.search(r'(\d[\d,]*)', price_container.get_text(' ', strip=True) or '')
+                    if m:
+                        price = int(m.group(1).replace(',', ''))
+            except Exception:
+                pass
+
         temp = []
         for each in all_features:
             details = each.get_text().strip().split('\n')
@@ -223,6 +317,59 @@ def scraper(province, property_type, num):
                     features[temp[i]] = temp[i + 1]
                 except:
                     pass
+
+        # Attribute/text fallbacks for key fields when primary misses
+        # Floor area (m²)
+        try:
+            fa_val = features.get('Floor area (m²)', '') if isinstance(features, dict) else ''
+            if not fa_val:
+                node = soup.select_one('[data-floor-area]')
+                if node:
+                    features['Floor area (m²)'] = str(node.get('data-floor-area', '')).strip()
+            if 'Floor area (m²)' not in features or not str(features.get('Floor area (m²)', '')).strip():
+                # Minimal regex: number + m² in a compact text node
+                try:
+                    candidate = soup.find(text=re.compile(r'\b\d[\d\.,]*\s*m²\b'))
+                    if candidate:
+                        m = re.search(r'(\d[\d\.,]*)\s*m²', candidate)
+                        if m:
+                            features['Floor area (m²)'] = m.group(1).replace(',', '')
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+        # Bedrooms
+        try:
+            br_val = features.get('Bedrooms', '') if isinstance(features, dict) else ''
+            if not br_val:
+                node = soup.select_one('[data-bedrooms]')
+                if node:
+                    raw = str(node.get('data-bedrooms', '')).strip()
+                    if raw:
+                        features['Bedrooms'] = raw
+            if 'Bedrooms' not in features or not str(features.get('Bedrooms', '')).strip():
+                m = re.search(r'(\d+)\s*Bedrooms?', soup.get_text(' ', strip=True))
+                if m:
+                    features['Bedrooms'] = m.group(1)
+        except Exception:
+            pass
+
+        # Baths
+        try:
+            ba_val = features.get('Baths', '') if isinstance(features, dict) else ''
+            if not ba_val:
+                node = soup.select_one('[data-bathrooms], [data-baths]')
+                if node:
+                    raw = (str(node.get('data-bathrooms', '') or node.get('data-baths', '')).strip())
+                    if raw:
+                        features['Baths'] = raw
+            if 'Baths' not in features or not str(features.get('Baths', '')).strip():
+                m = re.search(r'(\d+)\s*Baths?', soup.get_text(' ', strip=True))
+                if m:
+                    features['Baths'] = m.group(1)
+        except Exception:
+            pass
 
         latitude = ''
         longitude = ''

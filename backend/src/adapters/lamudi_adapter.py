@@ -51,16 +51,15 @@ def _normalize_row(row: pd.Series, property_type: str) -> Dict[str, Any]:
     price_float = _coerce_float(row.get('TCP', 0.0), 0.0)
     normalized: Dict[str, Any] = {
         'source': 'lamudi',
-        'property_id': row.get('SKU', ''),
-        'address': row.get('Location', ''),
+        'property_id': ('' if pd.isna(row.get('SKU', None)) else str(row.get('SKU', ''))),
+        'address': ('' if pd.isna(row.get('Location', None)) else str(row.get('Location', ''))),
         'price': price_float,
         'bedrooms': _coerce_int(row.get('Bedrooms', 0), 0),
         'bathrooms': _coerce_int(row.get('Baths', 0), 0),
         'sqm': _coerce_float(row.get('Floor_Area', 0.0), 0.0),
         'property_type': property_type,
         'coordinates': _build_coordinates(row),
-        'url': row.get('Source', ''),
-        'raw_data': row.to_dict(),
+        'url': ('' if pd.isna(row.get('Source', None)) else str(row.get('Source', ''))),
     }
     return normalized
 
@@ -105,10 +104,9 @@ def scrape_and_normalize(province_slug: str, property_type: str, count: int) -> 
             properties.append(normalized)
             price_series.append(float(normalized['price']))
 
-        # Cap properties to 10 for response parity
+        # Cap properties to 10 for response parity, but keep full price_series for stats
         if len(properties) > 10:
             properties = properties[:10]
-            price_series = price_series[:10]
 
         duration_ms = int((time.time() - start_ts) * 1000)
         print({
