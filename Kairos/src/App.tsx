@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { KairosLogo } from './components/KairosLogo';
 import { InlineToggle } from './components/InlineToggle';
 import { HeroSection } from './components/HeroSection';
+import { AddressInput } from './components/AddressInput';
 import {
   DATE_RANGE_OPTIONS,
   PROPERTY_TYPES,
@@ -10,6 +11,7 @@ import {
   INITIAL_PROPERTY_STATUSES,
 } from './constants';
 import { createPropertyStatusHandlers, renderPropertyStatusGroup } from './utils/propertyStatusHelpers';
+import type { KairosAddressOutput } from './types/address';
 
 
 export default function App() {
@@ -25,6 +27,7 @@ export default function App() {
   });
   const [propertyStatuses, setPropertyStatuses] = useState<Record<string, { selected: boolean; dateRange: string }>>(INITIAL_PROPERTY_STATUSES);
   const [openCalendarDropdown, setOpenCalendarDropdown] = useState<string | null>(null);
+  const [selectedAddress, setSelectedAddress] = useState<KairosAddressOutput | null>(null);
 
   // Get helper functions from utils
   const {
@@ -63,10 +66,9 @@ export default function App() {
         <div className="w-full max-w-2xl">
           <div className="relative bg-kairos-white-porcelain border-2 border-kairos-white-grey rounded-2xl shadow-sm focus-within:border-kairos-charcoal transition-colors duration-200 pb-4">
             <div className="relative">
-              <input
-                type="text"
+              <AddressInput 
+                onSelect={setSelectedAddress}
                 placeholder="Enter property address..."
-                className="w-full h-16 px-6 pr-32 text-lg bg-transparent border-none outline-none placeholder:text-kairos-charcoal/40"
               />
             </div>
             
