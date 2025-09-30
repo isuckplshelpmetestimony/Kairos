@@ -42,7 +42,7 @@ const MOCK_PHILIPPINE_ADDRESSES: AddressSuggestion[] = [
   {
     full_address: "Makati Central Business District, Makati City, Metro Manila",
     psgc_city_code: "137501000",
-    psgc_province_code: "1375",
+    psgc_province_code: "1376",
     coordinates: [14.5547, 121.0244],
     search_radius_km: 5,
     confidence_level: "high"
@@ -50,7 +50,7 @@ const MOCK_PHILIPPINE_ADDRESSES: AddressSuggestion[] = [
   {
     full_address: "Ortigas Center, Pasig City, Metro Manila",
     psgc_city_code: "137403000",
-    psgc_province_code: "1374",
+    psgc_province_code: "1376",
     coordinates: [14.5846, 121.0569],
     search_radius_km: 5,
     confidence_level: "high"
@@ -58,7 +58,7 @@ const MOCK_PHILIPPINE_ADDRESSES: AddressSuggestion[] = [
   {
     full_address: "Alabang, Muntinlupa City, Metro Manila",
     psgc_city_code: "137803000",
-    psgc_province_code: "1378",
+    psgc_province_code: "1376",
     coordinates: [14.4292, 121.0419],
     search_radius_km: 7,
     confidence_level: "high"
@@ -66,7 +66,7 @@ const MOCK_PHILIPPINE_ADDRESSES: AddressSuggestion[] = [
   {
     full_address: "Quezon City, Metro Manila",
     psgc_city_code: "137404000",
-    psgc_province_code: "1374",
+    psgc_province_code: "1376",
     coordinates: [14.6760, 121.0437],
     search_radius_km: 10,
     confidence_level: "medium"
@@ -74,7 +74,7 @@ const MOCK_PHILIPPINE_ADDRESSES: AddressSuggestion[] = [
   {
     full_address: "Eastwood City, Quezon City, Metro Manila",
     psgc_city_code: "137404000",
-    psgc_province_code: "1374",
+    psgc_province_code: "1376",
     coordinates: [14.6091, 121.0794],
     search_radius_km: 5,
     confidence_level: "high"
@@ -82,7 +82,7 @@ const MOCK_PHILIPPINE_ADDRESSES: AddressSuggestion[] = [
   {
     full_address: "Rockwell Center, Makati City, Metro Manila",
     psgc_city_code: "137501000",
-    psgc_province_code: "1375",
+    psgc_province_code: "1376",
     coordinates: [14.5656, 121.0360],
     search_radius_km: 3,
     confidence_level: "high"
@@ -98,7 +98,7 @@ const MOCK_PHILIPPINE_ADDRESSES: AddressSuggestion[] = [
   {
     full_address: "Aseana City, Parañaque City, Metro Manila",
     psgc_city_code: "137405000",
-    psgc_province_code: "1374",
+    psgc_province_code: "1376",
     coordinates: [14.5378, 120.9896],
     search_radius_km: 5,
     confidence_level: "high"
@@ -106,7 +106,7 @@ const MOCK_PHILIPPINE_ADDRESSES: AddressSuggestion[] = [
   {
     full_address: "Greenfield District, Mandaluyong City, Metro Manila",
     psgc_city_code: "137502000",
-    psgc_province_code: "1375",
+    psgc_province_code: "1376",
     coordinates: [14.5833, 121.0500],
     search_radius_km: 4,
     confidence_level: "high"

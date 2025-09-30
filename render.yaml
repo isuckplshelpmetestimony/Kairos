@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: kairos-backend
+    env: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: gunicorn backend.app:app
+    plan: free
+
+  - type: static
+    name: kairos-frontend
+    buildCommand: cd Kairos && npm install && npm run build
+    staticPublishPath: ./Kairos/build
+    envVars:
+      - key: VITE_API_URL
+        value: https://kairos-backend.onrender.com

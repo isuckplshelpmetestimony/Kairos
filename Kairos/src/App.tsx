@@ -4,7 +4,6 @@ import { InlineToggle } from './components/InlineToggle';
 import { HeroSection } from './components/HeroSection';
 import { AddressInput } from './components/AddressInput';
 import {
-  DATE_RANGE_OPTIONS,
   PROPERTY_TYPES,
   LOCATIONS,
   PROPERTY_STATUS_GROUPS,
@@ -28,6 +27,21 @@ export default function App() {
   const [propertyStatuses, setPropertyStatuses] = useState<Record<string, { selected: boolean; dateRange: string }>>(INITIAL_PROPERTY_STATUSES);
   const [openCalendarDropdown, setOpenCalendarDropdown] = useState<string | null>(null);
   const [selectedAddress, setSelectedAddress] = useState<KairosAddressOutput | null>(null);
+  
+  // CMA generation state
+  const [loading, setLoading] = useState(false);
+  const [cma, setCma] = useState<null | { 
+    properties: Record<string, unknown>[]; 
+    stats: { 
+      count: number; 
+      avg: number; 
+      median: number; 
+      min: number; 
+      max: number; 
+    };
+    data_source?: 'live' | 'demo';
+  }>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Get helper functions from utils
   const {
@@ -47,6 +61,55 @@ export default function App() {
 
   const handleReportToggle = (reportType: keyof typeof selectedReports) => {
     setSelectedReports(prev => ({ ...prev, [reportType]: !prev[reportType] }));
+  };
+
+  // Clear error function
+  const clearError = () => {
+    setError(null);
+  };
+
+  // CMA generation function
+  const generate = async () => {
+    // Guard: require selectedAddress
+    if (!selectedAddress) {
+      setError('Please select a property address first.');
+      return;
+    }
+
+    setLoading(true);
+    setCma(null);
+    setError(null);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/cma`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          psgc_province_code: selectedAddress.location.psgc_province_code,
+          property_type: 'condo', // Hardcoded for v1 simplicity
+          count: 50
+        }),
+      });
+
+      if (response.status === 409) {
+        setError('Scraper busy, please try again in a few minutes.');
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setCma(data);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to generate CMA. Please try again.';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
 
@@ -212,26 +275,35 @@ export default function App() {
             {/* Prominent Search Button */}
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
               <button
-                disabled={!reportTypeSelected && !compsSelected}
-                aria-disabled={!reportTypeSelected && !compsSelected}
+                disabled={(!reportTypeSelected && !compsSelected) || loading}
+                aria-disabled={(!reportTypeSelected && !compsSelected) || loading}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl shadow-md transition-all duration-200 ${
-                  !reportTypeSelected && !compsSelected
+                  (!reportTypeSelected && !compsSelected) || loading
                     ? 'bg-kairos-white-grey text-kairos-charcoal/40 cursor-not-allowed'
                     : 'bg-kairos-soft-black hover:bg-kairos-charcoal text-kairos-chalk hover:shadow-lg'
                 }`}
-                onClick={() => {
-                  // Button does nothing - CMA Generator removed
-                }}
+                onClick={generate}
               >
-                <span className="text-sm font-medium">
-                  Generate Reports
-                </span>
-                <div className="w-5 h-5 flex items-center justify-center">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
+                {loading ? (
+                  <>
+                    <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full"></div>
+                    <span className="text-sm font-medium">
+                      Scraping live data (5–10 minutes)...
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-sm font-medium">
+                      Generate Reports
+                    </span>
+                    <div className="w-5 h-5 flex items-center justify-center">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </div>
+                  </>
+                )}
               </button>
             </div>
 
@@ -271,6 +343,80 @@ export default function App() {
             )}
           </div>
         </div>
+
+        {/* CMA Results Display */}
+        {cma && (
+          <div className="w-full max-w-2xl mt-8 bg-kairos-white-porcelain border border-kairos-white-grey rounded-2xl shadow-sm p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <h3 className="text-lg font-semibold text-kairos-charcoal">CMA Analysis Complete</h3>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="bg-kairos-base-color rounded-lg p-3">
+                <div className="text-kairos-charcoal/60 mb-1">Properties Found</div>
+                <div className="text-xl font-semibold text-kairos-charcoal">{cma.stats.count}</div>
+              </div>
+              
+              <div className="bg-kairos-base-color rounded-lg p-3">
+                <div className="text-kairos-charcoal/60 mb-1">Average Price</div>
+                <div className="text-xl font-semibold text-kairos-charcoal">
+                  ₱{cma.stats.avg ? cma.stats.avg.toLocaleString() : 'N/A'}
+                </div>
+              </div>
+              
+              <div className="bg-kairos-base-color rounded-lg p-3">
+                <div className="text-kairos-charcoal/60 mb-1">Median Price</div>
+                <div className="text-xl font-semibold text-kairos-charcoal">
+                  ₱{cma.stats.median ? cma.stats.median.toLocaleString() : 'N/A'}
+                </div>
+              </div>
+              
+              <div className="bg-kairos-base-color rounded-lg p-3">
+                <div className="text-kairos-charcoal/60 mb-1">Price Range</div>
+                <div className="text-lg font-semibold text-kairos-charcoal">
+                  ₱{cma.stats.min ? cma.stats.min.toLocaleString() : 'N/A'} - ₱{cma.stats.max ? cma.stats.max.toLocaleString() : 'N/A'}
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-4 text-xs text-kairos-charcoal/60">
+              Based on {selectedAddress?.full_address} • Data source: {cma.data_source || 'live'}
+            </div>
+          </div>
+        )}
+
+        {/* Error Display */}
+        {error && (
+          <div className="w-full max-w-2xl mt-8 bg-red-50 border border-red-200 rounded-2xl shadow-sm p-6">
+            <div className="flex items-start gap-3">
+              <svg className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-red-800 mb-2">Error</h3>
+                <p className="text-red-700 mb-4">{error}</p>
+                <button
+                  onClick={clearError}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                >
+                  Dismiss
+                </button>
+              </div>
+              <button
+                onClick={clearError}
+                className="text-red-600 hover:text-red-800"
+                aria-label="Close error message"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Subtle Grid Background Pattern */}
