@@ -4,6 +4,7 @@ import re
 import requests
 from bs4 import BeautifulSoup as bs
 import time
+import random
 from tqdm import tqdm
 import os
 
@@ -29,8 +30,14 @@ def scraper(province, property_type, num):
     print('SCRAPING. . .')
 
     # Get the maximum page number
-    URL = f'https://www.lamudi.com.ph/buy/{province}/{property_type}/'
-    page = requests.get(URL)
+    base_list_url = f'https://www.lamudi.com.ph/buy/{province}/{property_type}/'
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Referer': base_list_url,
+    }
+    URL = base_list_url
+    page = requests.get(URL, headers=headers, timeout=15)
     soup = bs(page.content, 'html.parser')
     div = soup.find('div', class_='BaseSection Pagination')
     # Guard: if pagination container is missing, assume single page
@@ -42,15 +49,32 @@ def scraper(province, property_type, num):
     for page_num in range(1, max_page_num + 1):
         try:
             if page_num == 1:
-                URL = f'https://www.lamudi.com.ph/buy/{province}/{property_type}/'
+                URL = base_list_url
             else:
                 URL = f'https://www.lamudi.com.ph/buy/{province}/{property_type}/?page={page_num}'
             print(f"Scraping page {page_num}...")
-            page = requests.get(URL)
+            page = requests.get(URL, headers=headers, timeout=15)
             soup = bs(page.content, 'html.parser')
             results_link = soup.find_all("div", attrs={"class": "row ListingCell-row ListingCell-agent-redesign"})
             results_sku = soup.find_all("div", attrs={"class": "ListingCell-MainImage"})
             print(f"Found {len(results_sku)} results on page {page_num}...")
+            # Short-circuit if page 1 has zero listings
+            if page_num == 1 and len(results_sku) == 0:
+                try:
+                    status_code = getattr(page, 'status_code', None)
+                except Exception:
+                    status_code = None
+                print({
+                    'level': 'warn',
+                    'event': 'no_cards_found',
+                    'page': 1,
+                    'status_code': status_code,
+                    'url': URL,
+                    'reason': 'selector_miss',
+                })
+                # Return empty DataFrame immediately
+                empty = pd.DataFrame(columns=['SKU','Name','Location','City/Town','TCP','Floor_Area'])
+                return empty
         except Exception as e:
             print(f"Error on page {page_num}: {e}")
             continue  # Continue to the next page instead of breaking
@@ -93,7 +117,7 @@ def scraper(province, property_type, num):
         temp = []
         features = {}
         URL = each
-        page = requests.get(URL)
+        page = requests.get(URL, headers=headers, timeout=15)
         soup = bs(page.content, 'html.parser')
 
         all_sku = soup.find("div", attrs={"class": "Banner-Images"})
@@ -172,7 +196,8 @@ def scraper(province, property_type, num):
             pass
 
         data.append(prop_details)
-        time.sleep(0.5)
+        # Jittered delay between detail page fetches (0.3–0.8s)
+        time.sleep(random.uniform(0.3, 0.8))
 
     listing_details_df = pd.DataFrame(data)
 
