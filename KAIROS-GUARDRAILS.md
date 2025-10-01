@@ -997,3 +997,67 @@ git checkout -b restore-branch checkpoint-name
 - `PIVOTS-MADE.md` - Architectural decisions and lessons learned
 - `PSGC-DATA-SEARCHING-REFERENCE.md` - Address search implementation details
 - `render.yaml` - Deployment configuration
+
+---
+
+## Backend scraping and adapter guardrails
+
+### Scope guardrails
+- Keep a single minimal adapter per source in `backend/src/adapters/<site>_adapter.py`.
+- No new packages, headless browsers, proxies, queues, schedulers, or routes.
+- Do not change the `/api/cma` request/response contract or UI.
+
+### Data contract guardrails
+- Canonical fields: source, property_id, address, price, bedrooms, bathrooms, sqm, property_type, coordinates, url, raw_data.
+- `price` is a float strictly derived from the site’s primary price; no extra price fields.
+- Limit response `properties` to max 100; stats computed from full price series.
+
+### Scraper behavior guardrails
+- HTTP: `requests.Session` with headers, `timeout<=15s`, jitter 0.3–0.8s on details.
+- Selectors: exactly two strategies per surface:
+  - List pages: current class-based primary, then one attribute/URL-based fallback.
+  - Detail pages: current class-based primary, then one attribute-based fallback per field (price, sqm, beds, baths).
+- Pagination: default to 1 if unknown; scan hrefs for `?page=` as fallback.
+- Mini‑crawl: same host only, breadth across pages 1..`min(max_page, MAX_PAGES)`, no depth > 1, stop as soon as `count` links collected.
+
+### Limits and performance guardrails
+- End‑to‑end request budget ≤ existing API timeout (default 600s).
+- Default `count` ≤ 100; hard cap at `SCRAPER_MAX_COUNT`.
+- Page guardrail: `SCRAPER_MAX_PAGES` default 5 (optionally 50), never exceed.
+- No heavy parsing (no JSON‑LD), no headless browser.
+
+### Reliability guardrails
+- If page 1 yields zero cards, short‑circuit with `meta.reason = selector_miss` or `blocked`.
+- Retries: ≤2 per page with backoff ≤2s (only if implemented); otherwise none.
+- Never recurse links beyond discovered pagination.
+
+### Logging/observability guardrails
+- Log only: province, property_type, count, duration_ms, properties_len, stats.count, optional pages_scanned, and reason on empty.
+- No HTML content, no addresses, no PII. Levels: info (success), warn (empty), error (exceptions).
+
+### Security guardrails
+- Sanitize inputs (PSGC, property_type, count) in API.
+- Outbound requests restricted to the source domain; no dynamic domains.
+- HTTPS assumed; safe error messages only.
+
+### Code quality guardrails
+- Single small adapter module per site (<200 lines).
+- Pure functions where possible; clear type hints; no globals; no TODOs.
+- Keep scraper edits surgical and localized.
+
+### Testing guardrails
+- One minimal unit test per adapter mapping using tiny synthetic DataFrame.
+- Manual curl test for `/api/cma` on at least one supported province.
+- Optional: smoke script to assert non‑empty price_series for happy path.
+
+### Rollout guardrails
+- Continue writing `backend/data/output.csv` for diagnostics; API prefers in‑memory normalized results.
+- No frontend changes required; dev may point to `http://localhost:3000/api/cma`.
+
+### Failure messaging guardrails
+- On failure/empty: existing empty payload; include non‑breaking `meta.reason` in `{selector_miss, blocked, empty_market}`.
+- Never surface raw scraper errors to the client.
+
+### Out‑of‑scope (future work)
+- No headless browser, proxy rotation, caching layer, job queue, or metrics dashboard.
+- JSON‑LD parsing, richer UI messaging, multi‑source aggregation are follow‑ups.

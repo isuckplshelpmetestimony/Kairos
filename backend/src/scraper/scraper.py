@@ -378,7 +378,22 @@ def scraper(province, property_type, num):
             latitude = each.get('data-lat', '')
 
         try:
-            prop_details["SKU"] = all_sku["data-sku"] if all_sku else ''
+            # Primary SKU from banner images container
+            sku_value = ''
+            try:
+                sku_value = all_sku["data-sku"] if all_sku else ''
+            except Exception:
+                sku_value = ''
+            # Fallback: derive SKU from detail URL's trailing numeric token
+            if not sku_value:
+                try:
+                    m = re.findall(r'(\d+)(?:/)?$', URL or '')
+                    if m:
+                        sku_value = m[-1]
+                except Exception:
+                    sku_value = ''
+
+            prop_details["SKU"] = sku_value
             prop_details['text_location'] = loc_final
             prop_details['price'] = price
             prop_details['amenities'] = amenities
@@ -409,7 +424,8 @@ def scraper(province, property_type, num):
         raw_df = pd.concat([listing_details_df, amenities_res], axis=1, ignore_index=False)
         raw_df = raw_df.join(pd.DataFrame.from_records(raw_df['features'].mask(raw_df.features.isna(), {}).tolist())).fillna(0)
     raw_df.drop(columns=['features', 'amenities'], inplace=True, errors='ignore')
-    raw_df.drop_duplicates(keep='first', inplace=True)
+    # Avoid collapsing multiple rows that share sparse fields; dedupe by SKU only
+    raw_df.drop_duplicates(subset=['SKU'], keep='first', inplace=True)
 
     # Feature Selection
     staging_df = raw_df.merge(listing_df[['SKU', 'link']], on='SKU', how='left')

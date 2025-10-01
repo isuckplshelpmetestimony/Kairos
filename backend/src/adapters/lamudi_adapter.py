@@ -104,9 +104,9 @@ def scrape_and_normalize(province_slug: str, property_type: str, count: int) -> 
             properties.append(normalized)
             price_series.append(float(normalized['price']))
 
-        # Cap properties to 10 for response parity, but keep full price_series for stats
-        if len(properties) > 10:
-            properties = properties[:10]
+        # Cap properties to 100 for response parity, but keep full price_series for stats
+        if len(properties) > 100:
+            properties = properties[:100]
 
         duration_ms = int((time.time() - start_ts) * 1000)
         print({

@@ -26,6 +26,34 @@
 
 ---
 
+## 🔁 PIVOT: Transition to Kairos v4 Scraping Method (Lamudi)
+
+### Why we pivoted
+- Original flow (scraper ➝ CSV ➝ API/UI) was brittle: list selectors often returned 0 cards, detail selectors drifted, and NaN/raw_data leaked to JSON causing UI errors and N/A stats.
+- We needed reliability without changing UI/contract, so we adopted the Kairos v4 pattern: adapter-normalized in‑memory results, minimally hardened scraper, and stats computed from a full numeric price series.
+
+### What changed (surgical edits)
+- List pages: kept primary class selectors; always ran one attribute/URL fallback; merged candidates per page; deduped by SKU; breadth‑only mini‑crawl with `SCRAPER_MAX_PAGES` (default 10); early stop on requested count.
+- Pagination fix: removed `num` shadowing when parsing `?page=` so requested count is honored.
+- Detail pages: retained primaries; added one attribute/text fallback per field (price, sqm, beds, baths); added SKU‑from‑URL fallback; jitter 0.3–0.8s; timeout 15s.
+- Normalization adapter: mapped to canonical fields; sanitized NaN to JSON‑safe values; removed `raw_data`; coordinates None when missing; capped response properties (now 100) while keeping full price series for stats.
+- API orchestration: single‑flight lock; prefer in‑memory adapter results; compute stats from series; logs success/empty with optional pages_scanned (no PII); CSV retained for diagnostics.
+
+### Outcomes observed
+- Metro Manila condo run: site exposed 2 pages; crawler collected ~31 unique links; after fallbacks and SKU fixes, up to 31 normalized properties returned; UI unchanged; logs clean.
+- Raising response cap beyond discovered links does not increase results unless the site exposes more pages; scraper scans 1..min(detected_pages, MAX_PAGES).
+
+### Guardrails respected
+- No new deps/headless/proxies/queues/routes; same‑host; no depth > 1.
+- Secure inputs; PII‑free logging; small typed adapter module; CSV diagnostics preserved; API/UI contract unchanged.
+
+### Quick runbook (dev)
+- Backend: `pkill -f "python3 app.py" || true` then `cd backend && SCRAPER_MAX_PAGES=10 PORT=3000 python3 app.py`
+- Frontend: `cd Kairos && npm run dev -- --port 3001`
+- API test: `curl -s -X POST http://localhost:3000/api/cma -H "Content-Type: application/json" -d '{"psgc_province_code":"1376","property_type":"condo","count":50}' | jq`
+
+---
+
 ## 🎯 ORIGINAL PROPOSAL (What We Avoided)
 
 ### **The Initial Vision**

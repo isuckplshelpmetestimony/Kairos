@@ -176,9 +176,9 @@ def cma() -> Any:
                 pass
             return jsonify(response)
 
-        # Cap properties to 10 for response parity
-        if len(properties) > 10:
-            properties = properties[:10]
+        # Cap properties to 100 for response parity
+        if len(properties) > 100:
+            properties = properties[:100]
 
         # Successful response using adapter results
         duration_ms = int((time.time() - start_time) * 1000)
