@@ -30,7 +30,9 @@ def scraper(province, property_type, num):
     print('SCRAPING. . .')
 
     # Get the maximum page number
-    base_list_url = f'https://www.lamudi.com.ph/buy/{province}/{property_type}/'
+    # Updated 2025-10-01: Fix URL case sensitivity
+    province_lower = province.lower().replace('_', '-')
+    base_list_url = f'https://www.lamudi.com.ph/buy/{province_lower}/{property_type}/'
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         'Accept-Language': 'en-US,en;q=0.9',
@@ -131,8 +133,8 @@ def scraper(province, property_type, num):
                         href_abs = href
                     else:
                         continue
-                    # Derive a basic SKU: last numeric token in the URL
-                    match = re.findall(r'(\d+)(?:/)?$', href_abs)
+                    # Updated 2025-10-01: Capture property slugs instead of numeric endings
+                    match = re.findall(r'/property/([^/?#]+)', href_abs)
                     if not match:
                         continue
                     sku_val = match[-1]
@@ -246,9 +248,10 @@ def scraper(province, property_type, num):
 
         all_sku = soup.find("div", attrs={"class": "Banner-Images"})
         all_amenities = soup.find_all("span", attrs={"class": "material-icons material-icons-outlined"})
-        all_loc = soup.find_all("h3", attrs={"class": "Title-pdp-address"})
-        all_price = soup.find_all("div", attrs={"class": "Title-pdp-price"})
-        all_features = soup.find_all("div", attrs={"class": "columns medium-6 small-6 striped"})
+        # Updated 2025-10-01: Lamudi redesign
+        all_loc = soup.find_all("div", attrs={"class": "view-map__text"}) + soup.find_all("div", attrs={"class": "location-map__location-address-map"})
+        all_price = soup.find_all("div", attrs={"class": "prices-and-fees__price"})
+        all_features = soup.find_all("div", attrs={"class": "details-item-value"})
         all_lat_long = soup.find_all("div", attrs={"class": "LandmarksPDP-Wrapper"})
 
         try:
@@ -378,22 +381,8 @@ def scraper(province, property_type, num):
             latitude = each.get('data-lat', '')
 
         try:
-            # Primary SKU from banner images container
-            sku_value = ''
-            try:
-                sku_value = all_sku["data-sku"] if all_sku else ''
-            except Exception:
-                sku_value = ''
-            # Fallback: derive SKU from detail URL's trailing numeric token
-            if not sku_value:
-                try:
-                    m = re.findall(r'(\d+)(?:/)?$', URL or '')
-                    if m:
-                        sku_value = m[-1]
-                except Exception:
-                    sku_value = ''
-
-            prop_details["SKU"] = sku_value
+            # Updated 2025-10-01: Use SKU from listing DataFrame (URL-derived) instead of page attribute
+            prop_details["SKU"] = listing_df.iloc[index]['SKU'] if index < len(listing_df) else ''
             prop_details['text_location'] = loc_final
             prop_details['price'] = price
             prop_details['amenities'] = amenities
@@ -424,8 +413,7 @@ def scraper(province, property_type, num):
         raw_df = pd.concat([listing_details_df, amenities_res], axis=1, ignore_index=False)
         raw_df = raw_df.join(pd.DataFrame.from_records(raw_df['features'].mask(raw_df.features.isna(), {}).tolist())).fillna(0)
     raw_df.drop(columns=['features', 'amenities'], inplace=True, errors='ignore')
-    # Avoid collapsing multiple rows that share sparse fields; dedupe by SKU only
-    raw_df.drop_duplicates(subset=['SKU'], keep='first', inplace=True)
+    raw_df.drop_duplicates(keep='first', inplace=True)
 
     # Feature Selection
     staging_df = raw_df.merge(listing_df[['SKU', 'link']], on='SKU', how='left')
