@@ -17,7 +17,7 @@ export const HistoricalTrends = ({ cma }: HistoricalTrendsProps) => {
   const peakPrice = cma ? (cma.stats.max / 1000).toFixed(0) : "485";
 
   return (
-    <Card className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 p-6">
+    <Card className="bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-200 p-6">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-gray-900">Historical Trends</h3>
         <div className="flex gap-2">

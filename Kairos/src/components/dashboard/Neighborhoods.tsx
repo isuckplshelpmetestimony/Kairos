@@ -17,7 +17,7 @@ export const Neighborhoods = ({ cma }: NeighborhoodsProps) => {
   ];
 
   return (
-    <Card className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 p-6">
+    <Card className="bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-200 p-6">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-gray-900">Neighborhoods</h3>
         <div className="flex gap-2">
