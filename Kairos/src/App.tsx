@@ -132,7 +132,7 @@ export default function App() {
         <HeroSection />
 
         {/* Input Interface with Inline Toggles */}
-        <div className="w-full max-w-2xl">
+        <div className="w-full max-w-4xl">
           <div className="relative bg-kairos-white-porcelain border-2 border-kairos-white-grey rounded-2xl shadow-sm focus-within:border-kairos-charcoal transition-colors duration-200 pb-4">
             <div className="relative">
               <AddressInput 
@@ -286,7 +286,7 @@ export default function App() {
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl shadow-md transition-all duration-200 ${
                   (!reportTypeSelected && !compsSelected) || loading
                     ? 'bg-kairos-white-grey text-kairos-charcoal/40 cursor-not-allowed'
-                    : 'bg-kairos-soft-black hover:bg-kairos-charcoal text-kairos-chalk hover:shadow-lg'
+                    : 'bg-black hover:bg-gray-800 text-white hover:shadow-lg'
                 }`}
                 onClick={generate}
               >

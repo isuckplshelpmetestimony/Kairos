@@ -199,48 +199,7 @@ export function AddressInput({
           </div>
         )}
         
-        {/* Clear Button */}
-        {(selectedAddress || query) && !isLoading && (
-          <button
-            onClick={handleClear}
-            className="absolute right-20 top-1/2 -translate-y-1/2 p-1 hover:bg-kairos-white-grey rounded-full transition-colors"
-            aria-label="Clear address"
-            type="button"
-          >
-            <svg 
-              className="w-5 h-5 text-kairos-charcoal/60 hover:text-kairos-charcoal" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M6 18L18 6M6 6l12 12" 
-              />
-            </svg>
-          </button>
-        )}
-        
-        {/* Selected Address Indicator */}
-        {selectedAddress && (
-          <div className="absolute right-32 top-1/2 -translate-y-1/2">
-            <svg 
-              className="w-5 h-5 text-green-600" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M5 13l4 4L19 7" 
-              />
-            </svg>
-          </div>
-        )}
+        {/* Clear Button and Selected Indicator removed per request */}
       </div>
       
       {/* Dropdown Suggestions */}
