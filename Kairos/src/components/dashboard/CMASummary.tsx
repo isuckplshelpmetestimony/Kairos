@@ -12,7 +12,7 @@ export const CMASummary = ({ cma }: CMASummaryProps) => {
   const summaryData = [
     { label: "Average", value: cma ? `₱${cma.stats.avg.toLocaleString()}` : "$485,000", change: "+2.3%", positive: true },
     { label: "Median", value: cma ? `₱${cma.stats.median.toLocaleString()}` : "$452,000", change: "+1.8%", positive: true },
-    { label: "Range", value: cma ? `₱${(cma.stats.min / 1000).toFixed(0)}K - ₱${(cma.stats.max / 1000).toFixed(0)}K` : "$275K - $890K", change: "+6%", positive: true },
+    { label: "Range", value: cma ? `₱${cma.stats.min.toLocaleString()} - ₱${cma.stats.max.toLocaleString()}` : "₱275,000 - ₱890,000", change: "+6%", positive: true },
   ];
 
   return (

@@ -7,7 +7,7 @@ import { MetricCard } from './components/dashboard/MetricCard';
 import { PropertyReport } from './components/dashboard/PropertyReport';
 import { CMASummary } from './components/dashboard/CMASummary';
 import { MarketActivity } from './components/dashboard/MarketActivity';
-import { Neighborhoods } from './components/dashboard/Neighborhoods';
+import { Neighborhoods } from './components/dashboard/Locations';
 import { HistoricalTrends } from './components/dashboard/HistoricalTrends';
 import {
   PROPERTY_TYPES,

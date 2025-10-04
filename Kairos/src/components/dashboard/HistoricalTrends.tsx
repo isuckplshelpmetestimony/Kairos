@@ -13,8 +13,8 @@ export const HistoricalTrends = ({ cma }: HistoricalTrendsProps) => {
   const minValue = Math.min(...dataPoints);
   const range = maxValue - minValue;
 
-  const currentAvg = cma ? (cma.stats.avg / 1000).toFixed(0) : "485";
-  const peakPrice = cma ? (cma.stats.max / 1000).toFixed(0) : "485";
+  const currentAvg = cma ? cma.stats.avg.toLocaleString() : "485,000";
+  const peakPrice = cma ? cma.stats.max.toLocaleString() : "485,000";
 
   return (
     <Card className="bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-200 p-6">
@@ -53,7 +53,7 @@ export const HistoricalTrends = ({ cma }: HistoricalTrendsProps) => {
 
       <div className="grid grid-cols-3 gap-6">
         <div className="text-center">
-          <p className="text-2xl font-semibold">₱{currentAvg}K</p>
+          <p className="text-2xl font-semibold">₱{currentAvg}</p>
           <p className="text-xs text-muted-foreground mt-1">Current Avg</p>
         </div>
         <div className="text-center">
@@ -61,7 +61,7 @@ export const HistoricalTrends = ({ cma }: HistoricalTrendsProps) => {
           <p className="text-xs text-muted-foreground mt-1">6-Month Growth</p>
         </div>
         <div className="text-center">
-          <p className="text-2xl font-semibold">₱{peakPrice}K</p>
+          <p className="text-2xl font-semibold">₱{peakPrice}</p>
           <p className="text-xs text-muted-foreground mt-1">Peak Price</p>
         </div>
       </div>
