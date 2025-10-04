@@ -36,6 +36,29 @@ MAX_COUNT = int(os.getenv("SCRAPER_MAX_COUNT", "100"))
 SCRAPER_TIMEOUT_SEC = int(os.getenv("SCRAPER_TIMEOUT_SEC", "600"))
 
 
+def analyze_neighborhoods(properties: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Simple pandas-based neighborhood analysis following existing patterns."""
+    if not properties:
+        return {}
+    
+    try:
+        df = pd.DataFrame(properties)
+        df = df[df['neighborhood'].str.len() > 0]  # Filter empty neighborhoods
+        df = df[df['price'] > 0]  # Filter zero prices
+        
+        if df.empty:
+            return {}
+        
+        # Use pandas groupby like existing stats calculation
+        grouped = df.groupby('neighborhood')['price'].agg(['count', 'mean', 'min', 'max'])
+        grouped = grouped[grouped['count'] >= 2]  # Min 2 properties
+        grouped = grouped.sort_values('count', ascending=False).head(20)
+        
+        return grouped.round(2).to_dict('index')
+    except Exception:
+        return {}
+
+
 @app.get("/health")
 def health() -> Any:
     return jsonify({"status": "ok"})
@@ -153,6 +176,7 @@ def cma() -> Any:
             response: Dict[str, Any] = {
                 "properties": [],
                 "stats": {"count": 0},
+                "neighborhoods": {},
                 "data_source": "live",
             }
             # Provide a small non-breaking reason when available
@@ -180,6 +204,9 @@ def cma() -> Any:
         if len(properties) > 100:
             properties = properties[:100]
 
+        # Analyze neighborhoods
+        neighborhoods = analyze_neighborhoods(properties)
+
         # Successful response using adapter results
         duration_ms = int((time.time() - start_time) * 1000)
         try:
@@ -200,24 +227,7 @@ def cma() -> Any:
         return jsonify({
             "properties": properties,
             "stats": stats,
-            "data_source": "live",
-        })
-
-        duration_ms = int((time.time() - start_time) * 1000)
-        # Minimal observability (no raw CSV contents)
-        app.logger.info(
-            "scrape_done", extra={
-                "province": province,
-                "property_type": property_type,
-                "count": count,
-                "duration_ms": duration_ms,
-                "exit_code": proc.returncode,
-            }
-        )
-
-        return jsonify({
-            "properties": properties,
-            "stats": stats,
+            "neighborhoods": neighborhoods,
             "data_source": "live",
         })
 

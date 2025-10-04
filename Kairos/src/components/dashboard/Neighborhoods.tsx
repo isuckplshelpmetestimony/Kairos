@@ -3,18 +3,28 @@ import { Button } from "@/components/ui/button";
 import { Eye, Download } from "lucide-react";
 
 interface NeighborhoodsProps {
-  cma?: { stats: { avg: number } };
+  cma?: { 
+    stats: { avg: number };
+    neighborhoods: Record<string, { count: number; mean: number; min: number; max: number }>;
+  };
 }
 
 export const Neighborhoods = ({ cma }: NeighborhoodsProps) => {
-  const basePrice = cma ? cma.stats.avg : 485000;
-  const neighborhoods = [
-    { name: "Downtown", properties: "156 properties", price: `₱${(basePrice * 1.3).toLocaleString()}`, change: "+3.2%", positive: true },
-    { name: "Riverside", properties: "89 properties", price: `₱${(basePrice * 0.7).toLocaleString()}`, change: "+1.8%", positive: true },
-    { name: "Hillcrest", properties: "134 properties", price: `₱${(basePrice * 1.5).toLocaleString()}`, change: "+4.1%", positive: true },
-    { name: "Oakwood", properties: "78 properties", price: `₱${(basePrice * 0.8).toLocaleString()}`, change: "-0.5%", positive: false },
-    { name: "Metro Heights", properties: "112 properties", price: `₱${(basePrice * 1.1).toLocaleString()}`, change: "+2.7%", positive: true },
-  ];
+  // Use real data from API if available, otherwise fallback to mock data
+  const neighborhoods = cma?.neighborhoods ? 
+    Object.entries(cma.neighborhoods).map(([name, data]) => ({
+      name,
+      properties: `${data.count} properties`,
+      price: `₱${Math.round(data.mean).toLocaleString()}`,
+      change: "+2.1%", // Keep mock change for now
+      positive: true
+    })) : [
+      { name: "Downtown", properties: "156 properties", price: "₱485,000", change: "+3.2%", positive: true },
+      { name: "Riverside", properties: "89 properties", price: "₱485,000", change: "+1.8%", positive: true },
+      { name: "Hillcrest", properties: "134 properties", price: "₱485,000", change: "+4.1%", positive: true },
+      { name: "Oakwood", properties: "78 properties", price: "₱485,000", change: "-0.5%", positive: false },
+      { name: "Metro Heights", properties: "112 properties", price: "₱485,000", change: "+2.7%", positive: true },
+    ];
 
   return (
     <Card className="bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-200 p-6">

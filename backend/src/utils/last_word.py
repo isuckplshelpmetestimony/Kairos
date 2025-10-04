@@ -16,6 +16,22 @@ def get_word_after_last_comma(address):
     match = re.search(r',\s*([^,]+)\s*$', address)
     return match.group(1).strip() if match else ''
 
+
+def get_neighborhood_from_address(address):
+    """
+    Extracts the neighborhood/district from address string.
+    Format: "Neighborhood, City" → returns "Neighborhood"
+    
+    Parameters:
+    address (str): The address string to extract neighborhood from.
+    
+    Returns:
+    str: The neighborhood part before the first comma. If no comma is found, returns an empty string.
+    """
+    if not address or ',' not in address:
+        return ''
+    return address.split(',')[0].strip()
+
 # Example usage, which will only run if the script is executed directly
 if __name__ == "__main__":
     address = input("Please enter an address: ")

@@ -5,6 +5,7 @@ import pandas as pd
 
 # Local import without introducing new deps
 from src.scraper.scraper import scraper as lamudi_scraper
+from src.utils.last_word import get_neighborhood_from_address
 
 
 def _coerce_float(value: Any, default: float = 0.0) -> float:
@@ -49,10 +50,12 @@ def _build_coordinates(row: pd.Series) -> Optional[List[float]]:
 
 def _normalize_row(row: pd.Series, property_type: str) -> Dict[str, Any]:
     price_float = _coerce_float(row.get('TCP', 0.0), 0.0)
+    address = '' if pd.isna(row.get('Location', None)) else str(row.get('Location', ''))
     normalized: Dict[str, Any] = {
         'source': 'lamudi',
         'property_id': ('' if pd.isna(row.get('SKU', None)) else str(row.get('SKU', ''))),
-        'address': ('' if pd.isna(row.get('Location', None)) else str(row.get('Location', ''))),
+        'address': address,
+        'neighborhood': get_neighborhood_from_address(address),
         'price': price_float,
         'bedrooms': _coerce_int(row.get('Bedrooms', 0), 0),
         'bathrooms': _coerce_int(row.get('Baths', 0), 0),

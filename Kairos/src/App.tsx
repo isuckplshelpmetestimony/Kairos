@@ -45,6 +45,7 @@ export default function App() {
       min: number; 
       max: number; 
     };
+    neighborhoods: Record<string, { count: number; mean: number; min: number; max: number }>;
     data_source?: 'live' | 'demo';
   }>(null);
   const [error, setError] = useState<string | null>(null);
