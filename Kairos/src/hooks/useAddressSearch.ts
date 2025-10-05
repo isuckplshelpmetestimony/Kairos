@@ -3,15 +3,15 @@
  * 
  * Philippine address autocomplete with debounced search and caching.
  * 
- * ARCHITECTURE: This hook is THE SWAP POINT for API integration
- * - TODAY: Uses mock Philippine address data
- * - LATER: Replace mockSearchAddresses() with real API call to /api/addresses/search
+ * ARCHITECTURE: This hook integrates with the real backend API
+ * - Uses /api/addresses/search endpoint for Philippine address data
+ * - Includes debouncing, caching, and error handling
  * - Component code never needs to change
  * 
  * API Integration Pattern:
  * 1. User types → Hook debounces (300ms)
- * 2. Mock search executes (will be: API call)
- * 3. Returns structured suggestions
+ * 2. API call to /api/addresses/search executes
+ * 3. Returns structured suggestions with PSGC codes
  * 4. Results cached in localStorage
  */
 
@@ -22,133 +22,6 @@ import type {
   AddressSearchError 
 } from '@/types/address';
 
-// ============================================================================
-// MOCK DATA - Remove this section when backend API is ready
-// ============================================================================
-
-/**
- * Mock Philippine addresses with proper PSGC codes and coordinates
- * This data structure matches the exact API response format
- */
-const MOCK_PHILIPPINE_ADDRESSES: AddressSuggestion[] = [
-  {
-    full_address: "Bonifacio Global City (BGC), Taguig City, Metro Manila",
-    psgc_city_code: "137602000",
-    psgc_province_code: "1376",
-    coordinates: [14.5547, 121.0477],
-    search_radius_km: 5,
-    confidence_level: "high"
-  },
-  {
-    full_address: "Makati Central Business District, Makati City, Metro Manila",
-    psgc_city_code: "137501000",
-    psgc_province_code: "1376",
-    coordinates: [14.5547, 121.0244],
-    search_radius_km: 5,
-    confidence_level: "high"
-  },
-  {
-    full_address: "Ortigas Center, Pasig City, Metro Manila",
-    psgc_city_code: "137403000",
-    psgc_province_code: "1376",
-    coordinates: [14.5846, 121.0569],
-    search_radius_km: 5,
-    confidence_level: "high"
-  },
-  {
-    full_address: "Alabang, Muntinlupa City, Metro Manila",
-    psgc_city_code: "137803000",
-    psgc_province_code: "1376",
-    coordinates: [14.4292, 121.0419],
-    search_radius_km: 7,
-    confidence_level: "high"
-  },
-  {
-    full_address: "Quezon City, Metro Manila",
-    psgc_city_code: "137404000",
-    psgc_province_code: "1376",
-    coordinates: [14.6760, 121.0437],
-    search_radius_km: 10,
-    confidence_level: "medium"
-  },
-  {
-    full_address: "Eastwood City, Quezon City, Metro Manila",
-    psgc_city_code: "137404000",
-    psgc_province_code: "1376",
-    coordinates: [14.6091, 121.0794],
-    search_radius_km: 5,
-    confidence_level: "high"
-  },
-  {
-    full_address: "Rockwell Center, Makati City, Metro Manila",
-    psgc_city_code: "137501000",
-    psgc_province_code: "1376",
-    coordinates: [14.5656, 121.0360],
-    search_radius_km: 3,
-    confidence_level: "high"
-  },
-  {
-    full_address: "Manila, Metro Manila",
-    psgc_city_code: "137600000",
-    psgc_province_code: "1376",
-    coordinates: [14.5995, 120.9842],
-    search_radius_km: 15,
-    confidence_level: "medium"
-  },
-  {
-    full_address: "Aseana City, Parañaque City, Metro Manila",
-    psgc_city_code: "137405000",
-    psgc_province_code: "1376",
-    coordinates: [14.5378, 120.9896],
-    search_radius_km: 5,
-    confidence_level: "high"
-  },
-  {
-    full_address: "Greenfield District, Mandaluyong City, Metro Manila",
-    psgc_city_code: "137502000",
-    psgc_province_code: "1376",
-    coordinates: [14.5833, 121.0500],
-    search_radius_km: 4,
-    confidence_level: "high"
-  }
-];
-
-/**
- * Mock search function - simulates backend ph-address API
- * 
- * SWAP POINT: Replace this entire function with:
- * ```typescript
- * const response = await fetch(`/api/addresses/search?q=${encodeURIComponent(query)}&limit=5`);
- * if (!response.ok) throw new Error('API request failed');
- * return await response.json();
- * ```
- */
-async function mockSearchAddresses(query: string): Promise<AddressSearchResponse> {
-  const startTime = Date.now();
-  
-  // Simulate network latency (50-100ms) to mimic real API behavior
-  const delay = Math.random() * 50 + 50;
-  await new Promise(resolve => setTimeout(resolve, delay));
-  
-  // Case-insensitive search across all address fields
-  const lowerQuery = query.toLowerCase().trim();
-  const filteredSuggestions = MOCK_PHILIPPINE_ADDRESSES.filter(address =>
-    address.full_address.toLowerCase().includes(lowerQuery)
-  );
-  
-  // Limit to top 5 matches (API will do this)
-  const suggestions = filteredSuggestions.slice(0, 5);
-  
-  return {
-    suggestions,
-    total: suggestions.length,
-    query_time_ms: Date.now() - startTime
-  };
-}
-
-// ============================================================================
-// END MOCK DATA SECTION
-// ============================================================================
 
 // ============================================================================
 // LOCALSTORAGE CACHING
@@ -260,8 +133,12 @@ export function useAddressSearch(
           return;
         }
         
-        // SWAP POINT: Replace mockSearchAddresses with real API call
-        const response = await mockSearchAddresses(query);
+        // API call to backend address search endpoint
+        const apiResponse = await fetch(`/api/addresses/search?q=${encodeURIComponent(query)}&limit=5`);
+        if (!apiResponse.ok) {
+          throw new Error(`API request failed: ${apiResponse.status}`);
+        }
+        const response = await apiResponse.json();
         
         // Only update if this is still the latest query
         if (latestQueryRef.current === query) {

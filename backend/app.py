@@ -9,6 +9,7 @@ from typing import Any, Dict, List
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import pandas as pd
+from collections import defaultdict, deque
 
 from psgc_mapper import to_lamudi_province, is_supported
 from src.adapters.lamudi_adapter import scrape_and_normalize
@@ -25,15 +26,48 @@ CORS(app, resources={r"/*": {"origins": frontend_origin}})
 # Single-flight lock to serialize scrapes
 _scrape_lock = threading.Lock()
 
+# Rate limiting for address search (100 requests per minute per IP)
+_rate_limit_storage = defaultdict(deque)
+_rate_limit_lock = threading.Lock()
+
 # Paths
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BACKEND_DIR, "data")
 OUTPUT_CSV = os.path.join(DATA_DIR, "output.csv")
 SCRAPER_PATH = os.path.join(BACKEND_DIR, "lamudi_scraper.py")
+ADDRESS_DB_PATH = os.path.join(DATA_DIR, "philippine_addresses.json")
+
+# Load address database once at startup
+_address_database = None
+try:
+    with open(ADDRESS_DB_PATH, 'r', encoding='utf-8') as f:
+        _address_database = json.load(f)
+    app.logger.info(f"Loaded {len(_address_database.get('addresses', []))} addresses from database")
+except Exception as e:
+    app.logger.error(f"Failed to load address database: {e}")
+    _address_database = {"addresses": []}
 
 # Config
 MAX_COUNT = int(os.getenv("SCRAPER_MAX_COUNT", "100"))
 SCRAPER_TIMEOUT_SEC = int(os.getenv("SCRAPER_TIMEOUT_SEC", "600"))
+
+
+def check_rate_limit(ip: str, max_requests: int = 100, window_seconds: int = 60) -> bool:
+    """Check if IP has exceeded rate limit (100 requests per minute)."""
+    current_time = time.time()
+    
+    with _rate_limit_lock:
+        # Clean old requests outside the window
+        while _rate_limit_storage[ip] and _rate_limit_storage[ip][0] < current_time - window_seconds:
+            _rate_limit_storage[ip].popleft()
+        
+        # Check if under limit
+        if len(_rate_limit_storage[ip]) >= max_requests:
+            return False
+        
+        # Add current request
+        _rate_limit_storage[ip].append(current_time)
+        return True
 
 
 def analyze_neighborhoods(properties: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -62,6 +96,65 @@ def analyze_neighborhoods(properties: List[Dict[str, Any]]) -> Dict[str, Any]:
 @app.get("/health")
 def health() -> Any:
     return jsonify({"status": "ok"})
+
+
+@app.get("/api/addresses/search")
+def search_addresses() -> Any:
+    """Search Philippine addresses with PSGC codes and coordinates."""
+    
+    # Rate limiting check (100 requests per minute per IP)
+    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
+    if not check_rate_limit(client_ip):
+        return jsonify({"error": "Rate limit exceeded. Please try again later."}), 429
+    
+    # Validate and sanitize input parameters
+    query = request.args.get("q", "").strip()
+    try:
+        limit = int(request.args.get("limit", "5"))
+    except (ValueError, TypeError):
+        limit = 5
+    
+    # Input validation
+    if not query or len(query) < 2:
+        return jsonify({"error": "Query must be at least 2 characters"}), 400
+    
+    if len(query) > 100:
+        return jsonify({"error": "Query too long"}), 400
+    
+    if limit < 1 or limit > 10:
+        limit = 5
+    
+    start_time = time.time()
+    
+    try:
+        # Perform case-insensitive search
+        lower_query = query.lower()
+        addresses = _address_database.get("addresses", [])
+        
+        # Filter addresses that match the query
+        matches = []
+        for address in addresses:
+            if lower_query in address["full_address"].lower():
+                matches.append(address)
+        
+        # Sort by confidence level (high > medium > low) and limit results
+        confidence_order = {"high": 3, "medium": 2, "low": 1}
+        matches.sort(key=lambda x: confidence_order.get(x["confidence_level"], 0), reverse=True)
+        suggestions = matches[:limit]
+        
+        query_time_ms = int((time.time() - start_time) * 1000)
+        
+        response = {
+            "suggestions": suggestions,
+            "total": len(suggestions),
+            "query_time_ms": query_time_ms
+        }
+        
+        return jsonify(response)
+        
+    except Exception as e:
+        app.logger.error(f"Address search error: {e}", exc_info=False)
+        return jsonify({"error": "Search failed"}), 500
 
 
 @app.post("/api/cma")

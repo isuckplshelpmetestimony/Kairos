@@ -5,11 +5,22 @@ PSGC → Lamudi province mapper (minimal v1)
 """
 from typing import Dict, Optional
 
-# Minimal whitelist: NCR + nearby provinces
+# Expanded whitelist: NCR + major provinces nationwide
 _PSGC_TO_LAMUDI: Dict[str, str] = {
-    "1376": "metro-manila",  # NCR
-    "3400": "cavite",
-    "4000": "laguna",
+    # NCR and nearby provinces (original codes)
+    "1376": "metro-manila",  # NCR - Metro Manila
+    "3400": "cavite",        # Cavite (original code)
+    "4000": "laguna",        # Laguna (original code)
+    
+    # Additional major provinces (using original format)
+    "0722": "cebu",          # Cebu
+    "0630": "iloilo",        # Iloilo
+    "0645": "negros-occidental",  # Negros Occidental
+    "0973": "zamboanga-del-sur",  # Zamboanga del Sur
+    "1043": "misamis-oriental",   # Misamis Oriental
+    "1124": "davao-del-sur",      # Davao del Sur
+    "1411": "benguet",       # Benguet (Baguio)
+    "0458": "rizal",         # Rizal
 }
 
 
