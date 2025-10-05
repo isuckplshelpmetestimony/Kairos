@@ -72,10 +72,12 @@ def scraper(province, property_type, num):
     except Exception:
         max_pages_cap = 10
     capped_max_page_num = min(max_page_num, max_pages_cap)
+    # Always probe at least the first 3 pages to avoid page-1 selector/AB-test misses
+    pages_upper_bound = max(3, capped_max_page_num)
 
     pages_scanned = 0
 
-    for page_num in range(1, capped_max_page_num + 1):
+    for page_num in range(1, pages_upper_bound + 1):
         try:
             if page_num == 1:
                 URL = base_list_url
