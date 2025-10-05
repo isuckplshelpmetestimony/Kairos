@@ -354,25 +354,39 @@ export default function App() {
         {/* CMA Results Display */}
         {cma && (
           <div className="min-h-screen bg-kairos-chalk p-8">
-            <div className="mx-auto max-w-7xl space-y-8">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <MetricCard title="Total Properties" value={cma.stats.count.toString()} change="+12% from last month" positive />
-                <MetricCard title="Avg Price" value={`₱${Math.round(cma.stats.avg).toLocaleString()}`} change="+2.3% from last month" positive />
-                <MetricCard title="Avg Days on Market" value="28" change="-5 days from last month" positive note="Mock data placeholder" />
-                <MetricCard title="Total Neighborhoods" value="42" subtitle="Active areas" note="Mock data placeholder" />
+            {cma.stats.count === 0 ? (
+              <div className="mx-auto max-w-2xl text-center">
+                <div className="bg-white border border-gray-200 rounded-3xl shadow-sm p-12">
+                  <div className="w-16 h-16 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.29-1.009-5.824-2.709M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No Properties Found</h3>
+                  <p className="text-gray-600">Apologies, no properties found in this location. Please try searching in a different area.</p>
+                </div>
               </div>
+            ) : (
+              <div className="mx-auto max-w-7xl space-y-8">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                  <MetricCard title="Total Properties" value={cma.stats.count.toString()} change="+12% from last month" positive />
+                  <MetricCard title="Avg Price" value={`₱${Math.round(cma.stats.avg).toLocaleString()}`} change="+2.3% from last month" positive />
+                  <MetricCard title="Avg Days on Market" value="28" change="-5 days from last month" positive note="Mock data placeholder" />
+                  <MetricCard title="Total Neighborhoods" value={Object.keys(cma.neighborhoods || {}).length.toString()} subtitle="Active areas" />
+                </div>
 
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <PropertyReport cma={cma} />
-                <CMASummary cma={cma} />
-                <MarketActivity cma={cma} />
-                <Neighborhoods cma={cma} />
-              </div>
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                  <PropertyReport cma={cma} />
+                  <CMASummary cma={cma} />
+                  <MarketActivity cma={cma} />
+                  <Neighborhoods cma={cma} />
+                </div>
 
-              <div>
-                <HistoricalTrends cma={cma} />
+                <div>
+                  <HistoricalTrends cma={cma} />
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
