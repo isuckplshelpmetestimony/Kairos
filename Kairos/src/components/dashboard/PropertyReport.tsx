@@ -18,9 +18,12 @@ export const PropertyReport = ({ cma }: PropertyReportProps) => {
           const address = String(p.address ?? 'Unknown address');
           const priceNum = Number(p.price ?? 0);
           const price = `₱${Math.round(priceNum).toLocaleString()}`;
-          const bedrooms = p.bedrooms != null && p.bedrooms !== '' ? `${p.bedrooms} BR` : '';
-          const bathrooms = p.bathrooms != null && p.bathrooms !== '' ? `${p.bathrooms} BA` : '';
-          const sqm = p.sqm != null && p.sqm !== '' ? `${p.sqm} sqm` : '';
+          const brNum = Number(p.bedrooms);
+          const baNum = Number(p.bathrooms);
+          const sqmNum = Number(p.sqm);
+          const bedrooms = Number.isFinite(brNum) && brNum > 0 ? `${brNum} BR` : '';
+          const bathrooms = Number.isFinite(baNum) && baNum > 0 ? `${baNum} BA` : '';
+          const sqm = Number.isFinite(sqmNum) && sqmNum > 0 ? `${Math.round(sqmNum)} sqm` : '';
           const characteristics = [bedrooms, bathrooms, sqm].filter(Boolean).join(' • ');
           const url = p.url ? String(p.url) : undefined;
           return { address, price, characteristics, url };

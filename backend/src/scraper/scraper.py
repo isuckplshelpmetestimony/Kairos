@@ -38,8 +38,14 @@ def scraper(province, property_type, num):
         'Accept-Language': 'en-US,en;q=0.9',
         'Referer': base_list_url,
     }
+    # Reuse a single HTTP session to preserve cookies and reduce blocks
+    session = requests.Session()
+    try:
+        session.headers.update(headers)
+    except Exception:
+        pass
     URL = base_list_url
-    page = requests.get(URL, headers=headers, timeout=15)
+    page = session.get(URL, timeout=15)
     soup = bs(page.content, 'html.parser')
     div = soup.find('div', class_='BaseSection Pagination')
     # Primary: use pagination container's data attribute
@@ -72,8 +78,8 @@ def scraper(province, property_type, num):
     except Exception:
         max_pages_cap = 10
     capped_max_page_num = min(max_page_num, max_pages_cap)
-    # Always probe at least the first 3 pages to avoid page-1 selector/AB-test misses
-    pages_upper_bound = max(3, capped_max_page_num)
+    # Use detected/capped pagination only
+    pages_upper_bound = capped_max_page_num
 
     pages_scanned = 0
 
@@ -82,9 +88,9 @@ def scraper(province, property_type, num):
             if page_num == 1:
                 URL = base_list_url
             else:
-                URL = f'https://www.lamudi.com.ph/buy/{province_lower}/{property_type}/?page={page_num}'
+                URL = f'https://www.lamudi.com.ph/buy/{province}/{property_type}/?page={page_num}'
             print(f"Scraping page {page_num}...")
-            page = requests.get(URL, headers=headers, timeout=15)
+            page = session.get(URL, timeout=15)
             pages_scanned += 1
             soup = bs(page.content, 'html.parser')
             results_link = soup.find_all("div", attrs={"class": "row ListingCell-row ListingCell-agent-redesign"})
@@ -153,6 +159,14 @@ def scraper(province, property_type, num):
                 pass
             merged_candidates.extend(fallback_pairs)
             total_candidates = len(merged_candidates)
+            # Adaptive backoff: if first page shows zero candidates and looks like a bot challenge
+            if page_num == 1 and total_candidates == 0:
+                try:
+                    text_sample = (soup.get_text(' ', strip=True) or '')[:2000].lower()
+                    if ('security verification' in text_sample) or ('solve this math problem' in text_sample):
+                        time.sleep(5)
+                except Exception:
+                    pass
             try:
                 print({
                     'level': 'info',
@@ -162,23 +176,9 @@ def scraper(province, property_type, num):
                 })
             except Exception:
                 pass
-            # Short-circuit if page 1 has zero listings after fallback
-            if page_num == 1 and total_candidates == 0:
-                try:
-                    status_code = getattr(page, 'status_code', None)
-                except Exception:
-                    status_code = None
-                print({
-                    'level': 'warn',
-                    'event': 'no_cards_found',
-                    'page': 1,
-                    'status_code': status_code,
-                    'url': URL,
-                    'reason': 'selector_miss',
-                    'pages_scanned': pages_scanned,
-                })
-                # Do not abort early; continue scanning subsequent pages
-                continue
+            # Note: Previously, we short-circuited on page 1 with zero candidates.
+            # We now continue to subsequent pages to improve resilience against
+            # partial selector misses on the first page.
         except Exception as e:
             print(f"Error on page {page_num}: {e}")
             continue  # Continue to the next page instead of breaking

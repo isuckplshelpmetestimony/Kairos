@@ -15,6 +15,7 @@
 3. [Single-Server Implementation Guardrails](#single-server-implementation-guardrails)
 4. [Common Mistakes Prevention](#common-mistakes-prevention)
 5. [Critical Cursor Rules](#critical-cursor-rules)
+6. [Design System Protection Guardrails](#design-system-protection-guardrails)
 
 ---
 
@@ -1061,3 +1062,946 @@ git checkout -b restore-branch checkpoint-name
 ### Out‑of‑scope (future work)
 - No headless browser, proxy rotation, caching layer, job queue, or metrics dashboard.
 - JSON‑LD parsing, richer UI messaging, multi‑source aggregation are follow‑ups.
+
+---
+
+## **SCRAPER SELECTOR FIX GUARDRAILS**
+
+### **🎯 PURPOSE & STRATEGY**
+- **Purpose:** Surgical selector updates to fix price extraction while keeping codebase lean
+- **Timeline:** 1-2 hours maximum
+- **Strategy:** Temporary fix until official API migration (post-first sale)
+
+---
+
+### **📋 SCOPE GUARDRAILS**
+
+#### **✅ DO:**
+- Update selector strings ONLY (class names, attributes)
+- Test with 5-10 properties maximum
+- Keep existing fallback logic structure
+- Document which selectors were changed (inline comments)
+- Fix price, location, and other broken fields in ONE session
+
+#### **❌ DON'T:**
+- Add new dependencies (no Selenium, no external services)
+- Rewrite scraper architecture
+- Add complex error handling/monitoring
+- Create new files or modules
+- Add health checks, alerts, or observability (YAGNI for now)
+- Fix selectors "perfectly" - good enough is enough
+
+---
+
+### **🔧 IMPLEMENTATION GUARDRAILS**
+
+#### **Discovery Phase (30 min max):**
+- Pick ONE property URL from existing `output.csv`
+- Use simple Python script OR browser DevTools (whichever is faster)
+- Find selectors for: price, location, bedrooms, baths, floor_area
+- Stop searching once you find working selectors (don't optimize)
+
+#### **Update Phase (15-30 min max):**
+- Only modify `backend/src/scraper/scraper.py`
+- Lines to change: 248-252 (primary selectors), 285-303 (fallback selectors)
+- Keep existing `find_all()` / `select()` patterns
+- Update strings only, don't restructure logic
+- Add 1-line comment: `# Updated 2025-10-01: Lamudi redesign`
+
+#### **Test Phase (15 min max):**
+- Run: `python backend/lamudi_scraper.py` with count=5
+- Check: `backend/data/output.csv` has non-zero TCP values
+- Quick API test: `curl POST /api/cma`
+- If stats appear → Done. If not → debug ONE field at a time
+
+---
+
+### **📊 QUALITY GUARDRAILS**
+
+#### **Success Criteria:**
+- [ ] `output.csv` shows prices > 0 for most properties
+- [ ] API response has `stats.avg > 0` and `stats.median > 0`
+- [ ] At least 60% of scraped properties have valid prices (not 100%)
+- [ ] No new linter errors introduced
+- [ ] No changes to adapter, API, or frontend
+
+#### **Good Enough Threshold:**
+- 60% price extraction success = Ship it
+- 80% success = Great, don't optimize further
+- <50% success = Try different selectors, don't add complexity
+
+---
+
+### **🚫 ANTI-PATTERNS TO AVOID**
+
+#### **❌ Over-Engineering:**
+- "Let me add retry logic for failed requests"
+- "Let me build a selector health monitoring system"
+- "Let me make the fallbacks more sophisticated"
+- "Let me add unit tests for each selector"
+→ **NO.** Update strings, test, ship.
+
+#### **❌ Perfectionism:**
+- "I need 100% extraction success rate"
+- "Let me handle all edge cases"
+- "Let me add validation for every field"
+→ **NO.** 60-80% success is fine for validation phase.
+
+#### **❌ Scope Creep:**
+- "While I'm here, let me refactor the scraper"
+- "Let me add better logging"
+- "Let me extract more fields"
+→ **NO.** Fix what's broken, nothing more.
+
+---
+
+### **⏰ TIME BOXING**
+
+#### **Hard Limits:**
+- Discovery: 30 minutes → If not found, try browser DevTools instead
+- Updates: 30 minutes → If more needed, selectors are too complex, pick simpler ones
+- Testing: 15 minutes → If not working, revert and reassess
+- **Total: 2 hours MAX** → If exceeds, stop and evaluate alternatives
+
+#### **If You Hit 2 Hours:**
+- Stop and ask: "Is this the right approach?"
+- Consider: Mock data demo + API partnership pursuit instead
+- Don't fall into sunk cost fallacy
+
+---
+
+### **🛠️ MAINTENANCE EXPECTATIONS**
+
+#### **Accept These Realities:**
+- This WILL break again (3-12 months)
+- Next fix will also take 1-2 hours
+- This is temporary until official API
+- Not investing in "perfect" scraper
+
+#### **When It Breaks Next Time:**
+- Repeat this same process (1-2 hours)
+- OR trigger API partnership discussions
+- OR switch to mock data demos
+- Decision depends on business context at that time
+
+---
+
+### **🎯 CURSOR SESSION PROMPT**
+
+```
+ROLE: Python web scraping developer fixing outdated selectors
+TASK: Update Lamudi scraper selectors for price/location extraction
+CONSTRAINT: Surgical fix only - no architectural changes
+
+FILES TO MODIFY:
+- backend/src/scraper/scraper.py (lines 248-303 only)
+
+REQUIREMENTS:
+1. Find current Lamudi HTML selectors for price, location, beds, baths, sqm
+2. Update selector strings (class names, attributes)
+3. Keep existing fallback logic structure unchanged
+4. Test with 5 properties to verify
+5. Stop at "good enough" (60%+ success)
+
+TIME LIMIT: 2 hours maximum
+SUCCESS: stats.avg > 0 in API response
+
+DO NOT:
+- Add new dependencies
+- Rewrite scraper logic
+- Add monitoring/alerts
+- Create new files
+- Optimize beyond working state
+
+Please help me fix the selectors with minimal changes.
+```
+
+---
+
+### **📋 VALIDATION CHECKLIST**
+
+#### **Before Starting:**
+- [ ] Read these guardrails completely
+- [ ] Set 2-hour timer
+- [ ] Have `output.csv` URLs ready
+- [ ] Decide: Script inspection OR browser DevTools
+
+#### **During Implementation:**
+- [ ] Only modifying scraper.py
+- [ ] Not adding new functions/files
+- [ ] Not refactoring existing code
+- [ ] Changes are string updates only
+
+#### **Before Completing:**
+- [ ] Tested with 5 properties
+- [ ] TCP values > 0 in CSV
+- [ ] Stats appear in API response
+- [ ] No linter errors added
+- [ ] Took < 2 hours total
+
+---
+
+### **🔄 ROLLBACK PLAN**
+
+#### **If Fix Fails:**
+- `git checkout backend/src/scraper/scraper.py` (instant revert)
+- Reassess: Is scraping the right approach?
+- Consider: Mock data demos + API partnerships
+
+#### **Don't:**
+- Spend another 2 hours "perfecting" it
+- Add Selenium or complex solutions
+- Keep trying indefinitely
+
+---
+
+### **🎯 ONE-SENTENCE SUMMARY**
+
+**"Update selector strings in scraper.py lines 248-303, test with 5 properties, ship at 60%+ success rate, done in 2 hours max—this is temporary until API migration so don't over-engineer it."**
+
+---
+
+## **DASHBOARD IMPLEMENTATION GUARDRAILS**
+
+### **🎯 CORE PHILOSOPHY**
+**"Build the visual foundation of a comprehensive dashboard using only the data you currently have, with professional-looking placeholders for future expansion, in the most minimal way possible that integrates seamlessly with your existing codebase."**
+
+---
+
+### **🛡️ DASHBOARD IMPLEMENTATION GUARDRAILS**
+
+#### **1. SINGLE FILE CHANGE GUARDRAIL**
+```
+CONSTRAINT: Only modify App.tsx lines 348-389
+REQUIREMENT: Zero new files, zero new imports, zero new dependencies
+ANTI-PATTERN: Do NOT create new components or separate files
+RATIONALE: Follows "minimal technical debt" principle
+```
+
+#### **2. INLINE STRUCTURE GUARDRAIL**
+```
+CONSTRAINT: Build dashboard layout inline using JSX
+REQUIREMENT: Use existing React patterns and styling approaches
+ANTI-PATTERN: Do NOT create separate dashboard components
+RATIONALE: Maintains simplicity and reduces maintenance burden
+```
+
+#### **3. EXISTING DESIGN SYSTEM GUARDRAIL**
+```
+CONSTRAINT: Use only current Kairos design system classes
+REQUIREMENT: bg-kairos-*, text-kairos-*, border-kairos-* classes only
+ANTI-PATTERN: Do NOT create new CSS classes or modify globals.css
+RATIONALE: Maintains consistency and follows established patterns
+```
+
+#### **4. DATA REALITY GUARDRAIL**
+```
+CONSTRAINT: Only populate sections with current 4 metrics
+REQUIREMENT: count, avg, median, min-max from cma.stats object
+ANTI-PATTERN: Do NOT create fake data or complex calculations
+RATIONALE: "Data reality over data fantasy" - use what exists
+```
+
+#### **5. PLACEHOLDER PROFESSIONALISM GUARDRAIL**
+```
+CONSTRAINT: Empty sections must look professional and intentional
+REQUIREMENT: "Coming Soon" or "Data not available" messaging
+ANTI-PATTERN: Do NOT leave sections completely blank or broken
+RATIONALE: Maintains visual impact while being honest about data limitations
+```
+
+#### **6. ZERO BREAKING CHANGES GUARDRAIL**
+```
+CONSTRAINT: Maintain all existing functionality exactly as-is
+REQUIREMENT: CMA generation, error handling, loading states unchanged
+ANTI-PATTERN: Do NOT modify API calls, state management, or data flow
+RATIONALE: "No major fuckups" - don't break what's working
+```
+
+#### **7. VISUAL FOUNDATION GUARDRAIL**
+```
+CONSTRAINT: Build structure ready for future data expansion
+REQUIREMENT: Dashboard layout accommodates additional sections easily
+ANTI-PATTERN: Do NOT build rigid structure that's hard to extend
+RATIONALE: "Foundation first" - build the visual foundation now
+```
+
+#### **8. TIME BOXING GUARDRAIL**
+```
+CONSTRAINT: Complete implementation in 40 minutes maximum
+REQUIREMENT: Set timer, stop when time expires regardless of completeness
+ANTI-PATTERN: Do NOT spend hours perfecting minor details
+RATIONALE: "Fast feedback over perfect planning" - ship and iterate
+```
+
+#### **9. GOOD ENOUGH GUARDRAIL**
+```
+CONSTRAINT: Stop when it looks professional, not when it's perfect
+REQUIREMENT: Professional appearance with current data populated
+ANTI-PATTERN: Do NOT optimize beyond "good enough" threshold
+RATIONALE: "Working beats elegant" - functional over perfect
+```
+
+#### **10. INTEGRATION GUARDRAIL**
+```
+CONSTRAINT: Seamless integration with existing codebase patterns
+REQUIREMENT: Follows existing component structure, naming, and styling
+ANTI-PATTERN: Do NOT introduce new patterns or conventions
+RATIONALE: Maintains consistency and reduces learning curve
+```
+
+---
+
+### **🚫 DASHBOARD ANTI-PATTERNS TO AVOID**
+
+#### **❌ Over-Engineering:**
+- "Let me create a DashboardContainer component"
+- "Let me add TypeScript interfaces for dashboard data"
+- "Let me build a grid system library"
+- "Let me add animation libraries"
+
+#### **❌ Perfectionism:**
+- "I need perfect responsive design"
+- "Let me handle all edge cases"
+- "I need 100% pixel-perfect alignment"
+- "Let me add complex hover effects"
+
+#### **❌ Scope Creep:**
+- "While I'm here, let me refactor the entire results section"
+- "Let me add new data visualization features"
+- "Let me improve the overall app architecture"
+- "Let me add accessibility features"
+
+---
+
+### **✅ DASHBOARD SUCCESS CRITERIA**
+
+#### **Functional Requirements:**
+- [ ] Dashboard layout displays correctly
+- [ ] Current 4 metrics populate correctly
+- [ ] Placeholder sections look professional
+- [ ] Responsive design works on mobile/desktop
+- [ ] All existing functionality preserved
+
+#### **Technical Requirements:**
+- [ ] Single file modification (App.tsx)
+- [ ] Zero new dependencies
+- [ ] Zero new components
+- [ ] Uses existing Kairos design system
+- [ ] No breaking changes to existing code
+
+#### **Timeline Requirements:**
+- [ ] Completed in ≤40 minutes
+- [ ] Ready for immediate testing
+- [ ] Ready for user feedback
+
+---
+
+### **🎯 DASHBOARD IMPLEMENTATION STRATEGY**
+
+**Single File Change:** Only modify `App.tsx` lines 348-389
+
+**Zero New Components:** Build everything inline using existing patterns
+
+**Zero New Files:** No additional imports or dependencies
+
+**Existing Design System:** Use all current Kairos classes and styling
+
+---
+
+## **NEIGHBORHOOD EXTRACTION GUARDRAILS**
+
+### **📋 SCOPE GUARDRAILS**
+- Keep neighborhood extraction as a **single utility function** in existing `backend/src/utils/last_word.py`
+- **No new packages, dependencies, or external libraries** for neighborhood processing
+- **Do not change** the `/api/cma` request contract; only extend response with `neighborhoods` field
+- **No frontend changes required** for neighborhood data display
+- **Single small addition** per file; keep edits surgical and localized
+
+### **📊 DATA CONTRACT GUARDRAILS**
+- **Canonical neighborhood field**: `neighborhood` as string in normalized property data
+- **Neighborhood data format**: Extract only the part before first comma in address
+- **Fallback handling**: Empty string `''` when no comma found in address
+- **Response limit**: Neighborhood analysis included only when properties exist
+- **Non-breaking addition**: Existing API contract remains unchanged
+
+### **🔧 ADDRESS PARSING BEHAVIOR GUARDRAILS**
+- **Parsing strategy**: Single regex-based extraction using `address.split(',')[0].strip()`
+- **Fallback logic**: Return empty string if address is None, empty, or contains no comma
+- **Error handling**: Graceful degradation - never crash on malformed addresses
+- **Performance**: O(1) string operation; no heavy parsing or external lookups
+- **Consistency**: Same parsing logic applied to all addresses in dataset
+
+### **📈 DATA QUALITY GUARDRAILS**
+- **Neighborhood normalization**: Basic mapping for common variations (BGC → Fort Bonifacio)
+- **Sample size validation**: Only include neighborhoods with ≥2 properties in analysis
+- **Price validation**: Exclude properties with price = 0 from neighborhood averages
+- **Address validation**: Skip properties with empty or malformed addresses
+- **Duplicate handling**: Count unique properties per neighborhood (no double-counting)
+
+### **⚡ PERFORMANCE GUARDRAILS**
+- **Computation limit**: Neighborhood analysis must complete within existing API timeout
+- **Memory efficiency**: Process neighborhoods in single pass through properties array
+- **Response size**: Limit neighborhood analysis to top 20 neighborhoods by property count
+- **Caching**: No caching in v1; keep implementation simple
+- **Processing time**: Neighborhood extraction should add <50ms to total API response time
+
+### **🛡️ RELIABILITY GUARDRAILS**
+- **Graceful degradation**: If neighborhood extraction fails, continue with existing response
+- **Empty neighborhood handling**: Return empty `neighborhoods: {}` when no valid neighborhoods found
+- **Address format changes**: Robust parsing that handles various comma-separated formats
+- **Error isolation**: Neighborhood extraction errors don't affect property data or stats
+- **Fallback response**: Always return valid JSON even if neighborhood analysis fails
+
+### **📝 LOGGING/OBSERVABILITY GUARDRAILS**
+- **Log only**: neighborhood_count, neighborhood_analysis_duration_ms, neighborhoods_with_data
+- **No PII**: Never log individual addresses or neighborhood names in production
+- **Log levels**: info (successful analysis), warn (no neighborhoods found), error (extraction failure)
+- **Metrics**: Track neighborhood extraction success rate and performance impact
+- **Debug info**: Include neighborhood_count in existing cma_success logs
+
+### **🔒 SECURITY GUARDRAILS**
+- **Input sanitization**: Sanitize neighborhood strings (trim, limit length, remove special chars)
+- **XSS prevention**: Escape neighborhood names in API responses
+- **Data exposure**: No sensitive location data beyond what's already in addresses
+- **Error messages**: Safe, generic error messages for neighborhood extraction failures
+- **Rate limiting**: Existing API rate limiting applies to neighborhood-enhanced responses
+
+### **💻 CODE QUALITY GUARDRAILS**
+- **Pure functions**: Neighborhood extraction must be pure function with no side effects
+- **Type hints**: Clear type annotations for all neighborhood-related functions
+- **Single responsibility**: Neighborhood extraction handles only address parsing
+- **No globals**: No global state or configuration for neighborhood processing
+- **Documentation**: Clear docstrings explaining neighborhood extraction logic
+
+### **🧪 TESTING GUARDRAILS**
+- **Unit test**: One test for neighborhood extraction function with various address formats
+- **Integration test**: Verify neighborhood analysis in API response
+- **Edge case testing**: Empty addresses, malformed addresses, addresses without commas
+- **Performance test**: Ensure neighborhood analysis doesn't significantly impact API response time
+- **Manual validation**: Test with real scraped data to verify neighborhood accuracy
+
+### **🚀 ROLLOUT GUARDRAILS**
+- **Feature flag**: Make neighborhood extraction optional via environment variable `ENABLE_NEIGHBORHOOD_ANALYSIS=true`
+- **Backward compatibility**: API works identically when neighborhood analysis is disabled
+- **Gradual rollout**: Deploy with feature disabled, enable after validation
+- **Monitoring**: Track API response times and error rates after neighborhood addition
+- **Rollback plan**: Can disable neighborhood analysis without code changes
+
+### **📢 FAILURE MESSAGING GUARDRAILS**
+- **Empty neighborhoods**: Return `neighborhoods: {}` with no error message
+- **Extraction failure**: Continue with existing response, log error server-side only
+- **Invalid data**: Filter out invalid neighborhoods silently, don't expose to client
+- **Performance issues**: If neighborhood analysis takes too long, skip it and continue
+- **User experience**: Never show technical errors about neighborhood extraction to users
+
+### **🎯 DATA ACCURACY GUARDRAILS**
+- **Clear labeling**: Mark neighborhood data as "estimated" in UI
+- **Disclaimer**: Include note about neighborhood data accuracy limitations
+- **Sample size warnings**: Don't show averages for neighborhoods with <3 properties
+- **Transparency**: Be clear about how neighborhoods are extracted from addresses
+- **Validation**: Compare neighborhood extraction results with known Philippine geography
+
+### **📋 IMPLEMENTATION PHASE GUARDRAILS**
+
+#### **Phase 1: Basic Implementation**
+- **Scope**: Add neighborhood extraction function and basic API integration
+- **Validation**: Test with existing scraped data
+- **Monitoring**: Track performance impact and error rates
+- **Success criteria**: Neighborhood data appears in API responses without breaking existing functionality
+
+#### **Phase 2: Quality Improvements**
+- **Scope**: Add neighborhood normalization and validation
+- **Validation**: Compare neighborhood accuracy with known areas
+- **Monitoring**: Track neighborhood data quality metrics
+- **Success criteria**: >80% of neighborhoods correctly identified
+
+#### **Phase 3: Optimization**
+- **Scope**: Performance optimization and caching
+- **Validation**: Ensure API response times remain acceptable
+- **Monitoring**: Track performance improvements
+- **Success criteria**: <50ms additional processing time
+
+### **🚫 OUT-OF-SCOPE (FUTURE WORK)**
+- **No external APIs** for neighborhood validation or geocoding
+- **No machine learning** for neighborhood classification
+- **No historical tracking** of neighborhood data over time
+- **No advanced analytics** like neighborhood trends or comparisons
+- **No user-customizable** neighborhood groupings
+
+### **✅ NEIGHBORHOOD EXTRACTION SUCCESS CRITERIA CHECKLIST**
+- [ ] Neighborhood extraction function works with various address formats
+- [ ] API response includes neighborhood analysis without breaking existing contract
+- [ ] Performance impact <50ms on API response time
+- [ ] No errors in neighborhood extraction affect main API functionality
+- [ ] Neighborhood data quality >80% accuracy for known areas
+- [ ] Feature can be disabled via environment variable
+- [ ] All existing tests pass with neighborhood extraction enabled
+- [ ] Manual testing with real scraped data validates neighborhood accuracy
+
+---
+
+## **PSGC ADDRESS SEARCH CONTEXT ENGINEERING**
+
+### **1. INTEGRATION CONSTRAINT LAYER**
+
+**What it means:** *Forces implementation to use lightweight JSON database approach instead of complex ph-address integration.*
+
+```
+PSGC_LIGHTWEIGHT_DATABASE_CONTEXT:
+"PSGC address search implementation constraints:
+- Use lightweight JSON database (backend/data/philippine_addresses.json)
+- NO ph-address library integration (avoid 50MB database complexity)
+- NO SQLite database (keep it simple and fast)
+- Backend processes JSON file in-memory for fast lookups
+- Frontend makes API calls to /api/addresses/search endpoint
+- Structured output feeds CMA scraper targeting
+- Direct implementation: Real data from day one, no mock phases"
+```
+
+### **2. DATA STRUCTURE INTEGRITY CONTEXT**
+
+**What it means:** *Ensures PSGC codes and address data maintain official government standards.*
+
+```
+PSGC_DATA_INTEGRITY_CONTEXT:
+"PSGC data structure requirements:
+- All addresses MUST have valid PSGC city codes (8 digits)
+- All addresses MUST have valid PSGC province codes (4 digits)
+- Coordinates MUST be accurate [latitude, longitude] format
+- Address strings MUST follow official Philippine format
+- Confidence levels MUST be 'high' | 'medium' | 'low' only
+- Search radius MUST be realistic (1-50km range)
+- NO invalid or placeholder PSGC codes in production data"
+```
+
+### **3. BACKEND API PATTERN ENFORCEMENT**
+
+**What it means:** *Forces implementation to follow existing Flask patterns and avoid over-engineering.*
+
+```
+PSGC_BACKEND_API_PATTERN_CONTEXT:
+"Backend API implementation MUST follow existing patterns:
+1. Add @app.get('/api/addresses/search') endpoint to existing app.py
+2. Reuse existing input validation patterns from /api/cma
+3. Reuse existing error handling and response formatting
+4. Use existing CORS configuration (no changes needed)
+5. Follow existing logging patterns (no PII in logs)
+6. Return AddressSearchResponse format exactly as defined
+7. NO complex database connections or ORM layers"
+```
+
+---
+
+## **FRONTEND INTEGRATION CONTEXT ENGINEERING**
+
+### **1. SWAP POINT IMPLEMENTATION CONTEXT**
+
+**What it means:** *Ensures the frontend swap point is implemented correctly without breaking existing functionality.*
+
+```
+PSGC_FRONTEND_SWAP_CONTEXT:
+"Frontend swap point implementation requirements:
+- Replace ONLY the mockSearchAddresses() function call
+- Keep ALL existing error handling and loading states
+- Keep ALL existing caching and debouncing logic
+- Keep ALL existing TypeScript interfaces unchanged
+- Update ONLY line 264 in useAddressSearch.ts
+- NO changes to AddressInput component
+- NO changes to App.tsx integration
+- NO changes to data flow or state management"
+```
+
+### **2. API INTEGRATION SAFETY CONTEXT**
+
+**What it means:** *Ensures API integration handles network issues gracefully without breaking user experience.*
+
+```
+PSGC_API_SAFETY_CONTEXT:
+"Frontend API integration safety requirements:
+- Handle 404 errors gracefully (endpoint not found)
+- Handle 500 errors gracefully (server errors)
+- Handle network timeouts gracefully (5 second timeout)
+- Fallback to cached results if API unavailable
+- Show clear error messages to users
+- Maintain existing loading states and UX
+- NO breaking changes to existing component behavior"
+```
+
+### **3. DATA FLOW VALIDATION CONTEXT**
+
+**What it means:** *Ensures PSGC codes flow correctly from address search to CMA generation.*
+
+```
+PSGC_DATA_FLOW_CONTEXT:
+"PSGC data flow validation requirements:
+- Address search returns valid PSGC codes
+- PSGC codes pass through to CMA generation unchanged
+- No data transformation or validation in frontend
+- Backend validates PSGC codes before scraper execution
+- Error handling at each step of the data flow
+- NO raw user input reaches the scraper
+- NO PSGC code manipulation in frontend"
+```
+
+---
+
+## **DATA VALIDATION AND SECURITY CONTEXT**
+
+### **1. INPUT SANITIZATION CONTEXT**
+
+**What it means:** *Protects the address search API from malicious input and ensures data integrity.*
+
+```
+PSGC_INPUT_SANITIZATION_CONTEXT:
+"Address search input validation requirements:
+- Query parameter MUST be string, max 100 characters
+- Query parameter MUST be sanitized (trim, encode)
+- Limit parameter MUST be integer, 1-10 range
+- NO SQL injection vectors (JSON database, not SQL)
+- NO XSS vectors (output properly encoded)
+- NO path traversal vectors (no file system access)
+- Rate limiting: 100 requests per minute per IP"
+```
+
+### **2. PSGC CODE VALIDATION CONTEXT**
+
+**What it means:** *Ensures PSGC codes are valid and properly formatted before use.*
+
+```
+PSGC_CODE_VALIDATION_CONTEXT:
+"PSGC code validation requirements:
+- City codes MUST be 8 digits (e.g., '137602000')
+- Province codes MUST be 4 digits (e.g., '1376')
+- Codes MUST be numeric only (no letters or symbols)
+- Codes MUST exist in official PSGC database
+- Invalid codes MUST be rejected with clear error messages
+- NO partial or malformed PSGC codes accepted
+- Validation MUST happen on both frontend and backend"
+```
+
+### **3. DATA PRIVACY CONTEXT**
+
+**What it means:** *Protects user privacy and prevents data exposure.*
+
+```
+PSGC_DATA_PRIVACY_CONTEXT:
+"Address search data privacy requirements:
+- NO logging of user search queries
+- NO storage of user search history
+- NO tracking of user address selections
+- API responses contain NO sensitive information
+- Error logs contain NO user data
+- Caching in localStorage only (client-side)
+- NO server-side storage of search data"
+```
+
+---
+
+## **PERFORMANCE AND RELIABILITY CONTEXT**
+
+### **1. RESPONSE TIME CONSTRAINTS**
+
+**What it means:** *Ensures address search feels responsive despite network calls.*
+
+```
+PSGC_PERFORMANCE_CONTEXT:
+"Address search performance requirements:
+- API response time MUST be <100ms for typical searches
+- Frontend debouncing MUST be 300ms (existing)
+- Total user experience MUST feel <500ms
+- JSON database MUST be loaded once at startup
+- Search algorithm MUST be O(n) linear search
+- Results MUST be limited to top 5 matches
+- Caching MUST reduce API calls by 80%+"
+```
+
+### **2. ERROR HANDLING AND RESILIENCE**
+
+**What it means:** *Ensures the system handles failures gracefully without breaking user experience.*
+
+```
+PSGC_ERROR_RESILIENCE_CONTEXT:
+"Address search error handling requirements:
+- Network errors MUST show retry option
+- Server errors MUST show fallback message
+- Invalid queries MUST show helpful suggestions
+- Timeout errors MUST show clear timeout message
+- API unavailable MUST fallback to cached results
+- NO crashes or broken UI states
+- Error messages MUST be user-friendly"
+```
+
+### **3. CACHING STRATEGY CONTEXT**
+
+**What it means:** *Ensures caching improves performance without causing data staleness.*
+
+```
+PSGC_CACHING_CONTEXT:
+"Address search caching requirements:
+- Cache successful searches in localStorage
+- Cache expiry MUST be 24 hours
+- Cache size MUST be limited to 100 entries
+- Cache MUST be cleared on app restart
+- Cache MUST not interfere with real-time data
+- Cache MUST be validated before use
+- NO sensitive data in cache"
+```
+
+---
+
+## **IMPLEMENTATION PATTERN ENFORCEMENT**
+
+### **1. BACKEND IMPLEMENTATION PATTERN**
+
+**What it means:** *Forces implementation to follow the exact backend pattern established in the codebase.*
+
+```
+PSGC_BACKEND_IMPLEMENTATION_PATTERN:
+"Backend implementation MUST follow this exact pattern:
+1. Create backend/data/philippine_addresses.json with 200+ addresses
+2. Add @app.get('/api/addresses/search') to existing app.py
+3. Reuse existing validation patterns from /api/cma endpoint
+4. Reuse existing error handling and response formatting
+5. Load JSON database once at startup (not per request)
+6. Implement simple linear search algorithm
+7. Return AddressSearchResponse format exactly as defined
+8. NO complex database connections or ORM layers"
+```
+
+### **2. FRONTEND IMPLEMENTATION PATTERN**
+
+**What it means:** *Forces implementation to follow the exact frontend pattern established in the codebase.*
+
+```
+PSGC_FRONTEND_IMPLEMENTATION_PATTERN:
+"Frontend implementation MUST follow this exact pattern:
+1. Update ONLY line 264 in useAddressSearch.ts
+2. Replace mockSearchAddresses() with fetch() call
+3. Keep ALL existing error handling unchanged
+4. Keep ALL existing caching logic unchanged
+5. Keep ALL existing loading states unchanged
+6. Keep ALL existing TypeScript interfaces unchanged
+7. NO changes to AddressInput component
+8. NO changes to App.tsx integration"
+```
+
+### **3. DATA FLOW PATTERN ENFORCEMENT**
+
+**What it means:** *Ensures the data flow follows the established pattern from address search to CMA generation.*
+
+```
+PSGC_DATA_FLOW_PATTERN:
+"Data flow MUST follow this exact pattern:
+1. User types → Frontend debounces → API call to /api/addresses/search
+2. Backend searches JSON database → Returns structured suggestions
+3. User selects → Frontend creates KairosAddressOutput with PSGC codes
+4. User clicks Generate → Frontend calls /api/cma with PSGC codes
+5. Backend validates PSGC codes → Runs scraper with province mapping
+6. Backend returns CMA data → Frontend displays results
+7. NO data transformation between steps
+8. NO validation in frontend (backend only)"
+```
+
+---
+
+## **FUTURE-PROOFING AND EXPANSION CONTEXT**
+
+### **1. SCALABILITY PREPARATION**
+
+**What it means:** *Ensures the implementation can scale without major architectural changes.*
+
+```
+PSGC_SCALABILITY_CONTEXT:
+"Address search scalability requirements:
+- JSON database MUST be easily expandable to 1000+ addresses
+- Search algorithm MUST remain fast with larger datasets
+- API response time MUST remain <100ms with growth
+- Memory usage MUST remain reasonable (<10MB)
+- NO database migrations needed for expansion
+- NO code changes needed for new addresses
+- Easy to add new provinces and regions"
+```
+
+### **2. MAINTENANCE AND UPDATES**
+
+**What it means:** *Ensures the implementation is easy to maintain and update.*
+
+```
+PSGC_MAINTENANCE_CONTEXT:
+"Address search maintenance requirements:
+- Address database MUST be easily updatable
+- PSGC codes MUST be easily verifiable
+- Error handling MUST be easily debuggable
+- Performance MUST be easily monitorable
+- Code MUST be easily testable
+- Documentation MUST be easily maintainable
+- NO complex dependencies or frameworks"
+```
+
+### **3. EXPANSION STRATEGY**
+
+**What it means:** *Ensures the implementation can grow into a full ph-address integration later.*
+
+```
+PSGC_EXPANSION_CONTEXT:
+"Address search expansion strategy:
+- Current implementation MUST be easily replaceable
+- API contract MUST remain stable during expansion
+- Frontend code MUST not need changes for expansion
+- Backend can swap JSON database for ph-address later
+- Data structure MUST remain compatible
+- Performance MUST improve with expansion
+- NO breaking changes to existing functionality"
+```
+
+---
+
+## **CRITICAL IMPLEMENTATION RULES**
+
+### **PSGC ADDRESS SEARCH RULES**
+```
+# PSGC ADDRESS SEARCH IMPLEMENTATION RULES
+- Use lightweight JSON database - never implement ph-address integration
+- Follow existing Flask patterns - reuse validation and error handling
+- Implement swap point only - no other frontend changes needed
+- Validate PSGC codes - ensure data integrity and security
+- Cache aggressively - improve performance and user experience
+- Handle errors gracefully - maintain reliability and user experience
+- Keep it simple - avoid over-engineering and technical debt
+```
+
+### **DATA INTEGRITY RULES**
+```
+# PSGC DATA INTEGRITY RULES
+- All PSGC codes must be valid and properly formatted
+- All addresses must follow official Philippine format
+- All coordinates must be accurate and properly formatted
+- All data must be validated before use
+- No invalid or placeholder data in production
+- No data transformation in frontend
+- No raw user input reaches the scraper
+```
+
+### **PERFORMANCE RULES**
+```
+# PSGC PERFORMANCE RULES
+- API response time must be <100ms
+- Frontend debouncing must be 300ms
+- Total user experience must feel <500ms
+- Cache must reduce API calls by 80%+
+- Search algorithm must be O(n) linear
+- Results must be limited to top 5 matches
+- No complex database queries or joins
+```
+
+---
+
+## **IMPLEMENTATION CHECKLIST**
+
+### **Backend Implementation**
+- [ ] Create `backend/data/philippine_addresses.json` with 200+ addresses
+- [ ] Add `@app.get('/api/addresses/search')` endpoint to `app.py`
+- [ ] Implement input validation (query, limit parameters)
+- [ ] Implement PSGC code validation
+- [ ] Implement linear search algorithm
+- [ ] Implement error handling and response formatting
+- [ ] Test API endpoint with various queries
+- [ ] Verify response format matches `AddressSearchResponse`
+
+### **Frontend Implementation**
+- [ ] Update line 264 in `useAddressSearch.ts` (swap point)
+- [ ] Replace `mockSearchAddresses()` with `fetch()` call
+- [ ] Add proper error handling for network requests
+- [ ] Test with various search queries
+- [ ] Verify caching still works
+- [ ] Verify loading states still work
+- [ ] Test error scenarios (network failures, timeouts)
+
+### **Integration Testing**
+- [ ] Test address search functionality end-to-end
+- [ ] Test CMA generation with real PSGC codes
+- [ ] Test error handling and fallbacks
+- [ ] Test performance with various queries
+- [ ] Test caching behavior
+- [ ] Verify no breaking changes to existing functionality
+
+---
+
+## **DESIGN SYSTEM PROTECTION GUARDRAILS**
+
+### **CRITICAL RULE: NO UI/UX CHANGES WITHOUT EXPLICIT PERMISSION**
+
+**Context:** After implementing the PSGC address search system, unauthorized changes were made to the dashboard layout and button styling that violated the established Kairos design system. This section establishes absolute protection for the visual design and user experience.
+
+### **1. ABSOLUTE PROHIBITIONS**
+
+**❌ NEVER CHANGE WITHOUT PERMISSION:**
+- **Dashboard Layout**: Grid structure, component arrangement, spacing, responsive breakpoints
+- **Visual Design**: Colors, typography, shadows, borders, backgrounds, card styling
+- **Component Styling**: Button colors, input field designs, hover states, transitions
+- **Layout Structure**: Container sizes, positioning, alignment, spacing systems
+- **UX Flow**: Navigation patterns, interactions, loading states, error displays
+- **Design System Compliance**: Any deviation from established Kairos visual standards
+
+### **2. MANDATORY APPROVAL PROCESS**
+
+**✅ ALWAYS ASK FIRST:**
+```
+Before making ANY visual, layout, or UX change:
+1. STOP - Do not implement the change
+2. ASK - "Should I change [specific thing] to [specific change]?"
+3. WAIT - Get explicit permission before proceeding
+4. CONFIRM - Verify the exact change requested
+```
+
+**Example Questions:**
+- "Should I change the button color to match the design system?"
+- "Should I update the dashboard layout to fix the grid structure?"
+- "Should I modify the card styling for better visual consistency?"
+- "Should I adjust the spacing or typography?"
+
+### **3. DESIGN SYSTEM REFERENCE**
+
+**Established Standards:**
+- **Button Colors**: Primary buttons use `bg-black hover:bg-gray-800 text-white`
+- **Card Backgrounds**: Dashboard cards use `bg-kairos-chalk` (#FFFFFC)
+- **Layout Structure**: 4-column metrics, 2x2 analysis grid, full-width historical
+- **Typography**: `text-xl` for metric values, `text-xs` for labels
+- **Spacing**: `space-y-8` for sections, `gap-6` for grids, `p-6` for cards
+
+### **4. EXCEPTIONS**
+
+**✅ ALLOWED WITHOUT PERMISSION:**
+- **Bug fixes** that restore intended functionality
+- **Breaking changes** that prevent the app from working
+- **Security issues** that expose vulnerabilities
+- **Performance optimizations** that don't affect visual appearance
+
+### **5. VIOLATION CONSEQUENCES**
+
+**⚠️ ENFORCEMENT:**
+- Any unauthorized UI/UX change will result in immediate rollback
+- This guardrail reminder will be triggered
+- Future changes require explicit permission before implementation
+
+### **6. IMPLEMENTATION CONTEXT**
+
+```
+DESIGN_SYSTEM_PROTECTION_CONTEXT:
+"Kairos visual design and UX are sacred and must never be modified without explicit permission:
+- Dashboard layout follows established 3-level hierarchy
+- All components use documented color palette and typography
+- Button styling follows design system specifications exactly
+- Grid structure maintains professional, clean appearance
+- Any visual change requires approval before implementation
+- Preserve the 'calm in the chaos' design philosophy"
+```
+
+---
+
+**These guardrails ensure the Kairos design system maintains its professional, cohesive appearance without unauthorized modifications that could break the user experience or visual consistency.**
+
+---
+
+**These guardrails ensure the PSGC implementation follows established patterns, maintains security and performance, and provides a solid foundation for future expansion while keeping the codebase lean and maintainable.**
