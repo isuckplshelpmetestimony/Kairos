@@ -5,17 +5,33 @@ import { Eye, Download } from "lucide-react";
 interface PropertyReportProps {
   cma?: {
     stats: { count: number; avg: number; median: number; min: number; max: number };
+    properties?: Array<Record<string, unknown>>;
   };
 }
 
 export const PropertyReport = ({ cma }: PropertyReportProps) => {
-  const listings = [
-    { address: "123 Maple Street", days: "15 days on market", price: cma ? `₱${(cma.stats.avg * 0.8).toLocaleString()}` : "$625,000", status: "Active" },
-    { address: "456 Oak Avenue", days: "8 days on market", price: cma ? `₱${(cma.stats.avg * 1.2).toLocaleString()}` : "$750,000", status: "Pending" },
-    { address: "789 Pine Road", days: "32 days on market", price: cma ? `₱${cma.stats.median.toLocaleString()}` : "$420,000", status: "Active" },
-    { address: "321 Elm Drive", days: "4 days on market", price: cma ? `₱${(cma.stats.avg * 1.5).toLocaleString()}` : "$890,000", status: "Pending" },
-    { address: "654 Birch Lane", days: "22 days on market", price: cma ? `₱${(cma.stats.avg * 0.9).toLocaleString()}` : "$536,000", status: "Active" },
-  ];
+  const hasRealListings = Array.isArray(cma?.properties) && (cma?.properties?.length || 0) > 0;
+  const listings = hasRealListings
+    ? (cma!.properties as Array<Record<string, unknown>>) // top 5 real properties
+        .slice(0, 5)
+        .map((p) => {
+          const address = String(p.address ?? 'Unknown address');
+          const priceNum = Number(p.price ?? 0);
+          const price = `₱${Math.round(priceNum).toLocaleString()}`;
+          const bedrooms = p.bedrooms != null && p.bedrooms !== '' ? `${p.bedrooms} BR` : '';
+          const bathrooms = p.bathrooms != null && p.bathrooms !== '' ? `${p.bathrooms} BA` : '';
+          const sqm = p.sqm != null && p.sqm !== '' ? `${p.sqm} sqm` : '';
+          const characteristics = [bedrooms, bathrooms, sqm].filter(Boolean).join(' • ');
+          const url = p.url ? String(p.url) : undefined;
+          return { address, price, characteristics, url };
+        })
+    : [
+        { address: "123 Maple Street", characteristics: "2 BR • 1 BA • 45 sqm", price: "$625,000" },
+        { address: "456 Oak Avenue", characteristics: "3 BR • 2 BA • 60 sqm", price: "$750,000" },
+        { address: "789 Pine Road", characteristics: "1 BR • 1 BA • 35 sqm", price: "$420,000" },
+        { address: "321 Elm Drive", characteristics: "4 BR • 3 BA • 85 sqm", price: "$890,000" },
+        { address: "654 Birch Lane", characteristics: "2 BR • 2 BA • 50 sqm", price: "$536,000" },
+      ];
 
   const statusData = [
     { label: "Active", count: cma ? Math.floor(cma.stats.count * 0.68).toString() : "847" },
@@ -39,20 +55,26 @@ export const PropertyReport = ({ cma }: PropertyReportProps) => {
         </div>
       </div>
 
-      <p className="text-[10px] text-red-600 mb-4">Mock data placeholder</p>
+      {!hasRealListings && (
+        <p className="text-[10px] text-red-600 mb-4">Mock data placeholder</p>
+      )}
 
       <div className="mb-6">
         <p className="text-sm font-medium text-gray-700 mb-4">Top 5 Listings</p>
         <div className="space-y-3">
-          {listings.map((listing, idx) => (
+          {listings.map((listing: any, idx) => (
             <div key={idx} className="flex justify-between items-start border-b border-border pb-3 last:border-0">
               <div>
                 <p className="font-medium text-sm">{listing.address}</p>
-                <p className="text-xs text-muted-foreground">{listing.days}</p>
+                {listing.characteristics && (
+                  <p className="text-xs text-muted-foreground">{listing.characteristics}</p>
+                )}
               </div>
               <div className="text-right">
                 <p className="font-semibold text-sm">{listing.price}</p>
-                <p className="text-xs text-green-600">{listing.status}</p>
+                {listing.url && (
+                  <a href={listing.url} target="_blank" rel="noreferrer" className="text-xs text-green-600">View</a>
+                )}
               </div>
             </div>
           ))}
