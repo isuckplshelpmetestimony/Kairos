@@ -80,7 +80,7 @@ def scraper(province, property_type, num):
             if page_num == 1:
                 URL = base_list_url
             else:
-                URL = f'https://www.lamudi.com.ph/buy/{province}/{property_type}/?page={page_num}'
+                URL = f'https://www.lamudi.com.ph/buy/{province_lower}/{property_type}/?page={page_num}'
             print(f"Scraping page {page_num}...")
             page = requests.get(URL, headers=headers, timeout=15)
             pages_scanned += 1
@@ -175,9 +175,8 @@ def scraper(province, property_type, num):
                     'reason': 'selector_miss',
                     'pages_scanned': pages_scanned,
                 })
-                # Return empty DataFrame immediately
-                empty = pd.DataFrame(columns=['SKU','Name','Location','City/Town','TCP','Floor_Area'])
-                return empty
+                # Do not abort early; continue scanning subsequent pages
+                continue
         except Exception as e:
             print(f"Error on page {page_num}: {e}")
             continue  # Continue to the next page instead of breaking
