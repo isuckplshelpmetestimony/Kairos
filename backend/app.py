@@ -25,6 +25,8 @@ CORS(app, resources={r"/*": {"origins": frontend_origin}})
 
 # Single-flight lock to serialize scrapes
 _scrape_lock = threading.Lock()
+_progress_lock = threading.Lock()
+_scrape_progress: Dict[str, Any] = {"active": False, "pages_scanned": 0, "max_pages": None}
 
 # Rate limiting for address search (100 requests per minute per IP)
 _rate_limit_storage = defaultdict(deque)
@@ -96,6 +98,16 @@ def analyze_neighborhoods(properties: List[Dict[str, Any]]) -> Dict[str, Any]:
 @app.get("/health")
 def health() -> Any:
     return jsonify({"status": "ok"})
+@app.get("/api/cma/status")
+def cma_status() -> Any:
+    """Lightweight polling endpoint to expose current scrape progress."""
+    with _progress_lock:
+        return jsonify({
+            "active": bool(_scrape_progress.get("active", False)),
+            "pagesScanned": int(_scrape_progress.get("pages_scanned") or 0),
+            "maxPages": _scrape_progress.get("max_pages")
+        })
+
 
 
 @app.get("/api/addresses/search")
@@ -196,6 +208,10 @@ def cma() -> Any:
 
     start_time = time.time()
     try:
+        # Initialize progress for this run
+        with _progress_lock:
+            _scrape_progress.update({"active": True, "pages_scanned": 0, "max_pages": None})
+
         # Clean previous output if exists
         try:
             if os.path.exists(OUTPUT_CSV):
@@ -207,34 +223,62 @@ def cma() -> Any:
         # Build stdin for the scraper: province, property_type, count
         stdin_payload = f"{province}\n{property_type}\n{count}\n".encode("utf-8")
 
-        # Run scraper as subprocess with timeout and check
-        proc = subprocess.run(
+        # Run scraper as subprocess and parse stdout to update progress
+        proc = subprocess.Popen(
             [sys.executable, SCRAPER_PATH],
-            input=stdin_payload,
-            timeout=SCRAPER_TIMEOUT_SEC,
-            check=True,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             cwd=BACKEND_DIR,
-            capture_output=True,
+            text=True,
+            bufsize=1,
+            env={**os.environ, "TQDM_DISABLE": "1"},
         )
-        # Log limited stdout/stderr for diagnosis (do not return to client)
+        assert proc.stdin is not None and proc.stdout is not None
+        proc.stdin.write(stdin_payload.decode("utf-8"))
+        proc.stdin.close()
+
+        _stdout_tail_lines: List[str] = []
+        _stderr_tail = ""
+        import re as _re
+        start_read = time.time()
+        while True:
+            line = proc.stdout.readline()
+            if not line:
+                if proc.poll() is not None:
+                    break
+                # Prevent tight loop
+                time.sleep(0.05)
+                continue
+            # keep small tail for logs
+            _stdout_tail_lines.append(line)
+            if len(_stdout_tail_lines) > 200:
+                _stdout_tail_lines.pop(0)
+            # parse progress indicators
+            if "list_pages_scanned" in line:
+                m = _re.search(r"pages_scanned\'?:\s*(\d+)", line)
+                if m:
+                    with _progress_lock:
+                        _scrape_progress["pages_scanned"] = int(m.group(1))
+                m2 = _re.search(r"capped_max_page_num\'?:\s*(\d+)", line)
+                if m2:
+                    with _progress_lock:
+                        _scrape_progress["max_pages"] = int(m2.group(1))
+            # basic timeout check
+            if time.time() - start_read > SCRAPER_TIMEOUT_SEC:
+                proc.kill()
+                raise subprocess.TimeoutExpired(SCRAPER_PATH, SCRAPER_TIMEOUT_SEC)
+
+        # Collect remaining stderr for diagnostics
         try:
-            _stdout_tail = (proc.stdout or b"").decode("utf-8", errors="ignore")[-1000:]
-            _stderr_tail = (proc.stderr or b"").decode("utf-8", errors="ignore")[-1000:]
-            app.logger.info("scraper_stdout_tail: %s", _stdout_tail)
-            app.logger.info("scraper_stderr_tail: %s", _stderr_tail)
-            # Optional: extract pages_scanned from scraper logs (not exposed to client)
-            pages_scanned = None
-            try:
-                import re as _re
-                # Match Python-dict-style prints: {'event': 'list_pages_scanned', 'pages_scanned': 3, ...}
-                if 'list_pages_scanned' in _stdout_tail:
-                    m = _re.search(r"pages_scanned\'?:\s*(\d+)", _stdout_tail)
-                    if m:
-                        pages_scanned = int(m.group(1))
-            except Exception:
-                pages_scanned = None
+            _stderr_tail = (proc.stderr.read() or "")[-1000:]
         except Exception:
-            pass
+            _stderr_tail = ""
+        _stdout_tail = "".join(_stdout_tail_lines)[-1000:]
+        app.logger.info("scraper_stdout_tail: %s", _stdout_tail)
+        if _stderr_tail:
+            app.logger.info("scraper_stderr_tail: %s", _stderr_tail)
+        pages_scanned = _scrape_progress.get("pages_scanned")
 
         # Prefer adapter-normalized in-memory data; keep CSV for diagnostics only
         properties: List[Dict[str, Any]] = []
@@ -341,6 +385,8 @@ def cma() -> Any:
         return jsonify({"error": "Server error"}), 500
     finally:
         _scrape_lock.release()
+        with _progress_lock:
+            _scrape_progress["active"] = False
         # Cleanup partial output if needed
         try:
             if os.path.exists(OUTPUT_CSV) and os.path.getsize(OUTPUT_CSV) == 0:
