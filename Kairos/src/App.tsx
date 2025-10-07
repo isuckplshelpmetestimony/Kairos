@@ -23,19 +23,16 @@ import type { KairosAddressOutput } from './types/address';
 
 
 export default function App() {
-  const [reportTypeSelected, setReportTypeSelected] = useState(true);
   const [compsSelected, setCompsSelected] = useState(true);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isComparisonsOpen, setIsComparisonsOpen] = useState(false);
-  const [selectedReports, setSelectedReports] = useState({
-    property: true,
-    seller: true,
-    market: true,
-    neighborhood: true,
-  });
   const [propertyStatuses, setPropertyStatuses] = useState<Record<string, { selected: boolean; dateRange: string }>>(INITIAL_PROPERTY_STATUSES);
   const [openCalendarDropdown, setOpenCalendarDropdown] = useState<string | null>(null);
   const [selectedAddress, setSelectedAddress] = useState<KairosAddressOutput | null>(null);
+  // Inline custom dropdown state for property type and location
+  const [selectedPropertyType, setSelectedPropertyType] = useState<string>('');
+  const [selectedLocation, setSelectedLocation] = useState<string>('');
+  const [isPropertyTypeOpen, setIsPropertyTypeOpen] = useState(false);
+  const [isLocationOpen, setIsLocationOpen] = useState(false);
   
   // CMA generation state
   const [loading, setLoading] = useState(false);
@@ -68,13 +65,10 @@ export default function App() {
     setPropertyStatuses,
     openCalendarDropdown,
     setOpenCalendarDropdown,
-    selectedReports,
-    setSelectedReports
+    { property: true, seller: true, market: true, neighborhood: true },
+    () => {}
   );
 
-  const handleReportToggle = (reportType: keyof typeof selectedReports) => {
-    setSelectedReports(prev => ({ ...prev, [reportType]: !prev[reportType] }));
-  };
 
   // Clear error function
   const clearError = () => {
@@ -151,31 +145,11 @@ export default function App() {
             {/* Toggle Buttons at Bottom */}
             <div className="px-6 flex gap-2">
               <InlineToggle
-                label="Report Type"
-                isSelected={reportTypeSelected}
-                onToggle={() => {
-                  setReportTypeSelected(!reportTypeSelected);
-                  setIsDropdownOpen((prev) => !prev);
-                  // Close Comparisons dropdown when Report Type opens
-                  if (!isDropdownOpen) {
-                    setIsComparisonsOpen(false);
-                    setCompsSelected(false);
-                  }
-                }}
-                showDropdownChevron
-                isOpen={isDropdownOpen}
-              />
-              <InlineToggle
                 label="Comparisons"
                 isSelected={compsSelected}
                 onToggle={() => {
                   setCompsSelected(!compsSelected);
                   setIsComparisonsOpen((prev) => !prev);
-                  // Close Report Type dropdown when Comparisons opens
-                  if (!isComparisonsOpen) {
-                    setIsDropdownOpen(false);
-                    setReportTypeSelected(false);
-                  }
                 }}
                 showDropdownChevron
                 isOpen={isComparisonsOpen}
@@ -184,19 +158,43 @@ export default function App() {
             
             {/* Comparisons Dropdown */}
             {isComparisonsOpen && (
-              <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-[#FFFFFC] border border-[#E5E4E6] rounded-lg shadow-lg">
+              <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/95 border border-[#E5E4E6] rounded-3xl shadow-lg">
                 {/* Property Type Section */}
                 <div className="p-4 border-b border-[#E5E4E6]">
                   <label className="font-['Futura'] text-sm text-[#3B3832] mb-2 block">
                     Select Property Type
                   </label>
-                  <select className="w-full p-2 border border-[#E5E4E6] rounded bg-[#F3F3F2]">
-                    {PROPERTY_TYPES.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsPropertyTypeOpen(o => !o)}
+                      className="w-full h-10 px-3 pr-10 text-left border border-[#E5E4E6] rounded bg-[#F3F3F2]"
+                    >
+                      <span className={`${selectedPropertyType ? 'text-[#3B3832]' : 'text-[#7A7873]'}`}>
+                        {selectedPropertyType ? PROPERTY_TYPES.find(o => o.value === selectedPropertyType)?.label : 'Choose property type...'}
+                      </span>
+                      <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                        <svg className={`w-3.5 h-3.5 text-[#6B7280] transition-transform ${isPropertyTypeOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                          <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
+                        </svg>
+                      </span>
+                    </button>
+                    {isPropertyTypeOpen && (
+                      <ul className="absolute z-50 top-full left-0 right-0 mt-2 max-h-60 overflow-auto rounded-2xl border border-[#E5E4E6] bg-white/95 shadow-lg">
+                        {PROPERTY_TYPES.map((opt) => (
+                          <li key={opt.value}>
+                            <button
+                              type="button"
+                              className={`w-full text-left px-3 py-2 hover:bg-[#E7E7EB] ${opt.value === selectedPropertyType ? 'bg-[#F3F3F2]' : ''}`}
+                              onClick={() => { setSelectedPropertyType(opt.value); setIsPropertyTypeOpen(false); }}
+                            >
+                              {opt.label}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </div>
                 
                 {/* Location Section */}
@@ -204,13 +202,37 @@ export default function App() {
                   <label className="font-['Futura'] text-sm text-[#3B3832] mb-2 block">
                     Select Location
                   </label>
-                  <select className="w-full p-2 border border-[#E5E4E6] rounded bg-[#F3F3F2]">
-                    {LOCATIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsLocationOpen(o => !o)}
+                      className="w-full h-10 px-3 pr-10 text-left border border-[#E5E4E6] rounded bg-[#F3F3F2]"
+                    >
+                      <span className={`${selectedLocation ? 'text-[#3B3832]' : 'text-[#7A7873]'}`}>
+                        {selectedLocation ? LOCATIONS.find(o => o.value === selectedLocation)?.label : 'Choose location...'}
+                      </span>
+                      <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                        <svg className={`w-3.5 h-3.5 text-[#6B7280] transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                          <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
+                        </svg>
+                      </span>
+                    </button>
+                    {isLocationOpen && (
+                      <ul className="absolute z-50 top-full left-0 right-0 mt-2 max-h-60 overflow-auto rounded-2xl border border-[#E5E4E6] bg-white/95 shadow-lg">
+                        {LOCATIONS.map((opt) => (
+                          <li key={opt.value}>
+                            <button
+                              type="button"
+                              className={`w-full text-left px-3 py-2 hover:bg-[#E7E7EB] ${opt.value === selectedLocation ? 'bg-[#F3F3F2]' : ''}`}
+                              onClick={() => { setSelectedLocation(opt.value); setIsLocationOpen(false); }}
+                            >
+                              {opt.label}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </div>
                 
                 {/* Results Section */}
@@ -229,14 +251,12 @@ export default function App() {
                       Select None
                     </button>
                   </div>
-                  <button className="px-4 py-2 bg-[#3B3832] text-white rounded-lg text-sm font-medium hover:bg-[#2A2824] transition-colors">
-                    View Results
-                  </button>
+                  
                 </div>
                 
                 {/* Status - Dates or Days Section */}
                 <div>
-                  <div className="px-4 py-2 space-y-1">
+                  <div className="px-4 pt-4 pb-2 space-y-1">
                     {renderPropertyStatusGroup(
                       'Active Market Data',
                       PROPERTY_STATUS_GROUPS.activeMarket,
@@ -288,10 +308,10 @@ export default function App() {
             {/* Prominent Search Button */}
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
               <button
-                disabled={(!reportTypeSelected && !compsSelected) || loading}
-                aria-disabled={(!reportTypeSelected && !compsSelected) || loading}
+                disabled={!compsSelected || loading}
+                aria-disabled={!compsSelected || loading}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl shadow-md transition-all duration-200 ${
-                  (!reportTypeSelected && !compsSelected) || loading
+                  !compsSelected || loading
                     ? 'bg-kairos-white-grey text-kairos-charcoal/40 cursor-not-allowed'
                     : 'bg-black hover:bg-gray-800 text-white hover:shadow-lg'
                 }`}
@@ -320,40 +340,7 @@ export default function App() {
               </button>
             </div>
 
-            {/* Report Type Dropdown - positioned below entire card */}
-            {isDropdownOpen && (
-              <div
-                className="absolute top-full left-0 right-0 mt-2 z-50 bg-[#FFFFFC] border border-[#E5E4E6] rounded-lg shadow-lg"
-                role="listbox"
-                aria-label="Select report type"
-              >
-                {Object.entries(selectedReports).map(([reportType, isSelected], index, array) => (
-                  <div 
-                    key={reportType}
-                    className={`w-full p-4 hover:bg-[#E7E7EB] flex items-center justify-between text-left ${
-                      index < array.length - 1 ? 'border-b border-[#E5E4E6]' : ''
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => handleReportToggle(reportType as keyof typeof selectedReports)}
-                        aria-label={`Select ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report`}
-                        className="w-4 h-4 rounded border-[#E5E4E6]"
-                        style={{ accentColor: '#E5FFCC' }}
-                      />
-                      <span className="font-['Futura']">
-                        {reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report
-                      </span>
-                    </div>
-                    <span className="font-['Avenir'] text-sm text-[#7A7873]">
-                      Sample available after generation
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+            {/* Report Type Dropdown removed */}
           </div>
         </div>
 
