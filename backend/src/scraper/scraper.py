@@ -235,8 +235,11 @@ def scraper(province, property_type, num):
             print(f"Error on page {page_num}: {e}")
             continue  # Continue to the next page instead of breaking
 
+        # Collect all unique candidates from this page before checking if we've hit the target
         if len(results_sku) and len(results_link):
             for sku_tag, link_tag in zip(results_sku, results_link):
+                if count >= num:
+                    break
                 sku = sku_tag.find('div')["data-sku"]
                 if sku in skus:  # If SKU is already in the set, skip it
                     continue
@@ -244,19 +247,18 @@ def scraper(province, property_type, num):
                 link = link_tag.find('a')['href']
                 listing.append([sku, link])
                 count += 1
-                if count >= num:
-                    break
         # Always consider fallback-derived candidates as well
         if count < num and len(fallback_pairs):
             for sku, link in fallback_pairs:
+                if count >= num:
+                    break
                 if sku in skus:
                     continue
                 skus.add(sku)
                 listing.append([sku, link])
                 count += 1
-                if count >= num:
-                    break
 
+        # Check if we've reached target after processing this entire page
         if count >= num:
             break
 
