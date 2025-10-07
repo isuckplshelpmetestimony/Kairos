@@ -2004,4 +2004,87 @@ DESIGN_SYSTEM_PROTECTION_CONTEXT:
 
 ---
 
+## **DATATABLE MODAL IMPLEMENTATION GUARDRAILS**
+
+### **Scope and Change Control**
+
+- **Only implement exactly this**: harden scraper extraction, complete adapter normalization, add a small modal data table, wire "View" button.
+- **No new features**: no charts, filters, pagination, exports, or global state for this phase.
+- **No redesigns**: preserve existing layouts, component hierarchy, and API shapes.
+
+### **Dependencies and Footprint**
+
+- **No new libraries**: use existing React, TypeScript, Tailwind, and current UI primitives.
+- **Single new component**: add only `DataTable.tsx` under `dashboard/`.
+- **No shared utils** unless reused across ≥2 places; keep formatting inline for this phase.
+
+### **API Contract and Data Flow**
+
+- **Contract freeze**: Keep backend response as `{ properties, stats, neighborhoods, data_source }`; allow optional `meta.reason` on empty (already present).
+- **Normalization keys**: Keep `price`, `bedrooms`, `bathrooms`, `sqm`, `url`, `coordinates`, `address`, `neighborhood`, `property_type` as-is.
+- **Coordinates optional**: `coordinates` may be `null`; UI must tolerate it without branching logic.
+
+### **Backend Changes (Minimal and Internal)**
+
+- **Scraper**: Fix syntax and ensure `staging_df` maps to columns: `SKU`, `Location`, `TCP`, `Bedrooms`, `Baths`, `Floor_Area`, `Source`. No structural changes to pipeline or output files.
+- **Adapter**:
+    - Add `'latitude'`/`'longitude'` to missing-column guard.
+    - Implement `_build_coordinates` to coerce or return `None`.
+    - Do not add/rename normalized fields; keep mapping stable.
+- **Logging**: Fix only obvious syntax issues; no new logging categories or PII.
+
+### **Frontend Integration (Small and Local)**
+
+- **DataTable**:
+    - Create a self-contained modal with `open`, `onClose`, `properties` props.
+    - Use `Card`/`Button` and existing Tailwind classes; no new modal library.
+    - Show a fixed, simple table: Property ID, Address, City, Province, Bedrooms, Bathrooms, Floor Area, Price.
+    - Graceful fallbacks: display empty cells for missing values; format price with `toLocaleString`.
+- **Wiring**:
+    - Add `isDataTableOpen` state in `App.tsx` only.
+    - Pass `onOpenDataTable` to `PropertyReport`; wire existing "View" button to open modal.
+    - Do not introduce context, reducers, or global stores.
+
+### **UI/UX and Design System**
+
+- **Visuals**: White cards, subtle shadows, `rounded-3xl`, neutral grays. No new colors or visual flourishes.
+- **Layout**: Centered, calm, generous spacing. No extra panels or navigation.
+- **Text and labels**: Keep concise; no explanatory microcopy added in this phase.
+- **Accessibility**: Modal must close on ESC and backdrop click; trap focus while open.
+
+### **Security and Reliability**
+
+- **No raw HTML injection**; render plain text in table cells.
+- **Sanitize/safely format** price strings; avoid evaluating URLs (just render as text if included).
+- **Backend**: Keep timeouts and single-flight lock behaviors; do not expose stack traces or PII in logs.
+
+### **Performance and Scalability**
+
+- **Data size cap**: Respect existing cap (≤100 properties in response); table renders that list without virtualizing for now.
+- **Avoid heavy computation**: No sorting/grouping on the client; display as-is.
+- **No extra fetches**: Data flows from existing CMA call only.
+
+### **Testing and QA**
+
+- **Backend sanity**: POST `/api/cma` with Metro Manila condos (10–20 count). Expect `stats.count > 0` when data is present, `properties.length ≤ 100`, optional `meta.reason` on empty.
+- **Frontend checks**: Modal opens/closes, scrolls on small screens, keyboard accessible, fields render with empty cells when absent, price formatting correct.
+- **Non-regression**: `PropertyReport` still shows Top 5; other dashboard cards unchanged.
+
+### **Documentation and Maintenance**
+
+- **Inline comments**: Only when rationale is non-obvious (e.g., coordinates coercion rules).
+- **No README churn**: Skip broad docs; add a short note if needed near `DataTable.tsx` explaining its purpose and contract.
+- **Naming**: Use clear, descriptive prop and variable names; avoid abbreviations.
+
+### **"Done" Criteria**
+
+- "View" opens a modal table populated by live CMA data without adding dependencies or changing API shapes.
+- Scraper and adapter produce normalized properties reliably; `coordinates` optional and safe.
+- UI matches design system; no visual or behavioral regressions.
+- All QA checks pass with real responses; no console or server errors.
+
+**These guardrails ensure the DataTable implementation delivers exactly the requested phase outcome with zero technical bloat and a flawless fit into the current system.**
+
+---
+
 **These guardrails ensure the PSGC implementation follows established patterns, maintains security and performance, and provides a solid foundation for future expansion while keeping the codebase lean and maintainable.**
