@@ -84,10 +84,13 @@ export default function App() {
     }
 
     setLoading(true);
+    
     setCma(null);
     setError(null);
 
     try {
+      // start polling progress
+      
       const response = await fetch(`/api/cma`, {
         method: 'POST',
         headers: {
@@ -102,6 +105,7 @@ export default function App() {
 
       if (response.status === 409) {
         setError('Scraper busy, please try again in a few minutes.');
+        
         return;
       }
 
@@ -116,6 +120,7 @@ export default function App() {
       setError(errorMessage);
     } finally {
       setLoading(false);
+      
     }
   };
 
@@ -134,7 +139,7 @@ export default function App() {
 
         {/* Input Interface with Inline Toggles */}
         <div className="w-full max-w-4xl">
-          <div className="relative bg-kairos-white-porcelain border-2 border-kairos-white-grey rounded-2xl shadow-sm focus-within:border-kairos-charcoal transition-colors duration-200 pb-4">
+          <div className="relative bg-kairos-white-porcelain border-2 border-kairos-white-grey rounded-3xl shadow-sm focus-within:border-kairos-charcoal transition-colors duration-200 pb-4">
             <div className="relative">
               <AddressInput 
                 onSelect={setSelectedAddress}
@@ -321,7 +326,7 @@ export default function App() {
                   <>
                     <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full"></div>
                     <span className="text-sm font-medium">
-                      Scraping live data (5–10 minutes)...
+                      Generating Reports
                     </span>
                   </>
                 ) : (
