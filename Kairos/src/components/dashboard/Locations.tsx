@@ -7,9 +7,10 @@ interface NeighborhoodsProps {
     stats: { avg: number };
     neighborhoods: Record<string, { count: number; mean: number; min: number; max: number }>;
   };
+  onOpenLocations?: () => void;
 }
 
-export const Neighborhoods = ({ cma }: NeighborhoodsProps) => {
+export const Neighborhoods = ({ cma, onOpenLocations }: NeighborhoodsProps) => {
   // Use real data from API if available, otherwise fallback to mock data
   const neighborhoods = cma?.neighborhoods ? 
     Object.entries(cma.neighborhoods)
@@ -34,7 +35,15 @@ export const Neighborhoods = ({ cma }: NeighborhoodsProps) => {
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-gray-900">Locations</h3>
         <div className="flex gap-2">
-          <Button variant="ghost" size="sm" className="h-8 gap-2 text-gray-600 hover:text-gray-900">
+          <Button 
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              onOpenLocations?.(); 
+            }}
+            variant="ghost" 
+            size="sm" 
+            className="h-8 gap-2 text-gray-600 hover:text-gray-900"
+          >
             <Eye className="h-4 w-4" />
             View
           </Button>

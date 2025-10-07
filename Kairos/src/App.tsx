@@ -11,6 +11,7 @@ import { Neighborhoods } from './components/dashboard/Locations';
 import { HistoricalTrends } from './components/dashboard/HistoricalTrends';
 import { DataTable } from './components/dashboard/DataTable';
 import { CMASummaryTable } from './components/dashboard/CMASummaryTable';
+import { LocationsTable } from './components/dashboard/LocationsTable';
 import {
   PROPERTY_TYPES,
   LOCATIONS,
@@ -53,6 +54,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [isDataTableOpen, setIsDataTableOpen] = useState(false);
   const [isCMASummaryOpen, setIsCMASummaryOpen] = useState(false);
+  const [isLocationsOpen, setIsLocationsOpen] = useState(false);
 
   // Get helper functions from utils
   const {
@@ -399,7 +401,7 @@ export default function App() {
                   <PropertyReport cma={cma} onOpenDataTable={() => setIsDataTableOpen(true)} />
                   <CMASummary cma={cma} onOpenCMASummary={() => setIsCMASummaryOpen(true)} />
                   <MarketActivity cma={cma} />
-                  <Neighborhoods cma={cma} />
+                  <Neighborhoods cma={cma} onOpenLocations={() => setIsLocationsOpen(true)} />
                 </div>
 
                 <div>
@@ -443,6 +445,8 @@ export default function App() {
         <DataTable open={isDataTableOpen} onClose={() => setIsDataTableOpen(false)} properties={(cma?.properties as any[]) || []} />
         {/* CMA Summary Table Modal */}
         <CMASummaryTable open={isCMASummaryOpen} onClose={() => setIsCMASummaryOpen(false)} cma={cma} />
+        {/* Locations Table Modal */}
+        <LocationsTable open={isLocationsOpen} onClose={() => setIsLocationsOpen(false)} cma={cma} />
       </main>
 
       {/* Subtle Grid Background Pattern */}
