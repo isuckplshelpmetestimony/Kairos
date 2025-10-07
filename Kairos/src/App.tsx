@@ -9,6 +9,7 @@ import { CMASummary } from './components/dashboard/CMASummary';
 import { MarketActivity } from './components/dashboard/MarketActivity';
 import { Neighborhoods } from './components/dashboard/Locations';
 import { HistoricalTrends } from './components/dashboard/HistoricalTrends';
+import { DataTable } from './components/dashboard/DataTable';
 import {
   PROPERTY_TYPES,
   LOCATIONS,
@@ -49,6 +50,7 @@ export default function App() {
     data_source?: 'live' | 'demo';
   }>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isDataTableOpen, setIsDataTableOpen] = useState(false);
 
   // Get helper functions from utils
   const {
@@ -357,10 +359,26 @@ export default function App() {
             {cma.stats.count === 0 ? (
               <div className="mx-auto max-w-2xl text-center">
                 <div className="bg-white border border-gray-200 rounded-3xl shadow-sm p-12">
-                  <div className="w-16 h-16 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.29-1.009-5.824-2.709M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
+                  <div className="mx-auto mb-6 inline-block rotate-3">
+                    <div className="rounded-2xl border border-gray-200 shadow-sm bg-white p-3">
+                      {/* Sad black cat sticker (monochrome to match design system) */}
+                      <svg
+                        className="w-12 h-12"
+                        viewBox="0 0 64 64"
+                        aria-label="Sad black cat sticker"
+                        role="img"
+                      >
+                        {/* Cat head */}
+                        <path fill="#111111" d="M12 26c0-6 3.5-9.5 9.5-12.5l3-1.5c1.2-.6 2.2.2 2.6 1.5l1.3 4.3c.3 1 .9 1.2 1.6 1.2s1.3-.2 1.6-1.2l1.3-4.3c.4-1.4 1.4-2.1 2.6-1.5l3 1.5C48.5 16.5 52 20 52 26v6c0 10.5-8.5 19-20 19S12 42.5 12 32v-6z"/>
+                        {/* Eyes */}
+                        <circle cx="26" cy="32" r="3" fill="#FFFFFC"/>
+                        <circle cx="38" cy="32" r="3" fill="#FFFFFC"/>
+                        <circle cx="26" cy="32" r="1.5" fill="#111111"/>
+                        <circle cx="38" cy="32" r="1.5" fill="#111111"/>
+                        {/* Sad mouth */}
+                        <path d="M24 44c2.5-2.8 6.5-2.8 9 0" stroke="#FFFFFC" strokeWidth="2" fill="none" strokeLinecap="round"/>
+                      </svg>
+                    </div>
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">No Properties Found</h3>
                   <p className="text-gray-600">Apologies, no properties found in this location. Please try searching in a different area.</p>
@@ -376,7 +394,7 @@ export default function App() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                  <PropertyReport cma={cma} />
+                  <PropertyReport cma={cma} onOpenDataTable={() => setIsDataTableOpen(true)} />
                   <CMASummary cma={cma} />
                   <MarketActivity cma={cma} />
                   <Neighborhoods cma={cma} />
@@ -419,6 +437,8 @@ export default function App() {
             </div>
           </div>
         )}
+        {/* Data Table Modal */}
+        <DataTable open={isDataTableOpen} onClose={() => setIsDataTableOpen(false)} properties={(cma?.properties as any[]) || []} />
       </main>
 
       {/* Subtle Grid Background Pattern */}

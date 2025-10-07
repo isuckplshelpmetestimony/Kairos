@@ -7,9 +7,10 @@ interface PropertyReportProps {
     stats: { count: number; avg: number; median: number; min: number; max: number };
     properties?: Array<Record<string, unknown>>;
   };
+  onOpenDataTable?: () => void;
 }
 
-export const PropertyReport = ({ cma }: PropertyReportProps) => {
+export const PropertyReport = ({ cma, onOpenDataTable }: PropertyReportProps) => {
   const hasRealListings = Array.isArray(cma?.properties) && (cma?.properties?.length || 0) > 0;
   const listings = hasRealListings
     ? (cma!.properties as Array<Record<string, unknown>>) // top 5 real properties
@@ -47,7 +48,7 @@ export const PropertyReport = ({ cma }: PropertyReportProps) => {
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-gray-900">Property Report</h3>
         <div className="flex gap-2">
-          <Button variant="ghost" size="sm" className="h-8 gap-2 text-gray-600 hover:text-gray-900 transition-colors">
+          <Button onClick={(e) => { e.stopPropagation(); onOpenDataTable?.(); }} variant="ghost" size="sm" className="h-8 gap-2 text-gray-600 hover:text-gray-900 transition-colors">
             <Eye className="h-4 w-4" />
             View
           </Button>

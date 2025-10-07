@@ -159,14 +159,66 @@ def scraper(province, property_type, num):
                 pass
             merged_candidates.extend(fallback_pairs)
             total_candidates = len(merged_candidates)
-            # Adaptive backoff: if first page shows zero candidates and looks like a bot challenge
+            # Minimal retry: if page 1 yields zero candidates, re-fetch once after short delay
             if page_num == 1 and total_candidates == 0:
                 try:
+                    # If looks like a bot/challenge page, brief pause first
                     text_sample = (soup.get_text(' ', strip=True) or '')[:2000].lower()
                     if ('security verification' in text_sample) or ('solve this math problem' in text_sample):
-                        time.sleep(5)
+                        time.sleep(1.5)
+                    else:
+                        time.sleep(1.0)
+                    # Re-fetch and attempt anchor-based scan again (lightweight)
+                    page_retry = session.get(URL, timeout=15)
+                    soup_retry = bs(page_retry.content, 'html.parser')
+                    anchors_retry = soup_retry.find_all('a', href=True)
+                    for a in anchors_retry:
+                        href = a.get('href') or ''
+                        if '/property/' not in href:
+                            continue
+                        if href.startswith('/'):
+                            href_abs = f'https://www.lamudi.com.ph{href}'
+                        elif href.startswith('http'):
+                            href_abs = href
+                        else:
+                            continue
+                        match = re.findall(r'/property/([^/?#]+)', href_abs)
+                        if not match:
+                            continue
+                        sku_val = match[-1]
+                        fallback_pairs.append((sku_val, href_abs))
+                    # Update count after retry
+                    merged_candidates.extend(fallback_pairs)
+                    total_candidates = len(merged_candidates)
                 except Exception:
                     pass
+                # Second minimal retry: explicitly use page=1 variant if still zero
+                if total_candidates == 0:
+                    try:
+                        time.sleep(1.0)
+                        url_variant = f"{base_list_url}?page=1"
+                        page_retry2 = session.get(url_variant, timeout=15)
+                        soup_retry2 = bs(page_retry2.content, 'html.parser')
+                        anchors_retry2 = soup_retry2.find_all('a', href=True)
+                        for a in anchors_retry2:
+                            href = a.get('href') or ''
+                            if '/property/' not in href:
+                                continue
+                            if href.startswith('/'):
+                                href_abs = f'https://www.lamudi.com.ph{href}'
+                            elif href.startswith('http'):
+                                href_abs = href
+                            else:
+                                continue
+                            match = re.findall(r'/property/([^/?#]+)', href_abs)
+                            if not match:
+                                continue
+                            sku_val = match[-1]
+                            fallback_pairs.append((sku_val, href_abs))
+                        merged_candidates.extend(fallback_pairs)
+                        total_candidates = len(merged_candidates)
+                    except Exception:
+                        pass
             try:
                 print({
                     'level': 'info',
@@ -322,6 +374,25 @@ def scraper(province, property_type, num):
                 except:
                     pass
 
+        # Normalize feature labels to canonical keys
+        normalized_features = {}
+        for key, value in features.items():
+            normalized_key = key
+            # Normalize bedroom variations
+            if key in ["Bedroom(s)", "Bed(s)"]:
+                normalized_key = "Bedrooms"
+            # Normalize bathroom variations
+            elif key in ["Bathroom(s)", "Bath(s)", "T&B", "Toilet & Bath", "Toilet and Bath"]:
+                normalized_key = "Baths"
+            # Normalize floor area variations (keep only "Floor area" for condo)
+            elif key in ["Floor area", "Floor Area", "Area", "Lot area"]:
+                normalized_key = "Floor area (m²)"
+            
+            normalized_features[normalized_key] = value
+        
+        # Use normalized features for fallback searches
+        features = normalized_features
+
         # Attribute/text fallbacks for key fields when primary misses
         # Floor area (m²)
         try:
@@ -333,9 +404,10 @@ def scraper(province, property_type, num):
             if 'Floor area (m²)' not in features or not str(features.get('Floor area (m²)', '')).strip():
                 # Minimal regex: number + m² in a compact text node
                 try:
-                    candidate = soup.find(text=re.compile(r'\b\d[\d\.,]*\s*m²\b'))
+                    # Accept "m²", "sqm", or "sq m" variants (case-insensitive)
+                    candidate = soup.find(text=re.compile(r"\b\d[\d\.,]*\s*(m²|sqm|sq\s*m)\b", re.I))
                     if candidate:
-                        m = re.search(r'(\d[\d\.,]*)\s*m²', candidate)
+                        m = re.search(r"(\d[\d\.,]*)\s*(?:m²|sqm|sq\s*m)", candidate, re.I)
                         if m:
                             features['Floor area (m²)'] = m.group(1).replace(',', '')
                 except Exception:
@@ -353,7 +425,8 @@ def scraper(province, property_type, num):
                     if raw:
                         features['Bedrooms'] = raw
             if 'Bedrooms' not in features or not str(features.get('Bedrooms', '')).strip():
-                m = re.search(r'(\d+)\s*Bedrooms?', soup.get_text(' ', strip=True))
+                # Match "2 Bedroom", "2 Bedrooms", "2 Bed", "2 Bedroom(s)", "2 Bed(s)"
+                m = re.search(r'(\d+)\s*Bed(?:room)?s?', soup.get_text(' ', strip=True), re.I)
                 if m:
                     features['Bedrooms'] = m.group(1)
         except Exception:
@@ -369,9 +442,73 @@ def scraper(province, property_type, num):
                     if raw:
                         features['Baths'] = raw
             if 'Baths' not in features or not str(features.get('Baths', '')).strip():
-                m = re.search(r'(\d+)\s*Baths?', soup.get_text(' ', strip=True))
+                # Match "1 Bath", "1 Bathroom", "T&B 1", "1 Toilet & Bath", "Toilet and Bath 2"
+                m = re.search(r'(\d+)\s*(?:Bath(?:room)?s?|T\s*&\s*B|Toilet\s*&\s*Bath|Toilet\s*and\s*Bath)', soup.get_text(' ', strip=True), re.I)
                 if m:
                     features['Baths'] = m.group(1)
+        except Exception:
+            pass
+
+        # Last‑resort inferences to avoid empty fields for core metrics
+        try:
+            page_text = soup.get_text(' ', strip=True)
+        except Exception:
+            page_text = ''
+
+        # Bedrooms: infer 0 for studio; default to 1 if still blank
+        try:
+            if 'Bedrooms' not in features or not str(features.get('Bedrooms', '')).strip():
+                txt_l = page_text.lower()
+                if 'studio' in txt_l:
+                    features['Bedrooms'] = '0'
+                else:
+                    m = re.search(r'(\d+)\s*bed', page_text, re.I)
+                    if m:
+                        features['Bedrooms'] = m.group(1)
+                    else:
+                        features['Bedrooms'] = '1'
+        except Exception:
+            pass
+
+        # Bathrooms: if missing, assume at least 1; treat bare T&B as 1
+        try:
+            if 'Baths' not in features or not str(features.get('Baths', '')).strip():
+                if re.search(r'(?:t\s*&\s*b|toilet\s*&\s*bath|toilet\s*and\s*bath)', page_text, re.I):
+                    features['Baths'] = '1'
+                else:
+                    features['Baths'] = '1'
+        except Exception:
+            pass
+
+        # Floor area: scan wider text; clamp to plausible condo range 12–1000 sqm
+        try:
+            def _set_floor_area(val_str: str):
+                try:
+                    val = float(val_str.replace(',', ''))
+                    if 12 <= val <= 1000:
+                        features['Floor area (m²)'] = str(val)
+                except Exception:
+                    pass
+
+            if 'Floor area (m²)' not in features or not str(features.get('Floor area (m²)', '')).strip():
+                m = re.search(r'(\d[\d\.,]*)\s*(?:m²|sqm|sq\s*m)', page_text, re.I)
+                if m:
+                    _set_floor_area(m.group(1))
+                else:
+                    # Look for phrases like "floor size 45", "unit size: 32"
+                    m2 = re.search(r'(?:floor|unit|area|size)\s*[:\-]?\s*(\d[\d\.,]*)\s*(?:m2|m²|sqm|sq\s*m)?', page_text, re.I)
+                    if m2:
+                        _set_floor_area(m2.group(1))
+            else:
+                # Clamp existing value if wildly large
+                m3 = re.search(r'(\d[\d\.,]*)', str(features.get('Floor area (m²)', '')))
+                if m3:
+                    try:
+                        v = float(m3.group(1).replace(',', ''))
+                        if v > 1000 or v < 12:
+                            features.pop('Floor area (m²)', None)
+                    except Exception:
+                        pass
         except Exception:
             pass
 
@@ -403,6 +540,20 @@ def scraper(province, property_type, num):
 
     listing_details_df = pd.DataFrame(data)
 
+    # TEMP diagnostics: write raw features for label inspection (local only)
+    try:
+        debug_df = listing_details_df[['SKU', 'text_location', 'features']].copy()
+        # Attach links for reference
+        try:
+            debug_df = debug_df.merge(listing_df[['SKU', 'link']], on='SKU', how='left')
+        except Exception:
+            pass
+        os.makedirs("data/scraped", exist_ok=True)
+        debug_path = os.path.join("data", "scraped", "debug_features.csv")
+        debug_df.to_csv(debug_path, index=False)
+    except Exception:
+        pass
+
     # Exploding Amenities (guard for empty results)
     if len(listing_details_df) == 0:
         # No results; create empty frames to keep pipeline safe
@@ -412,7 +563,15 @@ def scraper(province, property_type, num):
         amenities = pd.get_dummies(listing_details_df['amenities'].explode())
         amenities_res = amenities.groupby(amenities.index).sum()
         raw_df = pd.concat([listing_details_df, amenities_res], axis=1, ignore_index=False)
-        raw_df = raw_df.join(pd.DataFrame.from_records(raw_df['features'].mask(raw_df.features.isna(), {}).tolist())).fillna(0)
+        # Join features but don't prematurely zero key fields
+        features_df = pd.DataFrame.from_records(raw_df['features'].mask(raw_df.features.isna(), {}).tolist())
+        raw_df = raw_df.join(features_df)
+        
+        # Fill NaN with 0 for all columns except key fields that should remain empty for adapter parsing
+        key_fields_to_preserve = ['Bedrooms', 'Baths', 'Floor area (m²)']
+        for col in raw_df.columns:
+            if col not in key_fields_to_preserve:
+                raw_df[col] = raw_df[col].fillna(0)
     raw_df.drop(columns=['features', 'amenities'], inplace=True, errors='ignore')
     raw_df.drop_duplicates(keep='first', inplace=True)
 

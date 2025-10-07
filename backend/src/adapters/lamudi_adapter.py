@@ -1,4 +1,5 @@
 import time
+import re
 from typing import Any, Dict, List, Tuple, Optional
 
 import pandas as pd
@@ -14,11 +15,13 @@ def _coerce_float(value: Any, default: float = 0.0) -> float:
             return float(default)
         if isinstance(value, (int, float)):
             return float(value)
-        # Strip currency/commas/common noise
-        text = str(value).replace(',', '').replace('₱', '').strip()
-        if text == '':
+        # Extract first numeric token (handles "45 m²", "7,108,000", etc.)
+        text = str(value)
+        m = re.search(r"\d[\d,\.]*", text)
+        if not m:
             return float(default)
-        return float(text)
+        num = m.group(0).replace(',', '')
+        return float(num)
     except Exception:
         return float(default)
 
@@ -29,10 +32,11 @@ def _coerce_int(value: Any, default: int = 0) -> int:
             return int(default)
         if isinstance(value, (int,)):
             return int(value)
-        text = str(value).strip()
-        if text == '':
+        text = str(value)
+        m = re.search(r"\d+", text)
+        if not m:
             return int(default)
-        return int(float(text))
+        return int(m.group(0))
     except Exception:
         return int(default)
 
@@ -101,11 +105,19 @@ def scrape_and_normalize(province_slug: str, property_type: str, count: int) -> 
             if missing not in staging_df.columns:
                 staging_df[missing] = pd.NA
 
-        # Map rows
-        for _, row in staging_df.iterrows():
-            normalized = _normalize_row(row, property_type)
-            properties.append(normalized)
-            price_series.append(float(normalized['price']))
+        # Map rows with per-row guard to avoid whole-adapter failure on a single bad row
+        for idx, row in staging_df.iterrows():
+            try:
+                normalized = _normalize_row(row, property_type)
+                properties.append(normalized)
+                price_series.append(float(normalized['price']))
+            except Exception as e:
+                # TEMP: minimal console diagnostic; safe (no PII)
+                try:
+                    print(f"row_normalize_skip idx={idx}: {e}")
+                except Exception:
+                    pass
+                continue
 
         # Cap properties to 100 for response parity, but keep full price_series for stats
         if len(properties) > 100:
@@ -122,8 +134,15 @@ def scrape_and_normalize(province_slug: str, property_type: str, count: int) -> 
             'properties_len': len(properties),
         })
         return properties, price_series
-    except Exception:
+    except Exception as e:
         duration_ms = int((time.time() - start_ts) * 1000)
+        try:
+            # TEMP: minimal console diagnostics to pinpoint failing line (no PII)
+            print(f"adapter_exception: {e}")
+            import traceback as _tb
+            _tb.print_exc()
+        except Exception:
+            pass
         print({
             'level': 'error',
             'event': 'lamudi_adapter_exception',
@@ -131,6 +150,8 @@ def scrape_and_normalize(province_slug: str, property_type: str, count: int) -> 
             'property_type': property_type,
             'count': int(count),
             'duration_ms': duration_ms,
+            'error': str(e),
+            'error_type': type(e).__name__,
         })
         return [], []
 
