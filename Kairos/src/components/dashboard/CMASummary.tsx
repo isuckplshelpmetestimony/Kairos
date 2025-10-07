@@ -6,9 +6,10 @@ interface CMASummaryProps {
   cma?: {
     stats: { count: number; avg: number; median: number; min: number; max: number };
   };
+  onOpenCMASummary?: () => void;
 }
 
-export const CMASummary = ({ cma }: CMASummaryProps) => {
+export const CMASummary = ({ cma, onOpenCMASummary }: CMASummaryProps) => {
   const summaryData = [
     { label: "Average", value: cma ? `₱${cma.stats.avg.toLocaleString()}` : "$485,000", change: "+2.3%", positive: true },
     { label: "Median", value: cma ? `₱${cma.stats.median.toLocaleString()}` : "$452,000", change: "+1.8%", positive: true },
@@ -20,7 +21,15 @@ export const CMASummary = ({ cma }: CMASummaryProps) => {
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-gray-900">CMA Summary</h3>
         <div className="flex gap-2">
-          <Button variant="ghost" size="sm" className="h-8 gap-2 text-gray-600 hover:text-gray-900">
+          <Button 
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              onOpenCMASummary?.(); 
+            }}
+            variant="ghost" 
+            size="sm" 
+            className="h-8 gap-2 text-gray-600 hover:text-gray-900"
+          >
             <Eye className="h-4 w-4" />
             View
           </Button>
