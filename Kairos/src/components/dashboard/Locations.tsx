@@ -1,19 +1,15 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Download } from "lucide-react";
-import type { ProjectionData } from "@/types/projection";
-import { calculateTrendChange } from "@/types/projection";
-
 interface NeighborhoodsProps {
   cma?: { 
     stats: { avg: number };
     neighborhoods: Record<string, { count: number; mean: number; min: number; max: number }>;
   };
   onOpenLocations?: () => void;
-  projection?: ProjectionData | null;
 }
 
-export const Neighborhoods = ({ cma, onOpenLocations, projection }: NeighborhoodsProps) => {
+export const Neighborhoods = ({ cma, onOpenLocations }: NeighborhoodsProps) => {
   // Use real data from API if available, otherwise fallback to mock data
   const neighborhoods = cma?.neighborhoods ? 
     Object.entries(cma.neighborhoods)
@@ -23,7 +19,7 @@ export const Neighborhoods = ({ cma, onOpenLocations, projection }: Neighborhood
         name,
         properties: `${data.count} properties`,
         price: `₱${Math.round(data.mean).toLocaleString()}`,
-        change: calculateTrendChange(projection), // Use province-level trend as neighborhood estimate
+        change: "N/A", // Use scraped data only, no projections
         positive: true
       })) : [
       { name: "Downtown", properties: "156 properties", price: "₱485,000", change: "N/A", positive: true },

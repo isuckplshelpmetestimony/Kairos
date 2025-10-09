@@ -20,7 +20,7 @@ import {
 } from './constants';
 import { createPropertyStatusHandlers, renderPropertyStatusGroup } from './utils/propertyStatusHelpers';
 import type { KairosAddressOutput } from './types/address';
-import { loadProjections, formatProjectionLabel, calculateTrendChange, calculateMarketActivityTrend, calculateDOMTrend, findProjectionByName } from './types/projection';
+import { loadProjections, formatProjectionLabel, calculateTrendChange, calculateDOMTrend, findProjectionByName } from './types/projection';
 import type { ProjectionData } from './types/projection';
 
 
@@ -87,17 +87,25 @@ export default function App() {
       const psgcCode = selectedAddress.location.psgc_province_code.toString();
       let projection = projectionsMap.get(psgcCode);
       
+      console.log(`🔍 Looking for projection for PSGC: ${psgcCode}, Address: ${selectedAddress.full_address}`);
+      
       // If no PSGC match, try name-based matching
       if (!projection && selectedAddress.full_address) {
+        console.log(`No PSGC match, trying name-based matching...`);
         projection = findProjectionByName(projectionsMap, selectedAddress.full_address) || undefined;
       }
       
       setCurrentProjection(projection || null);
       
       if (projection) {
-        console.log(`Loaded projection for ${projection.area_name} (PSGC: ${psgcCode})`);
+        console.log(`✅ Loaded projection for ${projection.area_name} (PSGC: ${psgcCode})`);
+        console.log(`📊 Projection data:`, {
+          avg_sold_price: projection.avg_sold_price,
+          trend_6m_length: projection.trend_6m.length,
+          trend_6m: projection.trend_6m
+        });
       } else {
-        console.log(`No projection found for PSGC: ${psgcCode} or address: ${selectedAddress.full_address}`);
+        console.log(`❌ No projection found for PSGC: ${psgcCode} or address: ${selectedAddress.full_address}`);
       }
     } else {
       setCurrentProjection(null);
@@ -461,23 +469,23 @@ export default function App() {
             ) : (
               <div className="mx-auto max-w-7xl space-y-8">
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                  <MetricCard title="Total Properties" value={cma.stats.count.toString()} change={calculateMarketActivityTrend(currentProjection)} positive />
-                  <MetricCard title="Avg Price" value={`₱${Math.round(cma.stats.avg).toLocaleString()}`} change={calculateTrendChange(currentProjection)} positive />
-                  <MetricCard 
-                    title="Avg Days on Market" 
-                    value={currentProjection ? Math.round(currentProjection.avg_dom).toString() : "N/A"} 
-                    change={calculateDOMTrend(currentProjection)} 
-                    positive 
-                    note={formatProjectionLabel(currentProjection)} 
-                  />
+        <MetricCard title="Total Properties" value={cma.stats.count.toString()} change="+1% from last month" positive />
+        <MetricCard title="Avg Price" value={`₱${Math.round(cma.stats.avg).toLocaleString()}`} change={calculateTrendChange(currentProjection)} positive />
+        <MetricCard 
+          title="Avg Days on Market" 
+          value={currentProjection ? Math.round(currentProjection.avg_dom).toString() : "N/A"} 
+          change={calculateDOMTrend(currentProjection)} 
+          positive 
+          note={formatProjectionLabel(currentProjection)} 
+        />
                   <MetricCard title="Total Neighborhoods" value={Object.keys(cma.neighborhoods || {}).length.toString()} subtitle="Active areas" />
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                   <PropertyReport cma={cma} onOpenDataTable={() => setIsDataTableOpen(true)} />
-                  <CMASummary cma={cma} onOpenCMASummary={() => setIsCMASummaryOpen(true)} projection={currentProjection} />
+                  <CMASummary cma={cma} onOpenCMASummary={() => setIsCMASummaryOpen(true)} />
                   <MarketActivity cma={cma} projection={currentProjection} />
-                  <Neighborhoods cma={cma} onOpenLocations={() => setIsLocationsOpen(true)} projection={currentProjection} />
+                  <Neighborhoods cma={cma} onOpenLocations={() => setIsLocationsOpen(true)} />
                 </div>
 
                 <div>

@@ -28,7 +28,8 @@ export function parseProjectionRow(row: string): ProjectionData | null {
   if (cols.length < 11) return null;
 
   try {
-    return {
+    const trendData = cols[8].replace(/"/g, '').split(/,/).map(v => parseFloat(v.trim()));
+    const projection = {
       psgc_code: cols[0].trim(),
       area_name: cols[1].trim(),
       avg_sold_price: parseFloat(cols[2]),
@@ -37,10 +38,18 @@ export function parseProjectionRow(row: string): ProjectionData | null {
       active_count: parseInt(cols[5]),
       pending_count: parseInt(cols[6]),
       closed_count: parseInt(cols[7]),
-      trend_6m: cols[8].split(/,/).map(v => parseFloat(v.trim())),
+      trend_6m: trendData,
       confidence: cols[9].trim() as 'high' | 'medium' | 'low',
       sample_size: parseInt(cols[10]),
     };
+    
+    console.log(`Parsed projection for ${projection.area_name}:`, {
+      psgc_code: projection.psgc_code,
+      trend_6m_length: projection.trend_6m.length,
+      trend_6m: projection.trend_6m
+    });
+    
+    return projection;
   } catch (e) {
     console.warn('Failed to parse projection row:', row, e);
     return null;
@@ -168,10 +177,12 @@ export function findProjectionByName(
   if (!searchLocation) return null;
   
   const searchLower = searchLocation.toLowerCase();
+  console.log(`🔍 Looking for projection matching: "${searchLocation}"`);
   
   // Try exact match first
   for (const projection of projections.values()) {
     if (projection.area_name.toLowerCase() === searchLower) {
+      console.log(`✅ Exact match found: ${projection.area_name}`);
       return projection;
     }
   }
@@ -180,6 +191,7 @@ export function findProjectionByName(
   for (const projection of projections.values()) {
     const csvName = projection.area_name.toLowerCase();
     if (searchLower.includes(csvName)) {
+      console.log(`✅ Partial match found: "${searchLocation}" contains "${projection.area_name}"`);
       return projection;
     }
   }
@@ -188,10 +200,12 @@ export function findProjectionByName(
   for (const projection of projections.values()) {
     const csvName = projection.area_name.toLowerCase();
     if (csvName.includes(searchLower)) {
+      console.log(`✅ Reverse match found: "${projection.area_name}" contains "${searchLocation}"`);
       return projection;
     }
   }
   
+  console.log(`❌ No projection match found for: "${searchLocation}"`);
   return null;
 }
 

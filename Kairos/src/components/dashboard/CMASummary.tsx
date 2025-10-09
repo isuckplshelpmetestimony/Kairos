@@ -1,22 +1,17 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Download } from "lucide-react";
-import type { ProjectionData } from "@/types/projection";
-import { calculateTrendChange } from "@/types/projection";
-
 interface CMASummaryProps {
   cma?: {
     stats: { count: number; avg: number; median: number; min: number; max: number };
   };
   onOpenCMASummary?: () => void;
-  projection?: ProjectionData | null;
 }
 
-export const CMASummary = ({ cma, onOpenCMASummary, projection }: CMASummaryProps) => {
-  const priceChange = calculateTrendChange(projection);
+export const CMASummary = ({ cma, onOpenCMASummary }: CMASummaryProps) => {
   const summaryData = [
-    { label: "Average", value: cma ? `₱${cma.stats.avg.toLocaleString()}` : "$485,000", change: priceChange, positive: true },
-    { label: "Median", value: cma ? `₱${cma.stats.median.toLocaleString()}` : "$452,000", change: priceChange, positive: true },
+    { label: "Average", value: cma ? `₱${cma.stats.avg.toLocaleString()}` : "$485,000", change: "N/A", positive: true },
+    { label: "Median", value: cma ? `₱${cma.stats.median.toLocaleString()}` : "$452,000", change: "N/A", positive: true },
     { label: "Range", value: cma ? `₱${cma.stats.min.toLocaleString()} - ₱${cma.stats.max.toLocaleString()}` : "₱275,000 - ₱890,000", change: "N/A", positive: true },
   ];
 
