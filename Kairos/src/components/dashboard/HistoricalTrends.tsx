@@ -4,6 +4,15 @@ import { Eye, Download } from "lucide-react";
 import type { ProjectionData } from "@/types/projection";
 import { formatProjectionLabel } from "@/types/projection";
 
+// ============================================================================
+// FEATURE FLAGS
+// ============================================================================
+// Set to true to enable, false to hide. No code deletion required.
+const FEATURE_FLAGS = {
+  HISTORICAL_TRENDS_BUTTONS: false, // Enable when needed
+};
+// ============================================================================
+
 interface HistoricalTrendsProps {
   cma?: { stats: { avg: number; max: number } };
   projection?: ProjectionData | null;
@@ -40,7 +49,7 @@ export const HistoricalTrends = ({ cma, projection }: HistoricalTrendsProps) => 
     <Card className="bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-200 p-6">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-gray-900">Historical Trends</h3>
-        <div className="flex gap-2">
+        <div className="flex gap-2" style={{ visibility: FEATURE_FLAGS.HISTORICAL_TRENDS_BUTTONS ? 'visible' : 'hidden' }}>
           <Button variant="ghost" size="sm" className="h-8 gap-2 text-gray-600 hover:text-gray-900">
             <Eye className="h-4 w-4" />
             View

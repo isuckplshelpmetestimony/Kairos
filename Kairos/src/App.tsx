@@ -12,6 +12,7 @@ import { HistoricalTrends } from './components/dashboard/HistoricalTrends';
 import { DataTable } from './components/dashboard/DataTable';
 import { CMASummaryTable } from './components/dashboard/CMASummaryTable';
 import { LocationsTable } from './components/dashboard/LocationsTable';
+import { MarketActivityTable } from './components/dashboard/MarketActivityTable';
 import {
   PROPERTY_TYPES,
   LOCATIONS,
@@ -43,6 +44,7 @@ export default function App() {
   const [selectedLocation, setSelectedLocation] = useState<string>('');
   const [isPropertyTypeOpen, setIsPropertyTypeOpen] = useState(false);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
+  const [isMarketActivityOpen, setIsMarketActivityOpen] = useState(false);
   
   // CMA generation state
   const [loading, setLoading] = useState(false);
@@ -490,7 +492,7 @@ export default function App() {
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                   <PropertyReport cma={cma} onOpenDataTable={() => setIsDataTableOpen(true)} />
                   <CMASummary cma={cma} onOpenCMASummary={() => setIsCMASummaryOpen(true)} />
-                  <MarketActivity cma={cma} projection={currentProjection} />
+                  <MarketActivity cma={cma} projection={currentProjection} onOpenMarketActivity={() => setIsMarketActivityOpen(true)} />
                   <Neighborhoods cma={cma} onOpenLocations={() => setIsLocationsOpen(true)} />
                 </div>
 
@@ -537,6 +539,8 @@ export default function App() {
         <CMASummaryTable open={isCMASummaryOpen} onClose={() => setIsCMASummaryOpen(false)} cma={cma as any} projection={currentProjection} />
         {/* Locations Table Modal */}
         <LocationsTable open={isLocationsOpen} onClose={() => setIsLocationsOpen(false)} cma={cma as any} projection={currentProjection} />
+        {/* Market Activity Table Modal */}
+        <MarketActivityTable open={isMarketActivityOpen} onClose={() => setIsMarketActivityOpen(false)} projection={currentProjection} />
       </main>
 
       {/* Subtle Grid Background Pattern */}

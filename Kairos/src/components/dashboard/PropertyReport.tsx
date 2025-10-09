@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Download } from "lucide-react";
+import { downloadCSV, arrayToCSV } from "@/utils/csvExport";
 
 interface PropertyReportProps {
   cma?: {
@@ -41,7 +42,27 @@ export const PropertyReport = ({ cma, onOpenDataTable }: PropertyReportProps) =>
     { label: "Active", count: cma ? Math.floor(cma.stats.count * 0.68).toString() : "847" },
     { label: "Pending", count: cma ? Math.floor(cma.stats.count * 0.25).toString() : "312" },
     { label: "Closed", count: cma ? Math.floor(cma.stats.count * 0.07).toString() : "88" },
-  ];
+      ];
+
+  const handleDownload = () => {
+    // Use ALL scraped properties, not just the 5 shown in overview
+    const allProperties = cma?.properties || [];
+    const headers = ['Property ID', 'Address', 'City', 'Province', 'Bedrooms', 'Bathrooms', 'Floor Area', 'Price', 'URL'];
+    const csvData = allProperties.map((property: any) => ({
+      'Property ID': property.id || '',
+      'Address': property.address || '',
+      'City': property.city || '',
+      'Province': property.province || '',
+      'Bedrooms': property.bedrooms || 0,
+      'Bathrooms': property.bathrooms || 0,
+      'Floor Area': property.sqm || property.floor_area || 0,
+      'Price': property.price || 0,
+      'URL': property.url || '',
+    }));
+    
+    const csvContent = arrayToCSV(csvData, headers);
+    downloadCSV(csvContent, 'property-report-all.csv');
+  };
 
   return (
     <Card className="bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-200 p-6">
@@ -52,7 +73,15 @@ export const PropertyReport = ({ cma, onOpenDataTable }: PropertyReportProps) =>
             <Eye className="h-4 w-4" />
             View
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 gap-2 text-gray-600 hover:text-gray-900 transition-colors">
+          <Button 
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              handleDownload(); 
+            }}
+            variant="ghost" 
+            size="sm" 
+            className="h-8 gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
             <Download className="h-4 w-4" />
             Download
           </Button>

@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Download } from "lucide-react";
+import { downloadCSV, arrayToCSV } from "@/utils/csvExport";
 interface CMASummaryProps {
   cma?: {
     stats: { count: number; avg: number; median: number; min: number; max: number };
@@ -14,6 +15,22 @@ export const CMASummary = ({ cma, onOpenCMASummary }: CMASummaryProps) => {
     { label: "Median", value: cma ? `₱${cma.stats.median.toLocaleString()}` : "$452,000" },
     { label: "Range", value: cma ? `₱${cma.stats.min.toLocaleString()} - ₱${cma.stats.max.toLocaleString()}` : "₱275,000 - ₱890,000" },
   ];
+
+  const handleDownload = () => {
+    // Export ALL CMA statistics and additional metrics
+    const headers = ['Metric', 'Value', 'Description'];
+    const csvData = [
+      { 'Metric': 'Total Properties', 'Value': cma?.stats.count || 0, 'Description': 'Total number of properties analyzed' },
+      { 'Metric': 'Average List Price', 'Value': cma?.stats.avg || 0, 'Description': 'Average price of all properties' },
+      { 'Metric': 'Median List Price', 'Value': cma?.stats.median || 0, 'Description': 'Median price of all properties' },
+      { 'Metric': 'Minimum Price', 'Value': cma?.stats.min || 0, 'Description': 'Lowest property price' },
+      { 'Metric': 'Maximum Price', 'Value': cma?.stats.max || 0, 'Description': 'Highest property price' },
+      { 'Metric': 'Price Range', 'Value': cma ? `${cma.stats.min} - ${cma.stats.max}` : 'N/A', 'Description': 'Price range from min to max' },
+    ];
+    
+    const csvContent = arrayToCSV(csvData, headers);
+    downloadCSV(csvContent, 'cma-summary-all.csv');
+  };
 
   return (
     <Card className="bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-200 p-6">
@@ -32,7 +49,15 @@ export const CMASummary = ({ cma, onOpenCMASummary }: CMASummaryProps) => {
             <Eye className="h-4 w-4" />
             View
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 gap-2 text-gray-600 hover:text-gray-900">
+          <Button 
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              handleDownload(); 
+            }}
+            variant="ghost" 
+            size="sm" 
+            className="h-8 gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
             <Download className="h-4 w-4" />
             Download
           </Button>

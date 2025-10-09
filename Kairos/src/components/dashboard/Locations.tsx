@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Download } from "lucide-react";
+import { downloadCSV, arrayToCSV } from "@/utils/csvExport";
 interface NeighborhoodsProps {
   cma?: { 
     stats: { avg: number };
@@ -27,6 +28,22 @@ export const Neighborhoods = ({ cma, onOpenLocations }: NeighborhoodsProps) => {
       { name: "Metro Heights", properties: "112 properties", price: "₱485,000" },
     ];
 
+  const handleDownload = () => {
+    // Use ALL neighborhoods from scraped data, not just the 5 shown in overview
+    const allNeighborhoods = cma?.neighborhoods ? Object.entries(cma.neighborhoods) : [];
+    const headers = ['Neighborhood', 'Property Count', 'Average Price', 'Min Price', 'Max Price'];
+    const csvData = allNeighborhoods.map(([name, data]) => ({
+      'Neighborhood': name,
+      'Property Count': data.count,
+      'Average Price': data.mean,
+      'Min Price': data.min,
+      'Max Price': data.max
+    }));
+    
+    const csvContent = arrayToCSV(csvData, headers);
+    downloadCSV(csvContent, 'locations-report-all.csv');
+  };
+
   return (
     <Card className="bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-200 p-6">
       <div className="flex items-center justify-between mb-6">
@@ -44,7 +61,15 @@ export const Neighborhoods = ({ cma, onOpenLocations }: NeighborhoodsProps) => {
             <Eye className="h-4 w-4" />
             View
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 gap-2 text-gray-600 hover:text-gray-900">
+          <Button 
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              handleDownload(); 
+            }}
+            variant="ghost" 
+            size="sm" 
+            className="h-8 gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
             <Download className="h-4 w-4" />
             Download
           </Button>
