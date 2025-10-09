@@ -23,6 +23,14 @@ import type { KairosAddressOutput } from './types/address';
 import { loadProjections, formatProjectionLabel, findProjectionByName } from './types/projection';
 import type { ProjectionData } from './types/projection';
 
+// ============================================================================
+// FEATURE FLAGS
+// ============================================================================
+// Set to true to enable, false to hide. No code deletion required.
+const FEATURE_FLAGS = {
+  COMPARISONS_DROPDOWN: false, // Enable when 5+ clients request this feature
+};
+// ============================================================================
 
 export default function App() {
   const [compsSelected, setCompsSelected] = useState(true);
@@ -190,7 +198,7 @@ export default function App() {
             </div>
             
             {/* Toggle Buttons at Bottom */}
-            <div className="px-6 flex gap-2">
+            <div className="px-6 flex gap-2" style={{ visibility: FEATURE_FLAGS.COMPARISONS_DROPDOWN ? 'visible' : 'hidden' }}>
               <InlineToggle
                 label="Comparisons"
                 isSelected={compsSelected}
@@ -248,7 +256,7 @@ export default function App() {
                 
                 See KAIROS-GUARDRAILS.md > COMPARISONS DROPDOWN DESIGN GUARDRAIL
             ======================================================================== */}
-            {isComparisonsOpen && (
+            {FEATURE_FLAGS.COMPARISONS_DROPDOWN && isComparisonsOpen && (
               <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/95 border border-[#E5E4E6] rounded-3xl shadow-lg">
                 {/* Property Type Section */}
                 <div className="p-4 border-b border-[#E5E4E6]">
