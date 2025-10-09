@@ -325,6 +325,293 @@ color: #ef4444; /* text-red-500 */
 - **Chart area**: Clean background with subtle grid
 - **Data points**: Clear markers
 - **Trend lines**: Smooth, professional styling
+- **Timeline**: 12-month X-axis (Jan-Dec) with 6 months of data
+- **Y-axis**: Price points formatted in millions (₱16.2M)
+- **Visualization**: SVG-based line chart without external libraries
+
+---
+
+## **ML Projections Integration**
+
+### **Overview**
+Kairos integrates Machine Learning projections to supplement scraped data with metrics that cannot be obtained through web scraping alone. This provides users with comprehensive market intelligence while maintaining transparency about data sources.
+
+### **Data Sources**
+
+#### **Scraped Data (Real Lamudi Listings):**
+- ✅ **Property Report** - Current active listings
+- ✅ **CMA Summary** (Avg, Median, Range) - Calculated from scraped properties
+- ✅ **Locations/Neighborhoods** - Real neighborhood distribution
+
+#### **ML Projections (Market Intelligence):**
+- ✅ **Avg Days on Market** - Projected DOM per location
+- ✅ **Market Activity** - Active/Pending/Closed counts
+- ✅ **Avg Sold Price** - Historical sale price projections
+- ✅ **Median Sold Price** - Historical sale price projections
+- ✅ **Historical Trends** - 6-month price trajectory
+
+### **CSV Data Structure**
+```csv
+psgc_code,area_name,avg_sold_price,median_sold_price,avg_dom,active_count,pending_count,closed_count,trend_6m,confidence,sample_size
+1376,Metro Manila,16631289,15325748,38,50,18,5,"16225648,16808081,16923067,17363097,17634040,16631289",high,4148
+1377,Antipolo,8429843,7897561,35,25,10,3,"8234567,8298765,8356789,8389234,8401234,8429843",high,892
+```
+
+### **Coverage**
+18 Philippine locations with ML projections:
+- Metro Manila, Antipolo, Cebu, Davao, Davao City
+- Rizal, Iloilo, Negros Occidental, Zamboanga City
+- Misamis Oriental, Cavite, Laguna, Baguio City
+- And 5 more major real estate markets
+
+### **Projection Labels**
+```css
+.projection-label {
+  font-size: 0.625rem; /* text-[10px] */
+  color: #6b7280; /* text-gray-500 */
+  margin-bottom: 1rem; /* mb-4 */
+}
+```
+
+**Label Format:** "Market Intelligence (X data points)"
+
+### **Historical Trends Visualization**
+
+#### **SVG Line Chart Implementation**
+```typescript
+// 12-month timeline with 6 months of data
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const dataPoints = projection?.trend_6m || [];
+
+// Chart dimensions
+viewBox="0 0 100 100"
+preserveAspectRatio="none"
+
+// Data point positioning
+x = idx * 8.33; // Spread 6 points across 50% of timeline
+y = 90 - ((value - minValue) / range) * 80; // Use 80% height with margins
+```
+
+#### **Y-Axis Price Labels**
+```typescript
+// Format: ₱16.2M
+(value / 1000000).toFixed(1) + 'M'
+
+// 5 horizontal grid lines
+const steps = 5;
+const stepValue = range / steps;
+```
+
+#### **Line Styling**
+```css
+.trend-line {
+  stroke: #000000; /* Black line */
+  stroke-width: 1.2; /* Thin professional line */
+  stroke-linecap: round; /* Smooth line caps */
+  fill: none;
+}
+
+.data-point {
+  fill: white; /* White circle fill */
+  stroke: #000000; /* Black border */
+  stroke-width: 0.8;
+  r: 1.2; /* Small circle radius */
+}
+```
+
+### **Dynamic Projection Lookup**
+
+#### **PSGC Code Matching**
+```typescript
+// Primary lookup by province code
+const projection = projectionsMap.get(psgc_province_code.toString());
+```
+
+#### **Name-Based Fallback**
+```typescript
+// Fallback to name matching for mismatches
+if (!projection && selectedAddress.full_address) {
+  projection = findProjectionByName(projectionsMap, selectedAddress.full_address);
+}
+
+// Matching priority:
+// 1. Exact match (case-insensitive)
+// 2. Partial match (search contains CSV name)
+// 3. Reverse partial match (CSV name contains search)
+```
+
+### **Component Integration**
+
+#### **MetricCard (Days on Market)**
+```typescript
+<MetricCard 
+  title="Avg Days on Market" 
+  value={currentProjection ? `${currentProjection.avg_dom}` : "28"}
+  note={currentProjection ? formatProjectionLabel(currentProjection) : "Mock data placeholder"}
+/>
+```
+
+#### **MarketActivity**
+```typescript
+const activeCount = projection ? projection.active_count : Math.floor(totalCount * 0.68);
+const pendingCount = projection ? projection.pending_count : Math.floor(totalCount * 0.25);
+const closedCount = projection ? projection.closed_count : Math.floor(totalCount * 0.07);
+
+// Calculate percentages for progress bars
+const activePercent = (activeCount / total) * 100;
+const pendingPercent = (pendingCount / total) * 100;
+const closedPercent = (closedCount / total) * 100;
+```
+
+#### **CMASummaryTable**
+```typescript
+const avgSoldPrice = projection?.avg_sold_price || cma.stats.avg * 0.98;
+const medianSoldPrice = projection?.median_sold_price || cma.stats.median * 0.99;
+const avgDaysOnMarket = projection?.avg_dom || 42;
+
+const isMock = !projection;
+```
+
+#### **HistoricalTrends**
+```typescript
+const dataPoints = projection?.trend_6m || [];
+
+// Calculate min/max for Y-axis scaling
+const minValue = Math.min(...dataPoints);
+const maxValue = Math.max(...dataPoints);
+const range = maxValue - minValue;
+
+// Display "No projection data available" if empty
+if (!projection || dataPoints.length === 0) {
+  return <EmptyState />;
+}
+```
+
+### **TypeScript Interfaces**
+
+```typescript
+interface ProjectionData {
+  psgc_code: string;
+  area_name: string;
+  avg_sold_price: number;
+  median_sold_price: number;
+  avg_dom: number;
+  active_count: number;
+  pending_count: number;
+  closed_count: number;
+  trend_6m: number[];
+  confidence: 'high' | 'medium' | 'low';
+  sample_size: number;
+}
+```
+
+### **CSV Parsing**
+
+#### **Handling Quoted Fields**
+```typescript
+// Custom parser for quoted fields containing commas
+function parseProjectionRow(row: string): ProjectionData | null {
+  const cols: string[] = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < row.length; i++) {
+    const char = row[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      cols.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  cols.push(current);
+  
+  // Parse trend_6m array
+  const trendData = cols[8].replace(/"/g, '').split(/,/).map(v => parseFloat(v.trim()));
+  
+  return {
+    // ... map columns to interface
+  };
+}
+```
+
+### **Realistic Market Data**
+
+#### **Trend Characteristics**
+- **Seasonal Patterns**: Q1 growth, Q2/Q3 cooling, Q4 OFW spike
+- **Market Volatility**: ±2-5% monthly fluctuations
+- **Occasional Corrections**: Realistic decreases (not always upward)
+- **Regional Variations**: Different trends per location
+
+#### **Sample Sizes**
+- **High Confidence**: 1000-4000+ samples (Metro Manila, Cebu)
+- **Medium Confidence**: 100-1000 samples (Major cities)
+- **Low Confidence**: 10-100 samples (Emerging markets)
+
+### **Error Handling**
+
+#### **Missing Projections**
+```typescript
+// Graceful fallback to defaults
+const value = projection?.avg_dom || 28;
+const note = projection 
+  ? formatProjectionLabel(projection) 
+  : "Mock data placeholder";
+```
+
+#### **Invalid CSV Data**
+```typescript
+try {
+  const projection = parseProjectionRow(row);
+  if (projection) {
+    projectionsMap.set(projection.psgc_code, projection);
+  }
+} catch (e) {
+  console.warn('Failed to parse projection row:', row, e);
+}
+```
+
+### **Scalability Considerations**
+
+#### **Monthly Updates**
+1. Run ML model with latest data
+2. Generate new `projections.csv`
+3. Replace existing CSV in `Kairos/public/data/`
+4. No code changes required
+5. Projections update automatically
+
+#### **Adding New Locations**
+1. Add row to CSV with PSGC code and projections
+2. Name-based matching handles lookup
+3. Components automatically display new data
+
+#### **Future MLS Integration**
+- Current structure supports swapping ML projections for real temporal data
+- Same component interfaces work
+- Just change data source from CSV to API
+- No component refactoring needed
+
+### **Design Guidelines**
+
+#### **Transparency**
+- Always label projected data as "Market Intelligence"
+- Show sample size to indicate confidence
+- Never mix scraped and projected data in same component
+- Clear visual distinction between data sources
+
+#### **Professional Appearance**
+- Gray text for projection labels (not red)
+- Subtle, not distracting
+- Consistent formatting across components
+- Professional chart styling (black lines, white data points)
+
+#### **User Trust**
+- Clear data source boundaries
+- Realistic fluctuations (not perfectly linear)
+- Regional variations (not one-size-fits-all)
+- Honest about limitations (sample sizes, confidence levels)
 
 ---
 

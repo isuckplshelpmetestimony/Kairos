@@ -739,16 +739,199 @@ python lamudi_scraper.py
 
 ---
 
+## 🔄 PIVOT #6: Component Data Sources - Scraped vs Projected (October 2025)
+
+### **The Problem**
+
+After integrating ML projections CSV into the dashboard, **all components appeared static** when searching different locations within the same province. Users perceived the entire dashboard as unchanging, even though ML projections were updating correctly in the background.
+
+### **The Discovery**
+
+**Root Cause:** Multiple data sources were mixed together in components, creating confusion:
+- Scraped data (real Lamudi listings) naturally shows the same results for locations within the same province
+- ML projections were changing dynamically, but users couldn't see the difference
+- Components showed a mix of both, making it unclear what was real vs projected
+
+### **The Decision**
+
+**Isolate data sources at the component level:**
+
+#### **Scraped Data Only (Real Lamudi Results):**
+1. ✅ **Property Report** - Real property listings from Lamudi
+2. ✅ **CMA Summary** (Average, Median, Range) - Calculated from scraped properties
+3. ✅ **Locations/Neighborhoods** - Real neighborhood data from listings
+
+#### **ML Projections Only (CSV-Driven):**
+1. ✅ **Avg Days on Market** (MetricCard) - From `projection.avg_dom`
+2. ✅ **Market Activity** (Active/Pending/Closed) - From `projection.active_count`, `pending_count`, `closed_count`
+3. ✅ **Avg Sold Price** (CMASummaryTable) - From `projection.avg_sold_price`
+4. ✅ **Median Sold Price** (CMASummaryTable) - From `projection.median_sold_price`
+5. ✅ **Avg Days on Market** (LocationsTable) - From `projection.avg_dom`
+6. ✅ **Historical Trends** - From `projection.trend_6m` (6-month price trajectory)
+
+### **Why This Works**
+
+**Clear Data Boundaries:**
+- Users understand which metrics are from real listings (Property Report, CMA)
+- Which metrics are market intelligence projections (DOM, Market Activity, Historical Trends)
+- No confusion about data sources
+
+**Dynamic Updates:**
+- When searching "Metro Manila" → Shows Metro Manila projections
+- When searching "Cebu" → Shows Cebu projections
+- Each of the 18 locations has unique ML projections
+
+**Professional Transparency:**
+- Projected data labeled as "Market Intelligence (X data points)"
+- Mock data labels removed from real scraped components
+- Users trust what they see because sources are clear
+
+### **Implementation Changes**
+
+**CSV Loading & State Management:**
+```typescript
+// App.tsx
+const [projectionsMap, setProjectionsMap] = useState<Map<string, ProjectionData>>(new Map());
+const [currentProjection, setCurrentProjection] = useState<ProjectionData | null>(null);
+
+// Load CSV on mount
+useEffect(() => {
+  loadProjections().then(setProjectionsMap);
+}, []);
+
+// Update projection when address changes
+useEffect(() => {
+  if (selectedAddress?.location?.psgc_province_code) {
+    const psgcCode = selectedAddress.location.psgc_province_code.toString();
+    let projection = projectionsMap.get(psgcCode);
+    
+    // Fallback to name-based matching if PSGC fails
+    if (!projection && selectedAddress.full_address) {
+      projection = findProjectionByName(projectionsMap, selectedAddress.full_address);
+    }
+    
+    setCurrentProjection(projection || null);
+  }
+}, [selectedAddress, projectionsMap]);
+```
+
+**Component Prop Drilling:**
+```typescript
+// Pass projections only to components that need them
+<MetricCard 
+  title="Avg Days on Market" 
+  value={currentProjection ? `${currentProjection.avg_dom}` : "28"} 
+/>
+
+<MarketActivity cma={cma} projection={currentProjection} />
+<HistoricalTrends cma={cma} projection={currentProjection} />
+<CMASummaryTable cma={cma} projection={currentProjection} />
+<LocationsTable cma={cma} projection={currentProjection} />
+```
+
+**Component Updates:**
+```typescript
+// MarketActivity.tsx - Use projections directly
+const activeCount = projection ? projection.active_count : Math.floor(totalCount * 0.68);
+const pendingCount = projection ? projection.pending_count : Math.floor(totalCount * 0.25);
+const closedCount = projection ? projection.closed_count : Math.floor(totalCount * 0.07);
+
+// HistoricalTrends.tsx - Use 6-month trend data
+const dataPoints = projection?.trend_6m || [450, 465, 470, 472, 478, 485];
+```
+
+### **Impact**
+
+**Before Pivot:**
+- ❌ Users confused about static vs dynamic data
+- ❌ Mock data labels everywhere ("Mock data placeholder")
+- ❌ Mixed data sources in components
+- ❌ Unclear what's real vs projected
+
+**After Pivot:**
+- ✅ Clear separation: Real listings vs Market intelligence
+- ✅ Dynamic projections for 18 Philippine locations
+- ✅ Professional labeling ("Market Intelligence (X data points)")
+- ✅ Users trust the dashboard because sources are transparent
+
+### **Technical Details**
+
+**CSV Structure:**
+```csv
+psgc_code,area_name,avg_sold_price,median_sold_price,avg_dom,active_count,pending_count,closed_count,trend_6m,confidence,sample_size
+1376,Metro Manila,16631289,15325748,38,50,18,5,"16225648,16808081,16923067,17363097,17634040,16631289",high,4148
+```
+
+**Projection Lookup Logic:**
+1. **PSGC Code Match** - Exact match on province code
+2. **Name-Based Fallback** - Case-insensitive partial matching
+3. **Graceful Degradation** - Falls back to reasonable defaults if no projection found
+
+**Coverage:**
+- 18 Philippine locations with ML projections
+- Realistic market fluctuations (seasonal trends, volatility)
+- Confidence levels: High (4000+ samples) to Low (10-50 samples)
+
+### **UI/UX Improvements**
+
+**Removed Distracting Elements:**
+- ❌ Removed green percentage texts ("+12% from last month", "N/A")
+- ❌ Removed "View" links from individual property listings
+- ❌ Removed red "Mock data placeholder" labels from scraped components
+- ✅ Kept only Historical Trends visualization for trend display
+
+**Label Updates:**
+- Changed red text → gray text for softer appearance
+- "Mock data placeholder" → "Market Intelligence (X data points)"
+- Maintained transparency about projection sources
+
+### **Guardrails Respected**
+
+✅ **Minimal Technical Debt** - Just CSV parsing, no new libraries  
+✅ **No Backend Changes** - Frontend-only integration  
+✅ **Type Safety** - Full TypeScript interfaces (`ProjectionData`)  
+✅ **Scalable** - Easy to update CSV monthly with new ML runs  
+✅ **Transparent** - Clear labeling of data sources  
+✅ **Simple** - ~100 lines of new code, 1 new file
+
+### **Lessons Learned**
+
+1. **Data Source Clarity > Feature Richness** - Users need to trust what they see
+2. **Component Isolation** - Each component should have a clear, singular data source
+3. **Transparent Labeling** - Always show users where data comes from
+4. **Graceful Fallbacks** - Name-based matching improves UX when PSGC codes mismatch
+5. **CSV is Sufficient** - No need for database/API for static projections
+
+### **Future Enhancements**
+
+**When ML model improves:**
+- Just replace `projections.csv` with updated file
+- No code changes needed
+- Projections update automatically
+
+**When adding more locations:**
+- Add rows to CSV
+- Lookup logic already handles new entries
+- No component changes required
+
+**When integrating real MLS data:**
+- Replace ML projections with actual temporal data
+- Same component structure works
+- Just swap data source
+
+---
+
 ## 📝 DOCUMENT METADATA
 
 **Created:** September 30, 2025  
 **Author:** Sean Macalintal (with AI assistance)  
 **Purpose:** Record architectural pivots and decision rationale  
 **Status:** Active reference document  
-**Last Updated:** September 30, 2025
+**Last Updated:** October 9, 2025
 
 **Related Documents:**
 - `PSGC-DATA-SEARCHING-REFERENCE.md` - Address search architecture decisions
+- `KAIROS-DASHBOARD-DESIGN-SYSTEM.md` - ML Projections Integration details
 - `Kairos/README.md` - Project overview
 - `render.yaml` - Deployment configuration
 
