@@ -1,19 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import type { ProjectionData } from "@/types/projection";
+import { formatProjectionLabel } from "@/types/projection";
 
 interface CMASummaryTableProps {
   open: boolean;
   onClose: () => void;
   cma: {
     stats: { count: number; avg: number; median: number; min: number; max: number };
-    properties?: Array<{ price: number; sqm: number; [key: string]: unknown }>;
+    properties?: Array<Record<string, unknown>>;
   } | null;
+  projection?: ProjectionData | null;
 }
 
 // Minimal, self-contained modal table for CMA summary metrics.
 // Closes on ESC and backdrop click. Simple focus trap while open.
-export const CMASummaryTable: React.FC<CMASummaryTableProps> = ({ open, onClose, cma }) => {
+export const CMASummaryTable: React.FC<CMASummaryTableProps> = ({ open, onClose, cma, projection }) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
   const closeBtnRef = useRef<HTMLButtonElement | null>(null);
   const [entered, setEntered] = useState(false);
@@ -61,25 +64,26 @@ export const CMASummaryTable: React.FC<CMASummaryTableProps> = ({ open, onClose,
   const validProperties = (cma.properties || []).filter(p => {
     const price = Number(p.price);
     const sqm = Number(p.sqm);
-    return price > 0 && sqm > 0;
+    return Number.isFinite(price) && price > 0 && Number.isFinite(sqm) && sqm > 0;
   });
   
   const pricePerSqm = validProperties.length > 0
     ? validProperties.reduce((sum, p) => sum + (Number(p.price) / Number(p.sqm)), 0) / validProperties.length
     : 0;
 
-  // Mock calculations for sold prices (real data not available yet)
-  const avgSoldPrice = cma.stats.avg * 0.98; // Approximation: sold ≈ 98% of list
-  const medianSoldPrice = cma.stats.median * 0.99; // Approximation
-  const avgDaysOnMarket = 42; // Mock constant
+  // Use projection data only (no fallback)
+  const avgSoldPrice = projection ? projection.avg_sold_price : undefined;
+  const medianSoldPrice = projection ? projection.median_sold_price : undefined;
+  const avgDaysOnMarket = projection ? Math.round(projection.avg_dom) : undefined;
+  const hasProjection = !!projection;
 
   const metrics = [
     { label: 'Total Properties Analyzed', value: cma.stats.count.toString(), isMock: false },
     { label: 'Average List Price', value: formatCurrency(cma.stats.avg), isMock: false },
     { label: 'Median List Price', value: formatCurrency(cma.stats.median), isMock: false },
-    { label: 'Average Sold Price', value: formatCurrency(avgSoldPrice), isMock: true },
-    { label: 'Median Sold Price', value: formatCurrency(medianSoldPrice), isMock: true },
-    { label: 'Average Days on Market', value: avgDaysOnMarket.toString(), isMock: true },
+    { label: 'Average Sold Price', value: formatCurrency(avgSoldPrice), isMock: !hasProjection },
+    { label: 'Median Sold Price', value: formatCurrency(medianSoldPrice), isMock: !hasProjection },
+    { label: 'Average Days on Market', value: avgDaysOnMarket !== undefined ? avgDaysOnMarket.toString() : 'N/A', isMock: !hasProjection },
     { label: 'Price per Sq M (Avg)', value: formatCurrency(pricePerSqm), isMock: false },
   ];
 
@@ -119,7 +123,7 @@ export const CMASummaryTable: React.FC<CMASummaryTableProps> = ({ open, onClose,
                     <td className="py-3 text-right">
                       <div className="text-sm font-semibold text-gray-900">{metric.value}</div>
                       {metric.isMock && (
-                        <div className="text-xs text-red-500 mt-0.5">Mock data placeholder</div>
+                        <div className="text-xs text-red-500 mt-0.5">{formatProjectionLabel(projection)}</div>
                       )}
                     </td>
                   </tr>

@@ -1,6 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Download } from "lucide-react";
+import type { ProjectionData } from "@/types/projection";
+import { calculateTrendChange } from "@/types/projection";
 
 interface NeighborhoodsProps {
   cma?: { 
@@ -8,9 +10,10 @@ interface NeighborhoodsProps {
     neighborhoods: Record<string, { count: number; mean: number; min: number; max: number }>;
   };
   onOpenLocations?: () => void;
+  projection?: ProjectionData | null;
 }
 
-export const Neighborhoods = ({ cma, onOpenLocations }: NeighborhoodsProps) => {
+export const Neighborhoods = ({ cma, onOpenLocations, projection }: NeighborhoodsProps) => {
   // Use real data from API if available, otherwise fallback to mock data
   const neighborhoods = cma?.neighborhoods ? 
     Object.entries(cma.neighborhoods)
@@ -20,14 +23,14 @@ export const Neighborhoods = ({ cma, onOpenLocations }: NeighborhoodsProps) => {
         name,
         properties: `${data.count} properties`,
         price: `₱${Math.round(data.mean).toLocaleString()}`,
-        change: "+2.1%", // Keep mock change for now
+        change: calculateTrendChange(projection), // Use province-level trend as neighborhood estimate
         positive: true
       })) : [
-      { name: "Downtown", properties: "156 properties", price: "₱485,000", change: "+3.2%", positive: true },
-      { name: "Riverside", properties: "89 properties", price: "₱485,000", change: "+1.8%", positive: true },
-      { name: "Hillcrest", properties: "134 properties", price: "₱485,000", change: "+4.1%", positive: true },
-      { name: "Oakwood", properties: "78 properties", price: "₱485,000", change: "-0.5%", positive: false },
-      { name: "Metro Heights", properties: "112 properties", price: "₱485,000", change: "+2.7%", positive: true },
+      { name: "Downtown", properties: "156 properties", price: "₱485,000", change: "N/A", positive: true },
+      { name: "Riverside", properties: "89 properties", price: "₱485,000", change: "N/A", positive: true },
+      { name: "Hillcrest", properties: "134 properties", price: "₱485,000", change: "N/A", positive: true },
+      { name: "Oakwood", properties: "78 properties", price: "₱485,000", change: "N/A", positive: true },
+      { name: "Metro Heights", properties: "112 properties", price: "₱485,000", change: "N/A", positive: true },
     ];
 
   return (

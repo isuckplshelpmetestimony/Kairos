@@ -1,21 +1,29 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Download } from "lucide-react";
+import type { ProjectionData } from "@/types/projection";
+import { formatProjectionLabel } from "@/types/projection";
 
 interface MarketActivityProps {
   cma?: { stats: { count: number } };
+  projection?: ProjectionData | null;
 }
 
-export const MarketActivity = ({ cma }: MarketActivityProps) => {
-  const totalCount = cma ? cma.stats.count : 1247;
-  const activeCount = Math.floor(totalCount * 0.68);
-  const pendingCount = Math.floor(totalCount * 0.25);
-  const closedCount = Math.floor(totalCount * 0.07);
+export const MarketActivity = ({ cma, projection }: MarketActivityProps) => {
+  // Use projection data only (no fallback)
+  const activeCount = projection ? projection.active_count : 0;
+  const pendingCount = projection ? projection.pending_count : 0;
+  const closedCount = projection ? projection.closed_count : 0;
+
+  const totalCount = activeCount + pendingCount + closedCount;
+  const activePercent = totalCount > 0 ? ((activeCount / totalCount) * 100).toFixed(1) : "0";
+  const pendingPercent = totalCount > 0 ? ((pendingCount / totalCount) * 100).toFixed(1) : "0";
+  const closedPercent = totalCount > 0 ? ((closedCount / totalCount) * 100).toFixed(1) : "0";
 
   const activityData = [
-    { label: "Active", count: activeCount, color: "bg-[#333f91]", width: "68%" },
-    { label: "Pending", count: pendingCount, color: "bg-[#e1516c]", width: "25%" },
-    { label: "Closed", count: closedCount, color: "bg-[#62bd2d]", width: "7%" },
+    { label: "Active", count: activeCount, color: "bg-[#333f91]", width: `${activePercent}%` },
+    { label: "Pending", count: pendingCount, color: "bg-[#e1516c]", width: `${pendingPercent}%` },
+    { label: "Closed", count: closedCount, color: "bg-[#62bd2d]", width: `${closedPercent}%` },
   ];
 
   return (
@@ -34,7 +42,7 @@ export const MarketActivity = ({ cma }: MarketActivityProps) => {
         </div>
       </div>
 
-      <p className="text-[10px] text-red-600 mb-4">Mock data placeholder</p>
+      <p className="text-[10px] text-red-600 mb-4">{formatProjectionLabel(projection)}</p>
 
       <div className="space-y-6">
         {activityData.map((item) => (

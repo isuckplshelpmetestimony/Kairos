@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { KairosLogo } from './components/KairosLogo';
 import { InlineToggle } from './components/InlineToggle';
 import { HeroSection } from './components/HeroSection';
@@ -20,6 +20,8 @@ import {
 } from './constants';
 import { createPropertyStatusHandlers, renderPropertyStatusGroup } from './utils/propertyStatusHelpers';
 import type { KairosAddressOutput } from './types/address';
+import { loadProjections, formatProjectionLabel, calculateTrendChange, calculateMarketActivityTrend, calculateDOMTrend } from './types/projection';
+import type { ProjectionData } from './types/projection';
 
 
 export default function App() {
@@ -53,6 +55,10 @@ export default function App() {
   const [isCMASummaryOpen, setIsCMASummaryOpen] = useState(false);
   const [isLocationsOpen, setIsLocationsOpen] = useState(false);
 
+  // ML Projections state
+  const [projectionsMap, setProjectionsMap] = useState<Map<string, ProjectionData>>(new Map());
+  const [currentProjection, setCurrentProjection] = useState<ProjectionData | null>(null);
+
   // Get helper functions from utils
   const {
     handleDateRangeSelect,
@@ -69,6 +75,27 @@ export default function App() {
     () => {}
   );
 
+  // Load ML projections on mount
+  useEffect(() => {
+    loadProjections().then(setProjectionsMap);
+  }, []);
+
+  // Update current projection when selected address changes
+  useEffect(() => {
+    if (selectedAddress?.location?.psgc_province_code) {
+      const psgcCode = selectedAddress.location.psgc_province_code.toString();
+      const projection = projectionsMap.get(psgcCode);
+      setCurrentProjection(projection || null);
+      
+      if (projection) {
+        console.log(`Loaded projection for ${projection.area_name} (PSGC: ${psgcCode})`);
+      } else {
+        console.log(`No projection found for PSGC: ${psgcCode}`);
+      }
+    } else {
+      setCurrentProjection(null);
+    }
+  }, [selectedAddress, projectionsMap]);
 
   // Clear error function
   const clearError = () => {
@@ -427,21 +454,27 @@ export default function App() {
             ) : (
               <div className="mx-auto max-w-7xl space-y-8">
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                  <MetricCard title="Total Properties" value={cma.stats.count.toString()} change="+12% from last month" positive />
-                  <MetricCard title="Avg Price" value={`₱${Math.round(cma.stats.avg).toLocaleString()}`} change="+2.3% from last month" positive />
-                  <MetricCard title="Avg Days on Market" value="28" change="-5 days from last month" positive note="Mock data placeholder" />
+                  <MetricCard title="Total Properties" value={cma.stats.count.toString()} change={calculateMarketActivityTrend(currentProjection)} positive />
+                  <MetricCard title="Avg Price" value={`₱${Math.round(cma.stats.avg).toLocaleString()}`} change={calculateTrendChange(currentProjection)} positive />
+                  <MetricCard 
+                    title="Avg Days on Market" 
+                    value={currentProjection ? Math.round(currentProjection.avg_dom).toString() : "N/A"} 
+                    change={calculateDOMTrend(currentProjection)} 
+                    positive 
+                    note={formatProjectionLabel(currentProjection)} 
+                  />
                   <MetricCard title="Total Neighborhoods" value={Object.keys(cma.neighborhoods || {}).length.toString()} subtitle="Active areas" />
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                   <PropertyReport cma={cma} onOpenDataTable={() => setIsDataTableOpen(true)} />
-                  <CMASummary cma={cma} onOpenCMASummary={() => setIsCMASummaryOpen(true)} />
-                  <MarketActivity cma={cma} />
-                  <Neighborhoods cma={cma} onOpenLocations={() => setIsLocationsOpen(true)} />
+                  <CMASummary cma={cma} onOpenCMASummary={() => setIsCMASummaryOpen(true)} projection={currentProjection} />
+                  <MarketActivity cma={cma} projection={currentProjection} />
+                  <Neighborhoods cma={cma} onOpenLocations={() => setIsLocationsOpen(true)} projection={currentProjection} />
                 </div>
 
                 <div>
-                  <HistoricalTrends cma={cma} />
+                  <HistoricalTrends cma={cma} projection={currentProjection} />
                 </div>
               </div>
             )}
@@ -480,9 +513,9 @@ export default function App() {
         {/* Data Table Modal */}
         <DataTable open={isDataTableOpen} onClose={() => setIsDataTableOpen(false)} properties={(cma?.properties as any[]) || []} />
         {/* CMA Summary Table Modal */}
-        <CMASummaryTable open={isCMASummaryOpen} onClose={() => setIsCMASummaryOpen(false)} cma={cma} />
+        <CMASummaryTable open={isCMASummaryOpen} onClose={() => setIsCMASummaryOpen(false)} cma={cma as any} projection={currentProjection} />
         {/* Locations Table Modal */}
-        <LocationsTable open={isLocationsOpen} onClose={() => setIsLocationsOpen(false)} cma={cma} />
+        <LocationsTable open={isLocationsOpen} onClose={() => setIsLocationsOpen(false)} cma={cma as any} projection={currentProjection} />
       </main>
 
       {/* Subtle Grid Background Pattern */}

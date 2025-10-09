@@ -1,19 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import type { ProjectionData } from "@/types/projection";
+import { formatProjectionLabel } from "@/types/projection";
 
 interface LocationsTableProps {
   open: boolean;
   onClose: () => void;
   cma: {
     neighborhoods: Record<string, { count: number; mean: number; min: number; max: number }>;
-    properties?: Array<{ neighborhood: string; price: number; sqm: number; [key: string]: unknown }>;
+    properties?: Array<Record<string, unknown>>;
   } | null;
+  projection?: ProjectionData | null;
 }
 
 // Minimal, self-contained modal table for neighborhood data.
 // Closes on ESC and backdrop click. Simple focus trap while open.
-export const LocationsTable: React.FC<LocationsTableProps> = ({ open, onClose, cma }) => {
+export const LocationsTable: React.FC<LocationsTableProps> = ({ open, onClose, cma, projection }) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
   const closeBtnRef = useRef<HTMLButtonElement | null>(null);
   const [entered, setEntered] = useState(false);
@@ -63,7 +66,7 @@ export const LocationsTable: React.FC<LocationsTableProps> = ({ open, onClose, c
     const neighborhoodProps = properties.filter(p => {
       const price = Number(p.price);
       const sqm = Number(p.sqm);
-      return p.neighborhood === neighborhood && price > 0 && sqm > 0;
+      return p.neighborhood === neighborhood && Number.isFinite(price) && price > 0 && Number.isFinite(sqm) && sqm > 0;
     });
     
     if (neighborhoodProps.length === 0) return 0;
@@ -76,15 +79,21 @@ export const LocationsTable: React.FC<LocationsTableProps> = ({ open, onClose, c
   };
 
   // Build table rows from neighborhoods data (show ALL neighborhoods)
+  // Note: Projections are province-level, so we apply them uniformly to all neighborhoods
+  const avgSoldPriceMultiplier = projection 
+    ? (projection.avg_sold_price / projection.trend_6m[projection.trend_6m.length - 1] || 1)
+    : 0;
+  const defaultDom = projection ? Math.round(projection.avg_dom) : undefined;
+
   const rows = Object.entries(cma.neighborhoods)
     .sort(([,a], [,b]) => b.count - a.count) // Sort by count descending
     .map(([name, data]) => ({
       neighborhood: name,
       activeListings: data.count,
       avgListPrice: data.mean,
-      avgSoldPrice: data.mean * 0.98, // Mock approximation
+      avgSoldPrice: data.mean * avgSoldPriceMultiplier, // Use projection ratio if available
       avgPricePerSqFt: calculatePricePerSqFt(name),
-      avgDaysOnMarket: 42, // Mock constant
+      avgDaysOnMarket: defaultDom, // Use projection DOM if available
     }));
 
   return (
@@ -128,12 +137,12 @@ export const LocationsTable: React.FC<LocationsTableProps> = ({ open, onClose, c
                     <td className="py-3 pr-4 text-sm text-right text-gray-900">{formatCurrency(row.avgListPrice)}</td>
                     <td className="py-3 pr-4 text-right">
                       <div className="text-sm text-gray-900">{formatCurrency(row.avgSoldPrice)}</div>
-                      <div className="text-xs text-red-500 mt-0.5">Mock data placeholder</div>
+                      <div className="text-xs text-red-500 mt-0.5">{formatProjectionLabel(projection)}</div>
                     </td>
                     <td className="py-3 pr-4 text-sm text-right text-gray-900">{formatCurrency(row.avgPricePerSqFt)}</td>
                     <td className="py-3 text-center">
-                      <div className="text-sm text-gray-900">{row.avgDaysOnMarket}</div>
-                      <div className="text-xs text-red-500 mt-0.5">Mock data placeholder</div>
+                      <div className="text-sm text-gray-900">{row.avgDaysOnMarket !== undefined ? row.avgDaysOnMarket : 'N/A'}</div>
+                      <div className="text-xs text-red-500 mt-0.5">{formatProjectionLabel(projection)}</div>
                     </td>
                   </tr>
                 ))}
