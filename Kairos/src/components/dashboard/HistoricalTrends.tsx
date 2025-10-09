@@ -13,6 +13,10 @@ export const HistoricalTrends = ({ cma, projection }: HistoricalTrendsProps) => 
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
   
   // Use projection trend data only (no fallback)
+  console.log('HistoricalTrends projection:', projection);
+  console.log('trend_6m:', projection?.trend_6m);
+  console.log('trend_6m length:', projection?.trend_6m?.length);
+  
   const dataPoints = projection && projection.trend_6m.length === 6
     ? projection.trend_6m
     : [];
@@ -48,23 +52,49 @@ export const HistoricalTrends = ({ cma, projection }: HistoricalTrendsProps) => 
         </div>
       </div>
 
-      <p className="text-[10px] text-red-600 mb-4">{formatProjectionLabel(projection)}</p>
 
       <p className="text-sm font-medium text-gray-700">Average Price Over Time (Last 6 Months)</p>
+      {dataPoints.length === 6 && (
+        <p className="text-xs text-gray-500 mb-2">
+          Trend: ₱{dataPoints.map(v => (v/1000000).toFixed(1)).join('M → ')}M
+        </p>
+      )}
       <div className="relative h-48 mb-8 bg-kairos-white-porcelain rounded-lg p-6">
         {dataPoints.length === 6 ? (
-          <div className="flex items-end justify-between h-full">
-            {dataPoints.map((value, idx) => {
-              const height = range > 0 ? ((value - minValue) / range) * 100 : 50;
-              return (
-                <div key={idx} className="flex flex-col items-center flex-1">
-                  <div className="w-full flex items-end justify-center h-full">
-                    <div className="w-2 bg-[#333f91] rounded-t transition-all" style={{ height: `${Math.max(height, 10)}%` }} />
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-3">{months[idx]}</p>
-                </div>
-              );
-            })}
+          <div className="w-full h-full">
+            <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+              <path 
+                d={dataPoints.map((value, idx) => {
+                  const x = idx * 20; // 0, 20, 40, 60, 80, 100
+                  const y = 100 - ((value - minValue) / range) * 100; // Invert Y for SVG
+                  return `${idx === 0 ? 'M' : 'L'} ${x},${y}`;
+                }).join(' ')}
+                stroke="#333f91" 
+                strokeWidth="3" 
+                fill="none" 
+              />
+              {/* Add data points for better visibility */}
+              {dataPoints.map((value, idx) => {
+                const x = idx * 20;
+                const y = 100 - ((value - minValue) / range) * 100;
+                return (
+                  <circle 
+                    key={idx}
+                    cx={x} 
+                    cy={y} 
+                    r="2" 
+                    fill="#333f91"
+                  />
+                );
+              })}
+            </svg>
+            
+            {/* Month labels */}
+            <div className="absolute bottom-0 left-0 right-0 flex justify-between px-6 pb-2">
+              {months.map((month, idx) => (
+                <span key={idx} className="text-xs text-muted-foreground">{month}</span>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="flex items-center justify-center h-full">

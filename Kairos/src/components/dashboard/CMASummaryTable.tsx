@@ -123,7 +123,7 @@ export const CMASummaryTable: React.FC<CMASummaryTableProps> = ({ open, onClose,
                     <td className="py-3 text-right">
                       <div className="text-sm font-semibold text-gray-900">{metric.value}</div>
                       {metric.isMock && (
-                        <div className="text-xs text-red-500 mt-0.5">{formatProjectionLabel(projection)}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">{formatProjectionLabel(projection)}</div>
                       )}
                     </td>
                   </tr>

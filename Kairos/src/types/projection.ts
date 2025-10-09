@@ -24,7 +24,24 @@ export interface ProjectionData {
  * Parse a CSV row into ProjectionData
  */
 export function parseProjectionRow(row: string): ProjectionData | null {
-  const cols = row.split(',');
+  // Simple CSV parser that handles quoted fields with commas
+  const cols: string[] = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < row.length; i++) {
+    const char = row[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      cols.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  cols.push(current); // Add the last column
+  
   if (cols.length < 11) return null;
 
   try {
@@ -42,13 +59,6 @@ export function parseProjectionRow(row: string): ProjectionData | null {
       confidence: cols[9].trim() as 'high' | 'medium' | 'low',
       sample_size: parseInt(cols[10]),
     };
-    
-    console.log(`Parsed projection for ${projection.area_name}:`, {
-      psgc_code: projection.psgc_code,
-      trend_6m_length: projection.trend_6m.length,
-      trend_6m: projection.trend_6m
-    });
-    
     return projection;
   } catch (e) {
     console.warn('Failed to parse projection row:', row, e);
@@ -101,13 +111,13 @@ export function formatProjectionLabel(projection: ProjectionData | null | undefi
   
   switch (confidence) {
     case 'high':
-      return `ML Projection (High Confidence - ${formattedSize} samples)`;
+      return `Market Intelligence (${formattedSize} data points)`;
     case 'medium':
-      return `ML Projection (Medium Confidence - ${formattedSize} samples)`;
+      return `Market Intelligence (${formattedSize} data points)`;
     case 'low':
-      return `ML Projection (Low Confidence - ${formattedSize} samples)`;
+      return `Market Intelligence (${formattedSize} data points)`;
     default:
-      return 'ML Projection';
+      return 'Market Intelligence';
   }
 }
 

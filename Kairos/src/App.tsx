@@ -20,7 +20,7 @@ import {
 } from './constants';
 import { createPropertyStatusHandlers, renderPropertyStatusGroup } from './utils/propertyStatusHelpers';
 import type { KairosAddressOutput } from './types/address';
-import { loadProjections, formatProjectionLabel, calculateTrendChange, calculateDOMTrend, findProjectionByName } from './types/projection';
+import { loadProjections, formatProjectionLabel, findProjectionByName } from './types/projection';
 import type { ProjectionData } from './types/projection';
 
 
@@ -469,13 +469,11 @@ export default function App() {
             ) : (
               <div className="mx-auto max-w-7xl space-y-8">
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <MetricCard title="Total Properties" value={cma.stats.count.toString()} change="+1% from last month" positive />
-        <MetricCard title="Avg Price" value={`₱${Math.round(cma.stats.avg).toLocaleString()}`} change={calculateTrendChange(currentProjection)} positive />
+        <MetricCard title="Total Properties" value={cma.stats.count.toString()} />
+        <MetricCard title="Avg Price" value={`₱${Math.round(cma.stats.avg).toLocaleString()}`} />
         <MetricCard 
           title="Avg Days on Market" 
           value={currentProjection ? Math.round(currentProjection.avg_dom).toString() : "N/A"} 
-          change={calculateDOMTrend(currentProjection)} 
-          positive 
           note={formatProjectionLabel(currentProjection)} 
         />
                   <MetricCard title="Total Neighborhoods" value={Object.keys(cma.neighborhoods || {}).length.toString()} subtitle="Active areas" />

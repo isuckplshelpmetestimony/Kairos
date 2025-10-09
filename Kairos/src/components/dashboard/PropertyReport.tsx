@@ -76,9 +76,6 @@ export const PropertyReport = ({ cma, onOpenDataTable }: PropertyReportProps) =>
               </div>
               <div className="text-right">
                 <p className="font-semibold text-sm">{listing.price}</p>
-                {listing.url && (
-                  <a href={listing.url} target="_blank" rel="noreferrer" className="text-xs text-green-600">View</a>
-                )}
               </div>
             </div>
           ))}

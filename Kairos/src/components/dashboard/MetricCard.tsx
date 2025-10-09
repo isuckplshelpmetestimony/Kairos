@@ -23,7 +23,7 @@ export const MetricCard = ({ title, value, change, subtitle, positive, note }: M
         <p className="text-xs text-gray-500">{subtitle}</p>
       )}
       {note && (
-        <p className="text-[10px] text-red-600 mt-2">{note}</p>
+        <p className="text-[10px] text-gray-500 mt-2">{note}</p>
       )}
     </Card>
   );

@@ -10,9 +10,9 @@ interface CMASummaryProps {
 
 export const CMASummary = ({ cma, onOpenCMASummary }: CMASummaryProps) => {
   const summaryData = [
-    { label: "Average", value: cma ? `₱${cma.stats.avg.toLocaleString()}` : "$485,000", change: "N/A", positive: true },
-    { label: "Median", value: cma ? `₱${cma.stats.median.toLocaleString()}` : "$452,000", change: "N/A", positive: true },
-    { label: "Range", value: cma ? `₱${cma.stats.min.toLocaleString()} - ₱${cma.stats.max.toLocaleString()}` : "₱275,000 - ₱890,000", change: "N/A", positive: true },
+    { label: "Average", value: cma ? `₱${cma.stats.avg.toLocaleString()}` : "$485,000" },
+    { label: "Median", value: cma ? `₱${cma.stats.median.toLocaleString()}` : "$452,000" },
+    { label: "Range", value: cma ? `₱${cma.stats.min.toLocaleString()} - ₱${cma.stats.max.toLocaleString()}` : "₱275,000 - ₱890,000" },
   ];
 
   return (
@@ -45,7 +45,6 @@ export const CMASummary = ({ cma, onOpenCMASummary }: CMASummaryProps) => {
             <p className="text-sm text-muted-foreground">{item.label}</p>
             <div className="text-right">
               <p className="font-semibold text-lg">{item.value}</p>
-              <p className={`text-xs ${item.positive ? 'text-green-600' : 'text-red-600'}`}>{item.change}</p>
             </div>
           </div>
         ))}

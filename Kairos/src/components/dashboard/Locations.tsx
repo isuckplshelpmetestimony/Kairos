@@ -18,15 +18,13 @@ export const Neighborhoods = ({ cma, onOpenLocations }: NeighborhoodsProps) => {
       .map(([name, data]) => ({
         name,
         properties: `${data.count} properties`,
-        price: `₱${Math.round(data.mean).toLocaleString()}`,
-        change: "N/A", // Use scraped data only, no projections
-        positive: true
+        price: `₱${Math.round(data.mean).toLocaleString()}`
       })) : [
-      { name: "Downtown", properties: "156 properties", price: "₱485,000", change: "N/A", positive: true },
-      { name: "Riverside", properties: "89 properties", price: "₱485,000", change: "N/A", positive: true },
-      { name: "Hillcrest", properties: "134 properties", price: "₱485,000", change: "N/A", positive: true },
-      { name: "Oakwood", properties: "78 properties", price: "₱485,000", change: "N/A", positive: true },
-      { name: "Metro Heights", properties: "112 properties", price: "₱485,000", change: "N/A", positive: true },
+      { name: "Downtown", properties: "156 properties", price: "₱485,000" },
+      { name: "Riverside", properties: "89 properties", price: "₱485,000" },
+      { name: "Hillcrest", properties: "134 properties", price: "₱485,000" },
+      { name: "Oakwood", properties: "78 properties", price: "₱485,000" },
+      { name: "Metro Heights", properties: "112 properties", price: "₱485,000" },
     ];
 
   return (
@@ -63,7 +61,6 @@ export const Neighborhoods = ({ cma, onOpenLocations }: NeighborhoodsProps) => {
             </div>
             <div className="text-right">
               <p className="font-semibold text-sm">{n.price}</p>
-              <p className={`text-xs ${n.positive ? 'text-green-600' : 'text-red-600'}`}>{n.change}</p>
             </div>
           </div>
         ))}

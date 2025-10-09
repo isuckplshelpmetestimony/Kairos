@@ -42,7 +42,7 @@ export const MarketActivity = ({ cma, projection }: MarketActivityProps) => {
         </div>
       </div>
 
-      <p className="text-[10px] text-red-600 mb-4">{formatProjectionLabel(projection)}</p>
+      <p className="text-[10px] text-gray-500 mb-4">{formatProjectionLabel(projection)}</p>
 
       <div className="space-y-6">
         {activityData.map((item) => (

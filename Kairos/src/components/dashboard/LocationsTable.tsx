@@ -137,12 +137,12 @@ export const LocationsTable: React.FC<LocationsTableProps> = ({ open, onClose, c
                     <td className="py-3 pr-4 text-sm text-right text-gray-900">{formatCurrency(row.avgListPrice)}</td>
                     <td className="py-3 pr-4 text-right">
                       <div className="text-sm text-gray-900">{formatCurrency(row.avgSoldPrice)}</div>
-                      <div className="text-xs text-red-500 mt-0.5">{formatProjectionLabel(projection)}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">{formatProjectionLabel(projection)}</div>
                     </td>
                     <td className="py-3 pr-4 text-sm text-right text-gray-900">{formatCurrency(row.avgPricePerSqFt)}</td>
                     <td className="py-3 text-center">
                       <div className="text-sm text-gray-900">{row.avgDaysOnMarket !== undefined ? row.avgDaysOnMarket : 'N/A'}</div>
-                      <div className="text-xs text-red-500 mt-0.5">{formatProjectionLabel(projection)}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">{formatProjectionLabel(projection)}</div>
                     </td>
                   </tr>
                 ))}
