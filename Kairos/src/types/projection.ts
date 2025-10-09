@@ -157,3 +157,41 @@ export function calculateDOMTrend(projection: ProjectionData | null | undefined)
   }
 }
 
+/**
+ * Find projection by name matching (case-insensitive, partial match)
+ * This allows matching "Davao City, Davao del Sur" with "Davao" in CSV
+ */
+export function findProjectionByName(
+  projections: Map<string, ProjectionData>, 
+  searchLocation: string
+): ProjectionData | null {
+  if (!searchLocation) return null;
+  
+  const searchLower = searchLocation.toLowerCase();
+  
+  // Try exact match first
+  for (const projection of projections.values()) {
+    if (projection.area_name.toLowerCase() === searchLower) {
+      return projection;
+    }
+  }
+  
+  // Try partial match (search location contains CSV area name)
+  for (const projection of projections.values()) {
+    const csvName = projection.area_name.toLowerCase();
+    if (searchLower.includes(csvName)) {
+      return projection;
+    }
+  }
+  
+  // Try reverse partial match (CSV area name contains search location)
+  for (const projection of projections.values()) {
+    const csvName = projection.area_name.toLowerCase();
+    if (csvName.includes(searchLower)) {
+      return projection;
+    }
+  }
+  
+  return null;
+}
+

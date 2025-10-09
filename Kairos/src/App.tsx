@@ -20,7 +20,7 @@ import {
 } from './constants';
 import { createPropertyStatusHandlers, renderPropertyStatusGroup } from './utils/propertyStatusHelpers';
 import type { KairosAddressOutput } from './types/address';
-import { loadProjections, formatProjectionLabel, calculateTrendChange, calculateMarketActivityTrend, calculateDOMTrend } from './types/projection';
+import { loadProjections, formatProjectionLabel, calculateTrendChange, calculateMarketActivityTrend, calculateDOMTrend, findProjectionByName } from './types/projection';
 import type { ProjectionData } from './types/projection';
 
 
@@ -83,14 +83,21 @@ export default function App() {
   // Update current projection when selected address changes
   useEffect(() => {
     if (selectedAddress?.location?.psgc_province_code) {
+      // Try PSGC code match first (for backward compatibility)
       const psgcCode = selectedAddress.location.psgc_province_code.toString();
-      const projection = projectionsMap.get(psgcCode);
+      let projection = projectionsMap.get(psgcCode);
+      
+      // If no PSGC match, try name-based matching
+      if (!projection && selectedAddress.full_address) {
+        projection = findProjectionByName(projectionsMap, selectedAddress.full_address) || undefined;
+      }
+      
       setCurrentProjection(projection || null);
       
       if (projection) {
         console.log(`Loaded projection for ${projection.area_name} (PSGC: ${psgcCode})`);
       } else {
-        console.log(`No projection found for PSGC: ${psgcCode}`);
+        console.log(`No projection found for PSGC: ${psgcCode} or address: ${selectedAddress.full_address}`);
       }
     } else {
       setCurrentProjection(null);
