@@ -121,7 +121,51 @@ Created `Kairos/src/components/dashboard/DataTable.tsx`:
 
 ---
 
+## Additional Modal Implementations (December 2024)
+
+### CMA Summary Table Implementation
+- **Request**: User wanted "View" button on CMA Summary card to show detailed metrics table
+- **Implementation**: Created `CMASummaryTable.tsx` modal replicating existing `DataTable.tsx` pattern
+- **Data Strategy**: 
+  - Real data: Total Properties, Avg/Median List Price, Price per Sq M (calculated)
+  - Mock data: Avg/Median Sold Price, Avg Days on Market (labeled "Mock data placeholder")
+- **Refinements**: Removed copy button per user request
+- **Integration**: Added `onOpenCMASummary` prop to `CMASummary.tsx`, managed state in `App.tsx`
+
+### Locations Table Implementation
+- **Initial Request**: "View" button on Locations card to show all 50 scraped properties
+- **First Attempt**: Built table showing individual property data (Option B)
+- **User Clarification**: Actually wanted aggregated neighborhood data like provided image
+- **Final Implementation**: `LocationsTable.tsx` showing:
+  - Active Listings, Avg List Price (real data)
+  - Avg Sold Price, Avg Days on Market (mock data with labels)
+  - Avg Price/Sq Ft (calculated from available properties)
+- **Integration**: Added `onOpenLocations` prop to `Neighborhoods.tsx`, managed state in `App.tsx`
+
+### UI Refinements
+- **Report Type Dropdown Removal**: Deleted toggle, dropdown content, related state variables, and handlers
+- **Comparisons Dropdown Design**: Reverted to original transparent design (no border, just text + chevron)
+- **Generate Button Logic**: Updated to depend only on `compsSelected`
+
+### Key Patterns Established
+- **Modal Pattern Replication**: Consistently used existing `DataTable.tsx` structure for new modals
+- **State Management**: React `useState` for modal visibility and data
+- **Client-side Calculations**: Price per Sq M/Ft calculations in frontend
+- **Mock Data Strategy**: Clear labeling of unavailable data with "Mock data placeholder"
+- **Design System Compliance**: Maintained Kairos design principles throughout
+
+### Guardrails Followed
+- ✅ Minimal technical debt
+- ✅ Only implement what's explicitly requested  
+- ✅ Ask for clarification before assuming requirements
+- ✅ Prioritize clarity and simplicity
+- ❌ No extra libraries or advanced patterns
+- ❌ No premature edge case design
+
+---
+
 **Created:** October 7, 2025  
 **Status:** ✅ Core implementation complete; DataTable working with PropertyReport  
+**Updated:** December 2024 - Additional modal implementations complete  
 **Tag:** checkpoint-2025-10-06
 

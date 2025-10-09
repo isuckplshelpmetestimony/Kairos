@@ -161,7 +161,51 @@ export default function App() {
               />
             </div>
             
-            {/* Comparisons Dropdown */}
+            {/* ========================================================================
+                DESIGN CHECKPOINT: Comparisons Dropdown Panel
+                ========================================================================
+                
+                This dropdown embodies Kairos design system principles:
+                "Calm in the chaos" - clean, minimal, professional
+                
+                CANONICAL STYLING (DO NOT CHANGE WITHOUT PERMISSION):
+                
+                Panel Container:
+                - rounded-3xl (NOT rounded-lg or rounded-xl)
+                - bg-white/95 (semi-transparent white, 95% opacity)
+                - border border-[#E5E4E6] (subtle neutral gray)
+                - shadow-lg (visible but subtle depth)
+                - Positioning: absolute top-full left-0 right-0 mt-2
+                - z-50 (above other content)
+                
+                Property Type / Location Selectors:
+                - bg-[#F3F3F2] (light gray, matches design system)
+                - border border-[#E5E4E6] (consistent with panel)
+                - rounded (standard, NOT rounded-xl)
+                - h-10 (fixed height for consistency)
+                - pr-10 (space for chevron icon)
+                
+                Section Dividers:
+                - border-b border-[#E5E4E6]
+                - Consistent spacing: p-4
+                
+                WHY THIS STYLING:
+                - rounded-3xl: Modern, friendly, matches dashboard cards
+                - bg-white/95: Subtle transparency, professional depth
+                - shadow-lg: Clear visual hierarchy without harshness
+                - Generous padding: Reduces cognitive load, easy scanning
+                - Consistent colors: Visual cohesion with rest of app
+                
+                PROTECTED ELEMENTS:
+                - Border radius (must stay rounded-3xl)
+                - Background transparency (white/95)
+                - Shadow intensity (shadow-lg)
+                - Section padding (p-4)
+                - Input field heights (h-10)
+                - Color palette (#E5E4E6, #F3F3F2, #3B3832, #7A7873)
+                
+                See KAIROS-GUARDRAILS.md > COMPARISONS DROPDOWN DESIGN GUARDRAIL
+            ======================================================================== */}
             {isComparisonsOpen && (
               <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/95 border border-[#E5E4E6] rounded-3xl shadow-lg">
                 {/* Property Type Section */}

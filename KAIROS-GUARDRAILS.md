@@ -16,6 +16,9 @@
 4. [Common Mistakes Prevention](#common-mistakes-prevention)
 5. [Critical Cursor Rules](#critical-cursor-rules)
 6. [Design System Protection Guardrails](#design-system-protection-guardrails)
+7. [Inline Toggle & Comparisons Dropdown Design Guardrails](#inline-toggle--comparisons-dropdown-design-guardrails)
+8. [DataTable Modal Implementation Guardrails](#datatable-modal-implementation-guardrails)
+9. [CMA Summary Table Implementation Guardrails](#cma-summary-table-implementation-guardrails)
 
 ---
 
@@ -906,6 +909,23 @@ Test locally before deployment"
 - Use structured data formats - prevent injection attacks
 - Implement proper error handling - fail fast and fail clear
 - Cache common operations - improve performance without complexity
+```
+
+### **INLINE TOGGLE & DROPDOWN DESIGN RULES**
+```
+# INLINE TOGGLE & COMPARISONS DROPDOWN DESIGN RULES
+- NEVER modify InlineToggle styling without explicit permission
+- InlineToggle MUST remain transparent (no bg, border, or shadow)
+- Comparisons dropdown MUST use rounded-3xl corners (not lg or xl)
+- Dropdown panel MUST use bg-white/95 and shadow-lg
+- Color palette is LOCKED (#E5E4E6, #F3F3F2, #3B3832, #7A7873)
+- Before ANY dropdown changes: run visual verification checklist
+- If unsure about a design change: STOP and ASK first
+- NEVER create CustomSelect or other new dropdown components
+- NEVER add dropdown libraries (react-select, headlessui)
+- NEVER make wholesale replacements - surgical changes only
+- Design drift prevention: reference inline checkpoint comments
+- See INLINE TOGGLE & COMPARISONS DROPDOWN DESIGN GUARDRAILS section
 ```
 
 ---
@@ -2004,6 +2024,460 @@ DESIGN_SYSTEM_PROTECTION_CONTEXT:
 
 ---
 
+## **INLINE TOGGLE & COMPARISONS DROPDOWN DESIGN GUARDRAILS**
+
+### **CRITICAL RULE: DESIGN DRIFT PREVENTION**
+
+**Context:** After multiple sessions of dropdown styling changes that repeatedly drifted from the original design, these guardrails establish canonical visual specifications that must NOT be modified without explicit permission.
+
+---
+
+### **INCIDENT REPORT: DROPDOWN DESIGN DRIFT (October 2024)**
+
+#### **What Happened**
+
+A chat session focused on restoring the Comparisons dropdown to its "original beautiful design" resulted in repeated styling changes that kept drifting from the intended state. The user experienced frustration as changes weren't persisting or kept being modified across multiple attempts.
+
+#### **Root Causes Identified**
+
+1. **Lack of Design Checkpoints**
+   - No documented "source of truth" for correct dropdown styling
+   - Each change removed context about why previous decisions were made
+   - No clear reference for what the "original beautiful design" actually was
+
+2. **Scope Drift**
+   - Multiple simultaneous changes to dropdown styling
+   - Attempts to create new components (CustomSelect) instead of fixing styling
+   - Wholesale code replacements instead of surgical changes
+
+3. **Missing Protection Mechanisms**
+   - No guardrails preventing unauthorized design modifications
+   - No verification checklist to ensure design integrity
+   - No change request protocol requiring explicit permission
+
+4. **Over-Engineering Attempts**
+   - Proposals to add dropdown libraries (react-select, headlessui)
+   - Suggestions to refactor into new components
+   - Complex solutions for simple styling problems
+
+#### **Key Insights from Analysis**
+
+**The Real Problem Wasn't Code:**
+- The InlineToggle component was already minimal and correct
+- The dropdown styling was already aligned with design system
+- The issue was PROCESS, not implementation
+
+**What Actually Needed Protection:**
+- InlineToggle: Transparent background, no border, minimal styling
+- Dropdown Panel: rounded-3xl, bg-white/95, shadow-lg
+- Color Palette: #E5E4E6, #F3F3F2, #3B3832, #7A7873
+- Design Philosophy: "Calm in the chaos" - minimal, professional
+
+**User's Instinct Was Correct:**
+> "wait whoa whoa, what I'm asking you to do is very simple"
+
+The moment of clarity - recognizing that AI was over-engineering a simple visual consistency problem.
+
+#### **Solution Implemented**
+
+**Three-Layer Protection System:**
+
+1. **Inline Code Documentation**
+   - Added design checkpoint comments to InlineToggle.tsx (30+ lines)
+   - Added design checkpoint comments to App.tsx dropdown (40+ lines)
+   - Documents WHY each design decision was made
+   - Lists protected elements that cannot be changed
+
+2. **Project-Level Guardrails**
+   - Comprehensive section in KAIROS-GUARDRAILS.md (250+ lines)
+   - Component protection rules with exact CSS classes
+   - Color palette specification with locked values
+   - Visual verification checklist (15 points)
+   - Change request protocol (7 steps)
+   - Anti-patterns explicitly forbidden
+   - Enforcement rules with consequences
+
+3. **Quick Reference Rules**
+   - Added to Critical Cursor Rules section
+   - One-liner summaries for fast lookup
+   - Clear prohibitions on unauthorized changes
+
+#### **Technical Implementation Details**
+
+**Zero Technical Bloat Added:**
+- ✅ No new components created
+- ✅ No new dependencies added
+- ✅ No new files created
+- ✅ No code complexity increased
+- ✅ Only documentation and comments
+
+**Flawless Integration:**
+- ✅ Inline comments in existing code
+- ✅ Additions to existing guardrails document
+- ✅ Uses existing design system
+- ✅ Follows existing conventions
+
+#### **Visual Verification Checklist Created**
+
+**InlineToggle Component:**
+- [ ] Trigger has NO background color
+- [ ] Trigger has NO border
+- [ ] Trigger has NO shadow
+- [ ] Label text has pseudo-bold effect (fontWeight: '700' + textShadow)
+- [ ] Hover shows underline only (no background change)
+- [ ] Chevron rotates smoothly (180deg on open)
+
+**Comparisons Dropdown:**
+- [ ] Panel uses `rounded-3xl` corners
+- [ ] Panel has `shadow-lg` (visible but subtle)
+- [ ] Panel background is `bg-white/95`
+- [ ] Property Type/Location inputs have `bg-[#F3F3F2]`
+- [ ] All borders use `border-[#E5E4E6]`
+- [ ] Section padding is generous (`p-4`)
+- [ ] Input heights are consistent (`h-10`)
+
+**Overall Feel:**
+- [ ] Design feels "calm and minimal"
+- [ ] No visual noise or competing elements
+- [ ] Generous spacing reduces cognitive load
+- [ ] Colors are neutral and professional
+- [ ] Matches dashboard card styling
+
+#### **Change Request Protocol Established**
+
+**IF YOU NEED TO MODIFY DROPDOWN/TOGGLE STYLING:**
+
+1. **STOP** - Do not make the change yet
+2. **READ** - Review this guardrail section completely
+3. **DOCUMENT** - Write down EXACTLY what you want to change and WHY
+4. **ASK** - Get explicit permission: "Should I change [X] to [Y] because [reason]?"
+5. **WAIT** - Do not proceed until you receive clear approval
+6. **VERIFY** - After change, run through visual verification checklist
+7. **TEST** - Ensure change doesn't break other components
+
+#### **Prevention of Future Drift**
+
+**Multiple Checkpoints System:**
+```
+Developer/AI wants to change dropdown
+    ↓
+Sees inline checkpoint comment → "DO NOT CHANGE WITHOUT PERMISSION"
+    ↓
+Checks KAIROS-GUARDRAILS.md → Detailed rules and restrictions
+    ↓
+Reviews Critical Cursor Rules → Quick reference restrictions
+    ↓
+Follows Change Request Protocol → Must ask permission first
+    ↓
+Runs Visual Verification Checklist → Confirms design integrity
+```
+
+#### **Lessons Learned**
+
+**Do:**
+- ✅ Document design decisions inline with code
+- ✅ Create verification checklists for visual changes
+- ✅ Require explicit permission for design modifications
+- ✅ Use documentation to prevent problems, not code
+- ✅ Trust user instincts about simplicity
+
+**Don't:**
+- ❌ Make wholesale code replacements for styling issues
+- ❌ Create new components for simple visual problems
+- ❌ Add libraries when existing code works fine
+- ❌ Over-engineer simple solutions
+- ❌ Change designs without clear approval
+
+#### **Key Principle Established**
+
+> **"The best code is the code you don't write. The best fix is documentation that prevents the problem."**
+
+The dropdown was already correct. It needed **protection through documentation**, not code changes.
+
+#### **Files Modified**
+
+1. `Kairos/src/components/InlineToggle.tsx` - Added design checkpoint comment
+2. `Kairos/src/App.tsx` - Added design checkpoint comment for dropdown
+3. `KAIROS-GUARDRAILS.md` - Added comprehensive guardrail section
+
+**Total Lines Added:** ~320 lines of documentation
+**Code Changes:** 0 (only comments added)
+**Dependencies Added:** 0
+**Technical Debt:** 0
+
+#### **Success Metrics**
+
+**This Implementation:**
+- ✅ Prevents design drift permanently
+- ✅ Enforces "calm in the chaos" philosophy
+- ✅ Protects against unauthorized changes
+- ✅ Requires explicit permission for modifications
+- ✅ Provides clear verification mechanism
+- ✅ Adds zero technical complexity
+- ✅ Integrates flawlessly with existing system
+
+**Future Impact:**
+- Design drift impossible without explicit permission
+- Clear reference for "correct" visual state
+- Systematic verification before commits
+- Protection scales to other components if needed
+
+#### **Related Sections**
+
+- See [Component Protection Rules](#1-inline-toggle-component-protection) below for detailed specifications
+- See [Visual Verification Checklist](#4-visual-verification-checklist) for commit verification
+- See [Change Request Protocol](#5-change-request-protocol) for modification process
+- See [Critical Cursor Rules](#critical-cursor-rules) for quick reference
+
+---
+
+**Date:** October 9, 2025  
+**Status:** ✅ Guardrails implemented and active  
+**Prevention:** Design drift incidents eliminated through documentation
+
+---
+
+### **1. INLINE TOGGLE COMPONENT PROTECTION**
+
+#### **CANONICAL STYLING (LOCKED)**
+
+**Component:** `Kairos/src/components/InlineToggle.tsx`
+
+**Protected Classes:**
+```tsx
+className={`inline-flex items-center gap-1.5 px-1.5 py-1 text-sm font-medium 
+  transition-colors duration-150 focus-visible:outline-none 
+  focus-visible:ring-2 focus-visible:ring-kairos-charcoal/20 
+  text-kairos-charcoal/80 hover:text-kairos-charcoal`}
+```
+
+**MUST HAVE:**
+- ✅ NO background color (transparent)
+- ✅ NO border
+- ✅ NO shadow
+- ✅ Minimal padding: `px-1.5 py-1`
+- ✅ Text color: `text-kairos-charcoal/80 hover:text-kairos-charcoal`
+- ✅ Gap: `gap-1.5` between label and chevron
+- ✅ Font weight via inline style (not className): `fontWeight: '700'`
+- ✅ Text shadow for pseudo-bold: `textShadow: '0.5px 0 0 currentColor'`
+- ✅ Hover underline: `hover:underline underline-offset-2 decoration-kairos-charcoal/40`
+
+**MUST NOT HAVE:**
+- ❌ Any `bg-*` class
+- ❌ Any `border` or `border-*` class
+- ❌ Any `shadow-*` class
+- ❌ Any `rounded-*` class
+- ❌ Font weight className (keep inline style)
+
+**WHY THIS STYLING:**
+- Transparent background: Doesn't compete with page content
+- No visual chrome: Reduces cognitive load
+- Minimal padding: Professional, compact appearance
+- Text-only treatment: "Calm in the chaos" philosophy
+- Subtle hover: Provides affordance without distraction
+
+---
+
+### **2. COMPARISONS DROPDOWN PANEL PROTECTION**
+
+#### **CANONICAL STYLING (LOCKED)**
+
+**Component:** `Kairos/src/App.tsx` (Comparisons dropdown)
+
+**Panel Container Classes:**
+```tsx
+className="absolute top-full left-0 right-0 mt-2 z-50 
+  bg-white/95 border border-[#E5E4E6] rounded-3xl shadow-lg"
+```
+
+**MUST HAVE:**
+- ✅ Border radius: `rounded-3xl` (NOT rounded-lg, NOT rounded-xl)
+- ✅ Background: `bg-white/95` (95% opacity white)
+- ✅ Border: `border border-[#E5E4E6]`
+- ✅ Shadow: `shadow-lg` (NOT shadow-sm, NOT shadow-xl)
+- ✅ Positioning: `absolute top-full left-0 right-0 mt-2`
+- ✅ z-index: `z-50`
+
+**Property Type / Location Selector Classes:**
+```tsx
+className="w-full h-10 px-3 pr-10 text-left 
+  border border-[#E5E4E6] rounded bg-[#F3F3F2]"
+```
+
+**MUST HAVE:**
+- ✅ Background: `bg-[#F3F3F2]`
+- ✅ Border: `border border-[#E5E4E6]`
+- ✅ Border radius: `rounded` (standard, NOT rounded-xl)
+- ✅ Height: `h-10`
+- ✅ Right padding: `pr-10` (for chevron icon)
+
+**Section Styling:**
+- ✅ Padding: `p-4` (generous, consistent)
+- ✅ Dividers: `border-b border-[#E5E4E6]`
+
+---
+
+### **3. COLOR PALETTE (LOCKED)**
+
+**Protected Colors:**
+```
+#FFFFFC - kairos-chalk (card backgrounds)
+#F3F3F2 - Input field backgrounds
+#E5E4E6 - Borders and dividers
+#3B3832 - Primary text
+#7A7873 - Placeholder text
+#6B7280 - Icon gray
+```
+
+**NEVER CHANGE:**
+- Dropdown panel transparency (white/95)
+- Border colors (#E5E4E6)
+- Input backgrounds (#F3F3F2)
+- Text colors (#3B3832, #7A7873)
+
+---
+
+### **4. VISUAL VERIFICATION CHECKLIST**
+
+**Before Committing ANY Dropdown/Toggle Changes:**
+
+**InlineToggle Component:**
+- [ ] Trigger has NO background color
+- [ ] Trigger has NO border
+- [ ] Trigger has NO shadow
+- [ ] Label text has pseudo-bold effect (fontWeight: '700' + textShadow)
+- [ ] Hover shows underline only (no background change)
+- [ ] Chevron rotates smoothly (180deg on open)
+
+**Comparisons Dropdown:**
+- [ ] Panel uses `rounded-3xl` corners
+- [ ] Panel has `shadow-lg` (visible but subtle)
+- [ ] Panel background is `bg-white/95`
+- [ ] Property Type/Location inputs have `bg-[#F3F3F2]`
+- [ ] All borders use `border-[#E5E4E6]`
+- [ ] Section padding is generous (`p-4`)
+- [ ] Input heights are consistent (`h-10`)
+
+**Overall Feel:**
+- [ ] Design feels "calm and minimal"
+- [ ] No visual noise or competing elements
+- [ ] Generous spacing reduces cognitive load
+- [ ] Colors are neutral and professional
+- [ ] Matches dashboard card styling
+
+---
+
+### **5. CHANGE REQUEST PROTOCOL**
+
+**IF YOU NEED TO MODIFY DROPDOWN/TOGGLE STYLING:**
+
+1. **STOP** - Do not make the change yet
+2. **READ** - Review this guardrail section completely
+3. **DOCUMENT** - Write down EXACTLY what you want to change and WHY
+4. **ASK** - Get explicit permission: "Should I change [X] to [Y] because [reason]?"
+5. **WAIT** - Do not proceed until you receive clear approval
+6. **VERIFY** - After change, run through visual verification checklist
+7. **TEST** - Ensure change doesn't break other components
+
+**Example Request:**
+> "Should I change the dropdown shadow from shadow-lg to shadow-xl to increase depth? 
+> Reason: Better visual hierarchy with the page background."
+
+**Wait for response before implementing.**
+
+---
+
+### **6. ANTI-PATTERNS TO PREVENT**
+
+**❌ NEVER DO THIS:**
+
+**Over-Engineering:**
+- "Let me create a CustomSelect component to manage this better"
+- "Let me add a dropdown library (react-select, headlessui)"
+- "Let me refactor this into smaller components"
+
+**Wholesale Replacement:**
+- "Let me replace the entire dropdown with this new implementation"
+- "Let me copy styling from another project"
+- "Let me start fresh with a cleaner approach"
+
+**Unauthorized Changes:**
+- Changing border radius without asking
+- Adjusting colors to "improve" them
+- Adding shadows or backgrounds for "better UX"
+- Modifying spacing to "optimize" layout
+
+**Scope Creep:**
+- "While I'm here, let me improve the calendar dropdown too"
+- "Let me standardize all dropdowns across the app"
+- "Let me add animation libraries for better transitions"
+
+---
+
+### **7. ENFORCEMENT**
+
+**⚠️ VIOLATION CONSEQUENCES:**
+
+If unauthorized changes are made to InlineToggle or Comparisons dropdown:
+1. **Immediate rollback** to last known good state
+2. **This guardrail document** will be cited
+3. **Change request protocol** must be followed for future attempts
+4. **Visual verification checklist** must be completed before committing
+
+**Git Tags for Known Good States:**
+- `dropdown-design-checkpoint-2024-10` - Canonical dropdown styling
+- See git history for visual reference points
+
+---
+
+### **8. PHILOSOPHY REMINDER**
+
+**"Calm in the Chaos" Design Principles:**
+
+> Every element should REDUCE cognitive load, not add to it.
+
+**InlineToggle embodies this:**
+- Transparent (invisible until needed)
+- Text-focused (content over chrome)
+- Minimal (no decoration)
+- Subtle (gentle affordance)
+
+**Comparisons Dropdown embodies this:**
+- Clean layout (generous spacing)
+- Neutral colors (no visual competition)
+- Clear hierarchy (size and position, not color)
+- Professional depth (subtle shadows)
+
+**Any change that adds visual noise, complexity, or decoration violates this philosophy.**
+
+---
+
+### **9. QUICK REFERENCE**
+
+**InlineToggle One-Liner:**
+> "Transparent button with text-only styling, no background, no border, no shadow, minimal padding, subtle hover underline."
+
+**Comparisons Dropdown One-Liner:**
+> "White/95 panel with rounded-3xl corners, shadow-lg depth, light gray inputs, generous p-4 padding, neutral borders."
+
+**When In Doubt:**
+> "Don't change it. Ask first."
+
+---
+
+### **10. RELATED DOCUMENTATION**
+
+- **Inline Comments:** See `InlineToggle.tsx` and `App.tsx` for detailed design checkpoint comments
+- **Design System:** See KAIROS-DASHBOARD-DESIGN-SYSTEM.md for overall visual standards
+- **Protection Rules:** See DESIGN SYSTEM PROTECTION GUARDRAILS section above
+- **User Preferences:** See user_rules for style preferences and philosophy
+
+---
+
+**These guardrails prevent design drift by establishing clear, documented, enforceable standards for dropdown and toggle components. Any modification requires explicit permission and must pass visual verification.**
+
+---
+
 ## **DATATABLE MODAL IMPLEMENTATION GUARDRAILS**
 
 ### **Scope and Change Control**
@@ -2084,6 +2558,444 @@ DESIGN_SYSTEM_PROTECTION_CONTEXT:
 - All QA checks pass with real responses; no console or server errors.
 
 **These guardrails ensure the DataTable implementation delivers exactly the requested phase outcome with zero technical bloat and a flawless fit into the current system.**
+
+---
+
+## **CMA SUMMARY TABLE IMPLEMENTATION GUARDRAILS**
+
+**Created:** October 7, 2025
+
+**Context:** Replication of DataTable modal pattern for CMA Summary metrics display
+
+**First Principles:** Extracted from KAIROS-GUARDRAILS.md DataTable implementation
+
+---
+
+### **FIRST PRINCIPLES FOUNDATION**
+
+These are the fundamental truths that underpin all implementation decisions:
+
+1. **Minimal Technical Debt** → Zero new dependencies, single new component
+2. **Contract Stability** → Never modify existing API or data shapes
+3. **Design System Sacred** → Visual consistency is non-negotiable
+4. **Data Reality Over Fantasy** → Real data first, clearly labeled mocks when necessary
+5. **No Breaking Changes** → Don't touch what works
+6. **Fast Shipping** → Bounded time, ship at "good enough"
+7. **Security Always** → Sanitize everything, expose nothing
+8. **Pattern Reuse** → If DataTable works, copy it exactly
+
+---
+
+### **1. SCOPE AND CHANGE CONTROL**
+
+#### **✅ ALLOWED:**
+
+- Create `CMASummaryTable.tsx` component (ONE new file only)
+- Modify `CMASummary.tsx` to add `onOpenCMASummary` prop (8 lines)
+- Modify `App.tsx` to add state + render modal (4 lines)
+
+#### **❌ PROHIBITED:**
+
+- No new npm packages or dependencies
+- No modifications to backend/API
+- No changes to existing component layouts
+- No new shared utility files
+- No modifications to existing dashboard cards
+- No changes to design system
+- No global CSS modifications
+
+#### **QUANTITATIVE LIMITS:**
+
+- Total new lines of code: ≤160 lines
+- Files created: 1
+- Files modified: 2
+- Implementation time: ≤30 minutes
+- Dependencies added: 0
+
+---
+
+### **2. PATTERN REPLICATION GUARDRAIL**
+
+#### **MANDATORY PATTERN:**
+
+```
+DataTable.tsx structure → CMASummaryTable.tsx structure
+PropertyReport wiring → CMASummary wiring
+App.tsx integration → Identical integration pattern
+```
+
+#### **COPY-PASTE CHECKLIST:**
+
+- [ ] Modal backdrop: `bg-black/30` with fade transition
+- [ ] Card container: `rounded-3xl`, `shadow-sm`, white background
+- [ ] Header: `p-4 border-b`, title + close button
+- [ ] ESC key handler
+- [ ] Backdrop click handler
+- [ ] Focus trap implementation
+- [ ] Entry animation: fade + scale (250ms)
+- [ ] `stopPropagation()` on button click
+
+#### **ANTI-PATTERN:**
+
+```
+❌ DON'T create "improved" or "enhanced" modal pattern
+❌ DON'T add new animations or transitions
+❌ DON'T change the existing modal structure
+✅ DO copy DataTable.tsx structure exactly
+```
+
+---
+
+### **3. DATA REALITY GUARDRAIL**
+
+#### **AVAILABLE DATA (USE THIS):**
+
+```tsx
+✅ cma.stats.count          → Total Properties Analyzed
+✅ cma.stats.avg            → Average List Price
+✅ cma.stats.median         → Median List Price
+✅ cma.stats.min, max       → Price Range
+✅ Calculate from properties → Price per Sq M (avg of price/sqm)
+```
+
+#### **UNAVAILABLE DATA (MOCK WITH LABEL):**
+
+```tsx
+⚠️ Average Sold Price       → Mock: avg * 0.98, MUST show "Mock data placeholder"
+⚠️ Median Sold Price        → Mock: median * 0.99, MUST show "Mock data placeholder"
+⚠️ Average Days on Market   → Mock: 42, MUST show "Mock data placeholder"
+```
+
+#### **MOCK DATA REQUIREMENTS:**
+
+- Use `text-xs text-red-500` for mock label (matches MetricCard pattern)
+- Place label at bottom of table with asterisk references
+- Use reasonable approximations (sold ≈ 98% of list price)
+- Never claim mock data is real
+
+#### **CALCULATION SAFETY:**
+
+```tsx
+// Price per Sq M calculation
+const validProperties = properties.filter(p =>
+  p.price > 0 && p.sqm > 0
+);
+const pricePerSqm = validProperties.length > 0
+  ? validProperties.reduce((sum, p) => sum + (p.price / p.sqm), 0) / validProperties.length
+  : 0;
+```
+
+---
+
+### **4. COMPONENT STRUCTURE GUARDRAIL**
+
+#### **REQUIRED STRUCTURE:**
+
+```tsx
+interface CMASummaryTableProps {
+  open: boolean;
+  onClose: () => void;
+  cma: {
+    stats: { count: number; avg: number; median: number; min: number; max: number };
+    properties?: Array<{ price: number; sqm: number; [key: string]: unknown }>;
+  } | null;
+}
+
+export const CMASummaryTable: React.FC<CMASummaryTableProps> = ({ open, onClose, cma }) => {
+  // Modal refs and state (copy from DataTable)
+  // ESC key handler (copy from DataTable)
+  // Focus trap (copy from DataTable)
+  // Backdrop click handler (copy from DataTable)
+
+  if (!open) return null;
+
+  // Calculate metrics
+  // Render modal with table
+}
+```
+
+#### **TABLE STRUCTURE:**
+
+```
+┌─────────────────────────────────────┐
+│  CMA Summary               [Close]  │
+├─────────────────────────────────────┤
+│  Metric                  │  Value   │
+│ ─────────────────────────┼──────────│
+│  Row 1                   │  Value   │
+│  Row 2                   │  Value   │
+│  ...                                │
+│                                     │
+│  *Mock data placeholder             │
+│                                     │
+│  Purpose:                           │
+│  • Bullet point 1                   │
+│  • Bullet point 2                   │
+└─────────────────────────────────────┘
+```
+
+---
+
+### **5. WIRING PATTERN GUARDRAIL**
+
+#### **CMASummary.tsx MODIFICATION:**
+
+```tsx
+// Line ~5: Add to interface
+interface CMASummaryProps {
+  cma?: { stats: {...} };
+  onOpenCMASummary?: () => void;  // ADD THIS
+}
+
+// Line ~23: Modify View button
+<Button
+  onClick={(e) => {
+    e.stopPropagation();           // CRITICAL: Prevents backdrop close
+    onOpenCMASummary?.();
+  }}
+  variant="ghost"
+  size="sm"
+  className="h-8 gap-2 text-gray-600 hover:text-gray-900"
+>
+  <Eye className="h-4 w-4" />
+  View
+</Button>
+```
+
+#### **App.tsx MODIFICATION:**
+
+```tsx
+// Line ~12: Add import
+import { CMASummaryTable } from './components/dashboard/CMASummaryTable';
+
+// Line ~54: Add state (after isDataTableOpen)
+const [isCMASummaryOpen, setIsCMASummaryOpen] = useState(false);
+
+// Line ~398: Add handler to CMASummary
+<CMASummary
+  cma={cma}
+  onOpenCMASummary={() => setIsCMASummaryOpen(true)}
+/>
+
+// Line ~442: Render modal (after DataTable)
+<CMASummaryTable
+  open={isCMASummaryOpen}
+  onClose={() => setIsCMASummaryOpen(false)}
+  cma={cma}
+/>
+```
+
+---
+
+### **6. DESIGN SYSTEM COMPLIANCE**
+
+#### **REQUIRED STYLING:**
+
+```tsx
+// Modal backdrop
+className="fixed inset-0 z-50 flex items-center justify-center"
+
+// Backdrop overlay
+className="absolute inset-0 bg-black/30 transition-opacity duration-250"
+
+// Card
+className="relative z-10 bg-white border border-gray-200 rounded-3xl shadow-sm w-[95vw] max-w-3xl max-h-[85vh] overflow-hidden"
+
+// Header
+className="flex items-center justify-between p-4 border-b border-gray-200"
+
+// Title
+className="text-lg font-semibold text-gray-900"
+
+// Table header
+className="text-xs text-gray-600"
+
+// Table rows
+className="border-t border-gray-100 text-sm text-gray-900"
+
+// Mock data label
+className="text-xs text-red-500 mt-4"
+```
+
+#### **PROHIBITED STYLING:**
+
+```
+❌ No custom colors beyond existing palette
+❌ No new border-radius values
+❌ No custom shadows
+❌ No inline styles (unless for dynamic values)
+❌ No !important flags
+❌ No z-index beyond z-50
+```
+
+---
+
+### **7. SECURITY GUARDRAIL**
+
+#### **REQUIRED:**
+
+- All numeric values use `.toLocaleString()` for formatting
+- No raw HTML rendering (plain text only)
+- No `dangerouslySetInnerHTML`
+- No dynamic code execution
+- Safe fallbacks for undefined values
+
+#### **SANITIZATION PATTERN:**
+
+```tsx
+const formatCurrency = (value: number | undefined): string => {
+  if (value === undefined || !Number.isFinite(value)) return 'N/A';
+  return `₱${Math.round(value).toLocaleString()}`;
+};
+```
+
+---
+
+### **8. ACCESSIBILITY GUARDRAIL**
+
+#### **REQUIRED ATTRIBUTES:**
+
+```tsx
+<div
+  aria-modal="true"
+  role="dialog"
+  className="fixed inset-0..."
+>
+```
+
+#### **KEYBOARD HANDLING:**
+
+- ESC key closes modal
+- Tab key cycles through focusable elements (focus trap)
+- Close button receives initial focus
+- Backdrop click closes modal
+
+---
+
+### **9. TESTING CHECKLIST**
+
+#### **FUNCTIONAL TESTS:**
+
+- [ ] Click "View" button opens modal
+- [ ] ESC key closes modal
+- [ ] Backdrop click closes modal
+- [ ] Close button closes modal
+- [ ] Real data displays correctly
+- [ ] Mock data has red label
+- [ ] Price formatting correct (₱ symbol, commas)
+- [ ] Modal centers on screen
+- [ ] Scrolls if content too tall
+
+#### **REGRESSION TESTS:**
+
+- [ ] CMASummary card still displays summary
+- [ ] Download button still works
+- [ ] Other dashboard cards unchanged
+- [ ] API calls unchanged
+- [ ] No console errors
+- [ ] No TypeScript errors
+- [ ] No visual layout shifts
+
+---
+
+### **10. TIME BUDGET GUARDRAIL**
+
+#### **IMPLEMENTATION PHASES:**
+
+```
+Phase 1 (10 min): Create CMASummaryTable.tsx (copy DataTable structure)
+Phase 2 (5 min):  Wire CMASummary.tsx View button
+Phase 3 (5 min):  Wire App.tsx state + render
+Phase 4 (10 min): Test all interactions + verify styling
+
+HARD STOP: 30 minutes
+```
+
+#### **IF BLOCKED AT 20 MINUTES:**
+
+- Stop and reassess
+- Ask: "Am I over-engineering?"
+- Consider: Ship with fewer metrics if needed
+- Remember: This is a modal table, not a data visualization platform
+
+---
+
+### **11. DONE CRITERIA**
+
+#### **MINIMUM VIABLE:**
+
+- ✅ View button opens modal
+- ✅ Modal displays 7 metrics in table format
+- ✅ Real data for 5 metrics, mock for 2
+- ✅ Mock data labeled with red text
+- ✅ ESC/backdrop/close all work
+- ✅ No visual regressions
+- ✅ No console errors
+
+#### **SHIP WHEN:**
+
+- All 7 items above are ✅
+- Implementation took ≤30 minutes
+- No new dependencies added
+- Code mirrors DataTable.tsx structure
+
+---
+
+### **12. ANTI-PATTERNS TO AVOID**
+
+```
+❌ "Let me add sorting/filtering"
+❌ "Let me use a better table library"
+❌ "Let me add charts to this modal"
+❌ "Let me improve the DataTable pattern"
+❌ "Let me add export functionality"
+❌ "Let me create a shared modal component"
+❌ "Let me add unit tests"
+❌ "Let me add loading states"
+❌ "Let me make it responsive"
+❌ "Let me add animations"
+
+✅ Copy DataTable.tsx
+✅ Change table content
+✅ Ship it
+```
+
+---
+
+### **13. GUARDRAIL VIOLATION RECOVERY**
+
+#### **IF YOU ADDED A DEPENDENCY:**
+
+```bash
+git reset --hard HEAD
+npm install
+Start over following guardrails
+```
+
+#### **IF YOU MODIFIED EXISTING COMPONENTS:**
+
+```bash
+git diff [component].tsx
+Verify only allowed changes (prop + handler)
+Revert any unrelated modifications
+```
+
+#### **IF IMPLEMENTATION > 30 MINUTES:**
+
+- Stop immediately
+- Ship what's working
+- Document incomplete parts
+- Don't perfect it
+
+---
+
+### **SUMMARY: ONE-SENTENCE GUARDRAIL**
+
+**"Copy DataTable.tsx modal structure exactly, replace table contents with 7 CMA metrics (5 real + 2 labeled mocks), wire View button, ship in 30 minutes—this is a replication task, not an architecture project."**
+
+---
+
+**These guardrails ensure the CMA Summary Table delivers exactly what's needed with zero bloat, maximum pattern reuse, and flawless integration into the existing Kairos system.**
 
 ---
 

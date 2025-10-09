@@ -9,6 +9,35 @@ interface InlineToggleProps {
   isOpen?: boolean;
 }
 
+/**
+ * DESIGN CHECKPOINT: InlineToggle Component
+ * 
+ * This component embodies the Kairos "calm in the chaos" design philosophy.
+ * It is intentionally minimal and should NOT be modified without explicit permission.
+ * 
+ * CANONICAL STYLING (DO NOT CHANGE):
+ * - NO background color (transparent)
+ * - NO border or shadow
+ * - Minimal padding: px-1.5 py-1 (just enough for touch targets)
+ * - Subtle text treatment: text-kairos-charcoal/80 → hover:text-kairos-charcoal
+ * - Small gap: gap-1.5 between label and chevron
+ * - Font weight via <span> pseudo-bold (not className)
+ * - Underline decoration on hover only
+ * 
+ * WHY THIS STYLING:
+ * - Transparent background: Doesn't compete with page content
+ * - No border: Reduces visual noise, maintains clean interface
+ * - Minimal padding: Compact, professional appearance
+ * - Subtle hover: Provides affordance without distraction
+ * - Text-only treatment: Keeps focus on content, not UI chrome
+ * 
+ * PROTECTED ELEMENTS:
+ * - className structure and specific Tailwind classes
+ * - Text styling (weight, shadow, decoration)
+ * - Chevron rotation logic (isOpen ? 'rotate-180' : 'rotate-0')
+ * 
+ * See KAIROS-GUARDRAILS.md > INLINE TOGGLE DESIGN GUARDRAIL
+ */
 export function InlineToggle({ label, isSelected, onToggle, ariaRole = 'checkbox', showDropdownChevron = false, isOpen = false }: InlineToggleProps) {
   return (
     <button

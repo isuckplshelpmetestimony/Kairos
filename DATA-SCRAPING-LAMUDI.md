@@ -22,7 +22,7 @@
   - price: `[data-price]` or numeric near `Title-pdp-price`
   - floor area: `[data-floor-area]` or `N m²` token
   - bedrooms: `[data-bedrooms]` or `N Bedrooms`
-  - baths: `[data-bathrooms]/[data-baths]` or `N Baths`
+  - baths: `[data-bathrooms]/[data-baths]` or `N Baths`sdfwd
 - SKU fallback: derive from detail URL if `data-sku` absent
 - Jitter 0.3–0.8s between detail requests
 
