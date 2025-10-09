@@ -10,7 +10,7 @@ interface HistoricalTrendsProps {
 }
 
 export const HistoricalTrends = ({ cma, projection }: HistoricalTrendsProps) => {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   
   // Use projection trend data only (no fallback)
   console.log('HistoricalTrends projection:', projection);
@@ -63,36 +63,88 @@ export const HistoricalTrends = ({ cma, projection }: HistoricalTrendsProps) => 
         {dataPoints.length === 6 ? (
           <div className="w-full h-full">
             <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
-              <path 
-                d={dataPoints.map((value, idx) => {
-                  const x = idx * 20; // 0, 20, 40, 60, 80, 100
-                  const y = 100 - ((value - minValue) / range) * 100; // Invert Y for SVG
+              {/* Professional smooth curve with color-coded segments */}
+              {(() => {
+                // Create smooth curve path - only for first 6 data points (Jan-Jun)
+                const pathData = dataPoints.map((value, idx) => {
+                  const x = 5 + (idx * 7.5); // Start at 5% margin, spread 6 points across 45% of timeline
+                  const y = 90 - ((value - minValue) / range) * 80; // Use 80% of height with 10% margins
                   return `${idx === 0 ? 'M' : 'L'} ${x},${y}`;
-                }).join(' ')}
-                stroke="#333f91" 
-                strokeWidth="3" 
-                fill="none" 
-              />
-              {/* Add data points for better visibility */}
+                }).join(' ');
+                
+                return (
+                  <path
+                    d={pathData}
+                    stroke="#e5e7eb"
+                    strokeWidth="0.8"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                );
+              })()}
+              
+              {/* Color-coded overlay segments */}
+              {dataPoints.slice(0, -1).map((value, idx) => {
+                const x1 = 5 + (idx * 7.5); // Start at 5% margin, spread across 45% of timeline
+                const y1 = 90 - ((value - minValue) / range) * 80; // Use 80% of height with margins
+                const x2 = 5 + ((idx + 1) * 7.5);
+                const y2 = 90 - ((dataPoints[idx + 1] - minValue) / range) * 80;
+                
+                // Determine color based on Y position
+                const avgY = (y1 + y2) / 2;
+                let color = "#62bd2d"; // Green for bottom
+                if (avgY >= 33 && avgY < 66) {
+                  color = "#333f91"; // Blue for middle
+                } else if (avgY >= 66) {
+                  color = "#e1516c"; // Pink for top
+                }
+                
+                return (
+                  <line
+                    key={idx}
+                    x1={x1}
+                    y1={y1}
+                    x2={x2}
+                    y2={y2}
+                    stroke="#000000"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                  />
+                );
+              })}
+              
+              {/* Professional data points */}
               {dataPoints.map((value, idx) => {
-                const x = idx * 20;
-                const y = 100 - ((value - minValue) / range) * 100;
+                const x = 5 + (idx * 7.5); // Start at 5% margin, spread across 45% of timeline
+                const y = 90 - ((value - minValue) / range) * 80; // Use 80% of height with margins
+                
+                // Determine color based on Y position
+                let color = "#62bd2d"; // Green for bottom
+                if (y >= 33 && y < 66) {
+                  color = "#333f91"; // Blue for middle
+                } else if (y >= 66) {
+                  color = "#e1516c"; // Pink for top
+                }
+                
                 return (
                   <circle 
                     key={idx}
                     cx={x} 
                     cy={y} 
-                    r="2" 
-                    fill="#333f91"
+                    r="1.2" 
+                    fill="white"
+                    stroke="#000000"
+                    strokeWidth="0.8"
                   />
                 );
               })}
             </svg>
             
-            {/* Month labels */}
-            <div className="absolute bottom-0 left-0 right-0 flex justify-between px-6 pb-2">
+            {/* Month labels - all 12 months */}
+            <div className="absolute bottom-0 left-0 right-0 flex justify-between px-3 pb-2">
               {months.map((month, idx) => (
-                <span key={idx} className="text-xs text-muted-foreground">{month}</span>
+                <span key={idx} className="text-[10px] text-muted-foreground">{month}</span>
               ))}
             </div>
           </div>
