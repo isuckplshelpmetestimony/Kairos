@@ -182,6 +182,11 @@
   .font-bold-custom {
     font-weight: 600 !important;
   }
+  
+  /* Override font-semibold to render as regular weight to match localhost */
+  .font-semibold {
+    font-weight: 400 !important;
+  }
 }
 
 /**
