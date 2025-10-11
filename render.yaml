@@ -7,11 +7,11 @@ services:
     plan: free
     envVars:
       - key: SCRAPER_MAX_PAGES
-        value: 10
+        value: 3
       - key: SCRAPER_MAX_COUNT
-        value: 100
+        value: 120
       - key: SCRAPER_TIMEOUT_SEC
-        value: 600
+        value: 25
       - key: FRONTEND_ORIGIN
         value: "*"
 

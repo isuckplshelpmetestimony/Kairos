@@ -2999,4 +2999,306 @@ Revert any unrelated modifications
 
 ---
 
+## **SCRAPER OPTIMIZATION IMPLEMENTATION GUARDRAILS**
+
+**Purpose:** Optimize scraper performance for 100+ properties in under 25 seconds while maintaining system reliability  
+**Context:** Render deployment timeout issues requiring conservative optimization approach  
+**Target:** Reduce timeout crashes from 100% to <5% while increasing property count from ~50 to 80-100
+
+---
+
+### **1. IMPLEMENTATION CONSTRAINT LAYER**
+
+**What it means:** *Tells Cursor that scraper optimization uses existing patterns only, no new architecture.*
+
+```
+SCRAPER_OPTIMIZATION_INTEGRATION_CONTEXT:
+"Optimizing Kairos scraper for Render deployment with existing patterns:
+- Use existing environment variables (SCRAPER_MAX_PAGES, SCRAPER_MAX_COUNT, SCRAPER_TIMEOUT_SEC)
+- Extend existing CSV diagnostics with minimal additional fields
+- Add simple timeout checks using existing time module
+- Maintain all existing fallback strategies and error handling
+- Conservative settings first, optimize based on real user data
+- Direct implementation: Configuration changes + simple validation, no complex systems"
+```
+
+---
+
+### **2. PERFORMANCE REQUIREMENTS CONTEXT**
+
+**What it means:** *Ensures optimization targets are realistic and measurable.*
+
+```
+SCRAPER_PERFORMANCE_TARGETS:
+"Scraper optimization must achieve specific performance goals:
+- Execution time: 15-25 seconds (vs 30+ seconds before)
+- Property count: 60-120 properties (vs ~50 before)  
+- Success rate: 95%+ (vs current timeout failures)
+- Early exit frequency: <20% of requests
+- Render timeout crashes: <5% (vs 100% currently)
+- Conservative initial settings that can be safely increased later"
+```
+
+---
+
+### **3. TECHNICAL BLoat Prevention CONTEXT**
+
+**What it means:** *Prevents over-engineering and maintains system simplicity.*
+
+```
+SCRAPER_OPTIMIZATION_ANTI_BLOAT:
+"Scraper optimization must avoid technical complexity:
+- No new Python libraries or dependencies
+- No threading, async, or parallel processing
+- No caching systems or persistent storage
+- No database connections or external services
+- No complex monitoring dashboards or alerting
+- No machine learning or AI-based optimization
+- Maximum 20 lines of code changes total
+- Use existing time, os, and requests modules only"
+```
+
+---
+
+### **4. CONFIGURATION MANAGEMENT CONTEXT**
+
+**What it means:** *Ensures safe, reversible configuration changes.*
+
+```
+SCRAPER_CONFIGURATION_SAFETY:
+"Scraper configuration changes must be conservative and reversible:
+- SCRAPER_MAX_PAGES: Start with 3 (was 10), can increase to 4-5 later
+- SCRAPER_MAX_COUNT: Start with 120 (was 100), can increase to 150 later
+- SCRAPER_TIMEOUT_SEC: Set to 25 (was 600), prevents Render timeout
+- Request timeout: Reduce to 7s (was 15s), faster page loads
+- All changes via environment variables in render.yaml
+- Keep original values documented for rollback
+- Test rollback procedure before deploying"
+```
+
+---
+
+### **5. VALIDATION AND MONITORING CONTEXT**
+
+**What it means:** *Provides safety nets without complex monitoring systems.*
+
+```
+SCRAPER_VALIDATION_SAFETY_NETS:
+"Scraper optimization requires simple validation and monitoring:
+- Add minimum property validation (fail if <40 properties)
+- Extend existing CSV diagnostics with 3 fields: property_count, execution_time, early_exit_triggered
+- Use existing print() statements for logging (no new logging libraries)
+- Check CSV files manually for first week (no automated alerts)
+- If early exit >30%, increase timeout by 5 seconds
+- If property count consistently <60, increase MAX_PAGES by 1
+- Focus on user-reported issues over perfect metrics"
+```
+
+---
+
+### **6. ERROR HANDLING AND GRACEFUL DEGRADATION**
+
+**What it means:** *Ensures system remains functional even with optimization failures.*
+
+```
+SCRAPER_OPTIMIZATION_ERROR_HANDLING:
+"Scraper optimization must maintain system reliability:
+- If timeout triggers, return whatever data was collected (don't fail completely)
+- If property count is low, log warning but still return results
+- If early exit happens frequently, automatically adjust settings
+- Always maintain backward compatibility with existing API contracts
+- Never break existing address search functionality
+- Never modify core scraping logic beyond timeout and validation
+- Graceful degradation: Better to have fewer properties than no properties"
+```
+
+---
+
+### **7. IMPLEMENTATION PHASES AND TIME BUDGETS**
+
+**What it means:** *Ensures implementation stays focused and doesn't over-engineer.*
+
+```
+SCRAPER_OPTIMIZATION_IMPLEMENTATION_PHASES:
+"Scraper optimization implementation phases with strict time limits:
+
+Phase 1 (15 min): Update render.yaml configuration
+- SCRAPER_MAX_PAGES: 10 → 3
+- SCRAPER_MAX_COUNT: 100 → 120  
+- SCRAPER_TIMEOUT_SEC: 600 → 25
+
+Phase 2 (20 min): Add early exit logic to scraper.py
+- Add start_time = time.time() before main loop
+- Add timeout check: if time.time() - start_time > SCRAPER_TIMEOUT_SEC: break
+
+Phase 3 (15 min): Add request timeout optimization
+- Change session.get(timeout=15) to session.get(timeout=7)
+
+Phase 4 (10 min): Add minimum property validation
+- Add: if len(data) < 40: print("WARNING: Low property count")
+
+Phase 5 (15 min): Extend CSV diagnostics
+- Add: property_count, execution_time, early_exit_triggered fields
+
+HARD STOP: 75 minutes total
+```
+
+---
+
+### **8. TESTING AND VALIDATION REQUIREMENTS**
+
+**What it means:** *Ensures optimization works before deployment.*
+
+```
+SCRAPER_OPTIMIZATION_TESTING:
+"Scraper optimization must be tested before deployment:
+- Test with Metro Manila data (most common use case)
+- Verify execution stays under 25 seconds
+- Confirm property count is 60-120 range
+- Ensure no breaking changes to existing functionality
+- Test rollback procedure (revert environment variables)
+- Validate CSV diagnostics output format
+- Check that early exit logic triggers appropriately"
+```
+
+---
+
+### **9. SUCCESS METRICS AND MONITORING**
+
+**What it means:** *Provides clear success criteria and monitoring approach.*
+
+```
+SCRAPER_OPTIMIZATION_SUCCESS_METRICS:
+"Scraper optimization success is measured by:
+
+PRIMARY GOALS:
+- Reduce Render timeout crashes from 100% to <5%
+- Increase average property count from ~50 to 80-100
+- Maintain execution time under 25 seconds for 95% of requests
+- Achieve consistent user experience (predictable report sizes)
+
+MONITORING INDICATORS:
+- Early exit frequency (should be <20% of requests)
+- Average property count per report (target: 80-100)
+- Execution time distribution (target: 15-25 seconds)
+- User satisfaction with report completeness
+
+ADJUSTMENT TRIGGERS:
+- If early exit >30%: Increase timeout by 5 seconds
+- If property count <60: Increase MAX_PAGES by 1
+- If execution time >25s: Reduce MAX_PAGES by 1
+- If user complaints about missing data: Increase timeout"
+```
+
+---
+
+### **10. ANTI-PATTERNS AND COMMON MISTAKES**
+
+**What it means:** *Prevents over-engineering and scope creep.*
+
+```
+SCRAPER_OPTIMIZATION_ANTI_PATTERNS:
+"Scraper optimization must avoid these common mistakes:
+
+❌ 'Let me add parallel processing for faster scraping'
+❌ 'Let me implement caching to avoid re-scraping'
+❌ 'Let me add retry logic for failed requests'
+❌ 'Let me create a monitoring dashboard'
+❌ 'Let me add machine learning for smart sampling'
+❌ 'Let me implement circuit breakers'
+❌ 'Let me add complex error recovery'
+❌ 'Let me create a separate optimization service'
+❌ 'Let me add database logging for analytics'
+❌ 'Let me implement A/B testing for different settings'
+
+✅ Adjust environment variables in render.yaml
+✅ Add simple timeout check in scraper loop
+✅ Extend existing CSV diagnostics
+✅ Add minimum property validation
+✅ Ship with conservative settings
+✅ Adjust based on real user data
+```
+
+---
+
+### **11. ROLLBACK AND RECOVERY PROCEDURES**
+
+**What it means:** *Ensures optimization can be safely reverted if issues arise.*
+
+```
+SCRAPER_OPTIMIZATION_ROLLBACK:
+"Scraper optimization must support safe rollback:
+
+IF TIMEOUT ISSUES PERSIST:
+- Revert SCRAPER_TIMEOUT_SEC to 600
+- Revert SCRAPER_MAX_PAGES to 10
+- Revert SCRAPER_MAX_COUNT to 100
+- Remove early exit logic from scraper.py
+- Deploy rollback version immediately
+
+IF PROPERTY COUNTS TOO LOW:
+- Increase SCRAPER_MAX_PAGES to 4 or 5
+- Increase request timeout to 10 seconds
+- Remove minimum property validation
+- Monitor for Render timeout issues
+
+IF USER COMPLAINTS ABOUT SPEED:
+- Reduce SCRAPER_MAX_PAGES to 2
+- Reduce request timeout to 5 seconds
+- Accept lower property counts for faster execution
+
+RECOVERY PROCEDURES:
+- All changes are environment variable based
+- No code changes required for rollback
+- Test rollback procedure before deploying optimization
+- Keep original configuration values documented"
+```
+
+---
+
+### **12. DONE CRITERIA AND SHIP CONDITIONS**
+
+**What it means:** *Provides clear completion criteria.*
+
+```
+SCRAPER_OPTIMIZATION_DONE_CRITERIA:
+"Scraper optimization is complete when:
+
+MINIMUM VIABLE:
+- ✅ render.yaml updated with conservative settings
+- ✅ Early exit logic added to scraper.py (max 5 lines)
+- ✅ Request timeout reduced to 7 seconds
+- ✅ Minimum property validation added (max 3 lines)
+- ✅ CSV diagnostics extended with 3 new fields
+- ✅ No new dependencies or libraries added
+- ✅ All existing functionality preserved
+- ✅ Implementation completed in ≤75 minutes
+
+SHIP WHEN:
+- All 8 items above are ✅
+- Test with Metro Manila data passes
+- Execution time consistently <25 seconds
+- Property count consistently 60-120
+- No breaking changes to existing API
+- Rollback procedure tested and documented
+
+MONITORING PHASE:
+- Check CSV diagnostics daily for first week
+- Adjust settings based on real user data
+- Respond to user feedback within 24 hours
+- Document all configuration changes"
+```
+
+---
+
+### **13. ONE-SENTENCE GUARDRAIL**
+
+**"Adjust environment variables to conservative settings, add 25-second early exit check, reduce request timeouts to 7 seconds, extend CSV diagnostics with 3 fields, ship in 75 minutes—this is configuration optimization, not system architecture."**
+
+---
+
+**These guardrails ensure scraper optimization delivers reliable performance improvements with zero technical bloat, maximum system stability, and flawless integration into the existing Kairos architecture.**
+
+---
+
 **These guardrails ensure the PSGC implementation follows established patterns, maintains security and performance, and provides a solid foundation for future expansion while keeping the codebase lean and maintainable.**
