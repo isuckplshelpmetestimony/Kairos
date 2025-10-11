@@ -262,7 +262,7 @@ export default function App() {
               <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/95 border border-[#E5E4E6] rounded-3xl shadow-lg">
                 {/* Property Type Section */}
                 <div className="p-4 border-b border-[#E5E4E6]">
-                  <label className="font-['Futura'] text-sm text-[#3B3832] mb-2 block">
+                  <label className="font-['Avenir'] text-sm text-[#3B3832] mb-2 block">
                     Select Property Type
                   </label>
                   <div className="relative">
@@ -300,7 +300,7 @@ export default function App() {
                 
                 {/* Location Section */}
                 <div className="p-4 border-b border-[#E5E4E6]">
-                  <label className="font-['Futura'] text-sm text-[#3B3832] mb-2 block">
+                  <label className="font-['Avenir'] text-sm text-[#3B3832] mb-2 block">
                     Select Location
                   </label>
                   <div className="relative">

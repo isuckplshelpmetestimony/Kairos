@@ -25,9 +25,9 @@ export function KairosLogo({ className = "", iconSize = 'md' }: KairosLogoProps)
     <div className={`flex items-center gap-0 ${className}`}>
       {/* SVG logo image */}
       <div className={`${iconSizeToClasses(iconSize)} flex items-center justify-center`}>
-        <img src={CatLogo} alt="Kairos logo" className="w-full h-full object-contain" draggable={false} />
+        <img src={CatLogo} alt="Cairos logo" className="w-full h-full object-contain" draggable={false} />
       </div>
-      <span className={`font-semibold text-kairos-charcoal tracking-wide text-35px`}>Kairos</span>
+      <span className={`font-semibold text-kairos-charcoal tracking-wide text-35px`}>Cairos</span>
     </div>
   );
 }
