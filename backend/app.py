@@ -6,6 +6,9 @@ import time
 import subprocess
 from typing import Any, Dict, List
 
+# Add the current directory to Python path for local modules
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import pandas as pd
