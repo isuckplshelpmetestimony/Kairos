@@ -183,10 +183,10 @@
     font-weight: 600 !important;
   }
   
-  /* Enforce semibold weight to ensure consistent rendering */
+  /* Override font-semibold to render as regular weight to match localhost */
   @layer utilities {
     .font-semibold {
-      font-weight: 600 !important; /* Enforce semibold weight */
+      font-weight: 400 !important;
     }
   }
 }
