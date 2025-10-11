@@ -304,7 +304,13 @@ def scraper(province, property_type, num):
 
     links = listing_df['link']
 
+    # Add timeout protection for detail processing
+    detail_start_time = time.time()
     for index, each in tqdm(enumerate(links), total=len(links), desc="Processing details"):
+        # Check timeout before processing each property detail
+        if time.time() - detail_start_time > (scraper_timeout - 5):  # Leave 5s buffer
+            print(f"Detail processing timeout - stopping at property {index + 1}")
+            break
         prop_details = {}
         amenities = []
         temp = []
