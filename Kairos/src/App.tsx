@@ -143,7 +143,8 @@ export default function App() {
     try {
       // start polling progress
       
-      const response = await fetch(`/api/cma`, {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/cma`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
