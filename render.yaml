@@ -7,7 +7,7 @@ services:
     plan: free
     envVars:
       - key: SCRAPER_MAX_PAGES
-        value: "4"
+        value: "4"  # Force redeploy
       - key: SCRAPER_MAX_COUNT
         value: 120
       - key: SCRAPER_TIMEOUT_SEC
