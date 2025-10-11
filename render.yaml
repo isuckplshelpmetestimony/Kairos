@@ -6,8 +6,6 @@ services:
     startCommand: gunicorn backend.app:app
     plan: free
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11
       - key: SCRAPER_MAX_PAGES
         value: 10
       - key: SCRAPER_MAX_COUNT
