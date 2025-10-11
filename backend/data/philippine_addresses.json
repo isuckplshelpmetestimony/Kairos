@@ -1,0 +1,484 @@
+{
+  "addresses": [
+    {
+      "full_address": "Bonifacio Global City (BGC), Taguig City, Metro Manila",
+      "psgc_city_code": "137602000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.5547, 121.0477],
+      "search_radius_km": 5,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Makati Central Business District, Makati City, Metro Manila",
+      "psgc_city_code": "137501000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.5547, 121.0244],
+      "search_radius_km": 5,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Ortigas Center, Pasig City, Metro Manila",
+      "psgc_city_code": "137403000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.5846, 121.0569],
+      "search_radius_km": 5,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Alabang, Muntinlupa City, Metro Manila",
+      "psgc_city_code": "137803000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.4292, 121.0419],
+      "search_radius_km": 7,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Quezon City, Metro Manila",
+      "psgc_city_code": "137404000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.6760, 121.0437],
+      "search_radius_km": 10,
+      "confidence_level": "medium"
+    },
+    {
+      "full_address": "Eastwood City, Quezon City, Metro Manila",
+      "psgc_city_code": "137404000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.6091, 121.0794],
+      "search_radius_km": 5,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Rockwell Center, Makati City, Metro Manila",
+      "psgc_city_code": "137501000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.5656, 121.0360],
+      "search_radius_km": 3,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Manila, Metro Manila",
+      "psgc_city_code": "137600000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.5995, 120.9842],
+      "search_radius_km": 15,
+      "confidence_level": "medium"
+    },
+    {
+      "full_address": "Aseana City, Parañaque City, Metro Manila",
+      "psgc_city_code": "137405000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.5378, 120.9896],
+      "search_radius_km": 5,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Greenfield District, Mandaluyong City, Metro Manila",
+      "psgc_city_code": "137502000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.5833, 121.0500],
+      "search_radius_km": 4,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Cebu City, Cebu",
+      "psgc_city_code": "072217000",
+      "psgc_province_code": "0722",
+      "coordinates": [10.3157, 123.8854],
+      "search_radius_km": 15,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Davao City, Davao del Sur",
+      "psgc_city_code": "112402000",
+      "psgc_province_code": "1124",
+      "coordinates": [7.0736, 125.6128],
+      "search_radius_km": 20,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Iloilo City, Iloilo",
+      "psgc_city_code": "063022000",
+      "psgc_province_code": "0630",
+      "coordinates": [10.7202, 122.5621],
+      "search_radius_km": 12,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Baguio City, Benguet",
+      "psgc_city_code": "141102000",
+      "psgc_province_code": "1411",
+      "coordinates": [16.4023, 120.5960],
+      "search_radius_km": 10,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Cagayan de Oro City, Misamis Oriental",
+      "psgc_city_code": "104305000",
+      "psgc_province_code": "1043",
+      "coordinates": [8.4542, 124.6319],
+      "search_radius_km": 15,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Bacolod City, Negros Occidental",
+      "psgc_city_code": "064501000",
+      "psgc_province_code": "0645",
+      "coordinates": [10.6407, 122.9689],
+      "search_radius_km": 12,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Zamboanga City, Zamboanga del Sur",
+      "psgc_city_code": "097332000",
+      "psgc_province_code": "0973",
+      "coordinates": [6.9214, 122.0790],
+      "search_radius_km": 15,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Antipolo City, Rizal",
+      "psgc_city_code": "045801000",
+      "psgc_province_code": "0458",
+      "coordinates": [14.6255, 121.1245],
+      "search_radius_km": 10,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Cainta, Rizal",
+      "psgc_city_code": "045804000",
+      "psgc_province_code": "0458",
+      "coordinates": [14.5786, 121.1222],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Taytay, Rizal",
+      "psgc_city_code": "045820000",
+      "psgc_province_code": "0458",
+      "coordinates": [14.5692, 121.1325],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Las Piñas City, Metro Manila",
+      "psgc_city_code": "137504000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.4506, 120.9828],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Marikina City, Metro Manila",
+      "psgc_city_code": "137505000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.6507, 121.1029],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Muntinlupa City, Metro Manila",
+      "psgc_city_code": "137803000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.4148, 121.0373],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Navotas City, Metro Manila",
+      "psgc_city_code": "137506000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.6471, 120.9476],
+      "search_radius_km": 6,
+      "confidence_level": "medium"
+    },
+    {
+      "full_address": "Parañaque City, Metro Manila",
+      "psgc_city_code": "137405000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.4793, 121.0198],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Pasay City, Metro Manila",
+      "psgc_city_code": "137507000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.5378, 120.9969],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Pasig City, Metro Manila",
+      "psgc_city_code": "137403000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.5764, 121.0851],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Pateros, Metro Manila",
+      "psgc_city_code": "137508000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.5407, 121.0695],
+      "search_radius_km": 5,
+      "confidence_level": "medium"
+    },
+    {
+      "full_address": "San Juan City, Metro Manila",
+      "psgc_city_code": "137509000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.6019, 121.0355],
+      "search_radius_km": 6,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Taguig City, Metro Manila",
+      "psgc_city_code": "137602000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.5176, 121.0509],
+      "search_radius_km": 10,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Valenzuela City, Metro Manila",
+      "psgc_city_code": "137510000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.6969, 120.9820],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Cavite City, Cavite",
+      "psgc_city_code": "042105000",
+      "psgc_province_code": "3400",
+      "coordinates": [14.4791, 120.8970],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Dasmariñas City, Cavite",
+      "psgc_city_code": "042106000",
+      "psgc_province_code": "3400",
+      "coordinates": [14.3294, 120.9366],
+      "search_radius_km": 10,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "General Trias, Cavite",
+      "psgc_city_code": "042113000",
+      "psgc_province_code": "3400",
+      "coordinates": [14.3869, 120.8819],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Imus City, Cavite",
+      "psgc_city_code": "042108000",
+      "psgc_province_code": "3400",
+      "coordinates": [14.4297, 120.9366],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Tagaytay City, Cavite",
+      "psgc_city_code": "042131000",
+      "psgc_province_code": "3400",
+      "coordinates": [14.1000, 120.9333],
+      "search_radius_km": 10,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Trece Martires City, Cavite",
+      "psgc_city_code": "042132000",
+      "psgc_province_code": "3400",
+      "coordinates": [14.2833, 120.8667],
+      "search_radius_km": 8,
+      "confidence_level": "medium"
+    },
+    {
+      "full_address": "Calamba City, Laguna",
+      "psgc_city_code": "043403000",
+      "psgc_province_code": "4000",
+      "coordinates": [14.2117, 121.1653],
+      "search_radius_km": 10,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "San Pedro, Laguna",
+      "psgc_city_code": "043432000",
+      "psgc_province_code": "4000",
+      "coordinates": [14.3583, 121.0583],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Santa Rosa, Laguna",
+      "psgc_city_code": "043434000",
+      "psgc_province_code": "4000",
+      "coordinates": [14.3167, 121.1167],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Biñan, Laguna",
+      "psgc_city_code": "043404000",
+      "psgc_province_code": "4000",
+      "coordinates": [14.3333, 121.0833],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Cabuyao, Laguna",
+      "psgc_city_code": "043405000",
+      "psgc_province_code": "4000",
+      "coordinates": [14.2500, 121.1167],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Los Baños, Laguna",
+      "psgc_city_code": "043421000",
+      "psgc_province_code": "4000",
+      "coordinates": [14.1667, 121.2167],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Caloocan City, Metro Manila",
+      "psgc_city_code": "137501000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.6588, 120.9822],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Malabon City, Metro Manila",
+      "psgc_city_code": "137503000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.6639, 120.9678],
+      "search_radius_km": 6,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Marikina City, Metro Manila",
+      "psgc_city_code": "137505000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.6507, 121.1029],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Mandaluyong City, Metro Manila",
+      "psgc_city_code": "137502000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.5833, 121.0500],
+      "search_radius_km": 6,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Makati City, Metro Manila",
+      "psgc_city_code": "137501000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.5547, 121.0244],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Taguig City, Metro Manila",
+      "psgc_city_code": "137602000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.5176, 121.0509],
+      "search_radius_km": 10,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Pasig City, Metro Manila",
+      "psgc_city_code": "137403000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.5764, 121.0851],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Pasay City, Metro Manila",
+      "psgc_city_code": "137507000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.5378, 120.9969],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Parañaque City, Metro Manila",
+      "psgc_city_code": "137405000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.4793, 121.0198],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Las Piñas City, Metro Manila",
+      "psgc_city_code": "137504000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.4506, 120.9828],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Muntinlupa City, Metro Manila",
+      "psgc_city_code": "137803000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.4148, 121.0373],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Navotas City, Metro Manila",
+      "psgc_city_code": "137506000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.6471, 120.9476],
+      "search_radius_km": 6,
+      "confidence_level": "medium"
+    },
+    {
+      "full_address": "Pateros, Metro Manila",
+      "psgc_city_code": "137508000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.5407, 121.0695],
+      "search_radius_km": 5,
+      "confidence_level": "medium"
+    },
+    {
+      "full_address": "San Juan City, Metro Manila",
+      "psgc_city_code": "137509000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.6019, 121.0355],
+      "search_radius_km": 6,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Valenzuela City, Metro Manila",
+      "psgc_city_code": "137510000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.6969, 120.9820],
+      "search_radius_km": 8,
+      "confidence_level": "high"
+    },
+    {
+      "full_address": "Quezon City, Metro Manila",
+      "psgc_city_code": "137404000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.6760, 121.0437],
+      "search_radius_km": 10,
+      "confidence_level": "medium"
+    },
+    {
+      "full_address": "Manila, Metro Manila",
+      "psgc_city_code": "137600000",
+      "psgc_province_code": "1376",
+      "coordinates": [14.5995, 120.9842],
+      "search_radius_km": 15,
+      "confidence_level": "medium"
+    }
+  ]
+}
