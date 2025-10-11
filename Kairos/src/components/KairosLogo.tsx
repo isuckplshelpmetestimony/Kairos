@@ -27,7 +27,7 @@ export function KairosLogo({ className = "", iconSize = 'md' }: KairosLogoProps)
       <div className={`${iconSizeToClasses(iconSize)} flex items-center justify-center`}>
         <img src={CatLogo} alt="Cairos logo" className="w-full h-full object-contain" draggable={false} />
       </div>
-      <span className={`font-normal text-kairos-charcoal tracking-wide text-35px`}>Cairos</span>
+      <span className={`font-semibold text-kairos-charcoal tracking-wide text-35px`}>Cairos</span>
     </div>
   );
 }
