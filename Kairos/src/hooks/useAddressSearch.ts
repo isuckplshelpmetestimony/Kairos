@@ -134,7 +134,8 @@ export function useAddressSearch(
         }
         
         // API call to backend address search endpoint
-        const apiResponse = await fetch(`/api/addresses/search?q=${encodeURIComponent(query)}&limit=5`);
+        const apiUrl = import.meta.env.VITE_API_URL || '';
+        const apiResponse = await fetch(`${apiUrl}/api/addresses/search?q=${encodeURIComponent(query)}&limit=5`);
         if (!apiResponse.ok) {
           throw new Error(`API request failed: ${apiResponse.status}`);
         }
