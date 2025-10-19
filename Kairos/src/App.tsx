@@ -93,14 +93,15 @@ export default function App() {
     loadProjections().then(setProjectionsMap);
   }, []);
 
-  // Update current projection when selected address changes
+  // Update current projection when selected address changes or projections are loaded
   useEffect(() => {
-    if (selectedAddress?.location?.psgc_province_code) {
+    if (selectedAddress?.location?.psgc_province_code && projectionsMap.size > 0) {
       // Try PSGC code match first (for backward compatibility)
       const psgcCode = selectedAddress.location.psgc_province_code.toString();
       let projection = projectionsMap.get(psgcCode);
       
       console.log(`🔍 Looking for projection for PSGC: ${psgcCode}, Address: ${selectedAddress.full_address}`);
+      console.log(`📊 Projections map size: ${projectionsMap.size}`);
       
       // If no PSGC match, try name-based matching
       if (!projection && selectedAddress.full_address) {
@@ -120,7 +121,7 @@ export default function App() {
       } else {
         console.log(`❌ No projection found for PSGC: ${psgcCode} or address: ${selectedAddress.full_address}`);
       }
-    } else {
+    } else if (!selectedAddress?.location?.psgc_province_code) {
       setCurrentProjection(null);
     }
   }, [selectedAddress, projectionsMap]);
