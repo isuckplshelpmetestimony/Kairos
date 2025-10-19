@@ -23,17 +23,20 @@ import { createPropertyStatusHandlers, renderPropertyStatusGroup } from './utils
 import type { KairosAddressOutput } from './types/address';
 import { loadProjections, formatProjectionLabel, findProjectionByName } from './types/projection';
 import type { ProjectionData } from './types/projection';
+import { useAuth } from './hooks/useAuth';
+import { createAppraisalRecord, updateAppraisalRecord, trackEvent } from './lib/supabase';
 
 // ============================================================================
 // FEATURE FLAGS
 // ============================================================================
 // Set to true to enable, false to hide. No code deletion required.
 const FEATURE_FLAGS = {
-  COMPARISONS_DROPDOWN: false, // Enable when 5+ clients request this feature
+  COMPARISONS_DROPDOWN: true, // Enable when 5+ clients request this feature
 };
 // ============================================================================
 
 export default function App() {
+  const { user, loading: authLoading } = useAuth();
   const [compsSelected, setCompsSelected] = useState(true);
   const [isComparisonsOpen, setIsComparisonsOpen] = useState(false);
   const [propertyStatuses, setPropertyStatuses] = useState<Record<string, { selected: boolean; dateRange: string }>>(INITIAL_PROPERTY_STATUSES);
@@ -135,16 +138,37 @@ export default function App() {
       return;
     }
 
+    // Guard: require user authentication
+    if (!user) {
+      setError('Please wait for authentication to complete.');
+      return;
+    }
+
     setLoading(true);
-    
     setCma(null);
     setError(null);
 
+    let appraisalId: string | null = null;
+
     try {
-      // start polling progress
-      
-      const apiUrl = import.meta.env.VITE_API_URL || '';
-      const response = await fetch(`${apiUrl}/api/cma`, {
+      // Create initial appraisal record
+      appraisalId = await createAppraisalRecord(
+        user.id,
+        selectedAddress.full_address,
+        selectedAddress.location.municipality || '',
+        selectedAddress.location.province || ''
+      );
+
+      if (!appraisalId) {
+        console.warn('⚠️ No appraisal ID returned, continuing without tracking')
+        appraisalId = `fallback-${Date.now()}`
+      }
+
+      // Track login event
+      await trackEvent(user.id, 'login', 'User logged in');
+
+      // Use relative URL to leverage Vite proxy
+      const response = await fetch('/api/cma', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -152,13 +176,22 @@ export default function App() {
         body: JSON.stringify({
           psgc_province_code: selectedAddress.location.psgc_province_code,
           property_type: 'condo', // Hardcoded for v1 simplicity
-          count: 50
+          count: 50,
+          appraisal_id: appraisalId // Pass appraisal ID to backend
         }),
       });
 
       if (response.status === 409) {
         setError('Scraper busy, please try again in a few minutes.');
         
+        // Update appraisal record with failure
+        if (appraisalId) {
+          await updateAppraisalRecord(appraisalId, {
+            status: 'failed',
+            error_type: 'scraper_busy',
+            error_message: 'Scraper busy, please try again in a few minutes.'
+          });
+        }
         return;
       }
 
@@ -168,15 +201,51 @@ export default function App() {
 
       const data = await response.json();
       setCma(data);
+
+      // Update appraisal record with success (backend should have done this, but just in case)
+      if (appraisalId) {
+        await updateAppraisalRecord(appraisalId, {
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+          properties_found: data.stats?.count || 0
+        });
+      }
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate CMA. Please try again.';
       setError(errorMessage);
+
+      // Update appraisal record with failure
+      if (appraisalId) {
+        await updateAppraisalRecord(appraisalId, {
+          status: 'failed',
+          error_type: 'client_error',
+          error_message: errorMessage
+        });
+
+        // Track the error
+        await trackEvent(user.id, 'error', `CMA generation failed: ${errorMessage}`, {
+          error_type: 'client_error',
+          appraisal_id: appraisalId
+        });
+      }
     } finally {
       setLoading(false);
-      
     }
   };
 
+
+  // Show loading state while authenticating
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-kairos-chalk flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-black border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-kairos-charcoal">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-kairos-chalk" onClick={handleClickOutside}>
