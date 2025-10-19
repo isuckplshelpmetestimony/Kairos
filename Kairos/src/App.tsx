@@ -167,8 +167,9 @@ export default function App() {
       // Track login event
       await trackEvent(user.id, 'login', 'User logged in');
 
-      // Use relative URL to leverage Vite proxy
-      const response = await fetch('/api/cma', {
+      // Use environment variable for API URL or fallback to backend
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://cairos.onrender.com';
+      const response = await fetch(`${apiUrl}/api/cma`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

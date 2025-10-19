@@ -134,7 +134,7 @@ export function useAddressSearch(
         }
         
         // API call to backend address search endpoint
-        const apiUrl = import.meta.env.VITE_API_URL || '';
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://cairos.onrender.com';
         const apiResponse = await fetch(`${apiUrl}/api/addresses/search?q=${encodeURIComponent(query)}&limit=5`);
         if (!apiResponse.ok) {
           throw new Error(`API request failed: ${apiResponse.status}`);
