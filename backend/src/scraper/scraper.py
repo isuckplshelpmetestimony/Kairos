@@ -82,15 +82,27 @@ def scraper(province, property_type, num):
     pages_upper_bound = capped_max_page_num
 
     pages_scanned = 0
+    # Track execution time for early exit
+    start_time = time.time()
+    try:
+        scraper_timeout = int(os.getenv('SCRAPER_TIMEOUT_SEC', '25'))
+    except Exception:
+        scraper_timeout = 25
+    early_exit_triggered = False
 
     for page_num in range(1, pages_upper_bound + 1):
+        # Check for timeout to prevent Render worker crash
+        if time.time() - start_time > scraper_timeout:
+            early_exit_triggered = True
+            print(f"Early exit triggered after {scraper_timeout}s timeout")
+            break
         try:
             if page_num == 1:
                 URL = base_list_url
             else:
                 URL = f'https://www.lamudi.com.ph/buy/{province}/{property_type}/?page={page_num}'
             print(f"Scraping page {page_num}...")
-            page = session.get(URL, timeout=15)
+            page = session.get(URL, timeout=7)
             pages_scanned += 1
             soup = bs(page.content, 'html.parser')
             results_link = soup.find_all("div", attrs={"class": "row ListingCell-row ListingCell-agent-redesign"})
@@ -169,7 +181,7 @@ def scraper(province, property_type, num):
                     else:
                         time.sleep(1.0)
                     # Re-fetch and attempt anchor-based scan again (lightweight)
-                    page_retry = session.get(URL, timeout=15)
+                    page_retry = session.get(URL, timeout=7)
                     soup_retry = bs(page_retry.content, 'html.parser')
                     anchors_retry = soup_retry.find_all('a', href=True)
                     for a in anchors_retry:
@@ -197,7 +209,7 @@ def scraper(province, property_type, num):
                     try:
                         time.sleep(1.0)
                         url_variant = f"{base_list_url}?page=1"
-                        page_retry2 = session.get(url_variant, timeout=15)
+                        page_retry2 = session.get(url_variant, timeout=7)
                         soup_retry2 = bs(page_retry2.content, 'html.parser')
                         anchors_retry2 = soup_retry2.find_all('a', href=True)
                         for a in anchors_retry2:
@@ -292,13 +304,19 @@ def scraper(province, property_type, num):
 
     links = listing_df['link']
 
+    # Add timeout protection for detail processing
+    detail_start_time = time.time()
     for index, each in tqdm(enumerate(links), total=len(links), desc="Processing details"):
+        # Check timeout before processing each property detail
+        if time.time() - detail_start_time > (scraper_timeout - 5):  # Leave 5s buffer
+            print(f"Detail processing timeout - stopping at property {index + 1}")
+            break
         prop_details = {}
         amenities = []
         temp = []
         features = {}
         URL = each
-        page = requests.get(URL, headers=headers, timeout=15)
+        page = requests.get(URL, headers=headers, timeout=7)
         soup = bs(page.content, 'html.parser')
 
         all_sku = soup.find("div", attrs={"class": "Banner-Images"})
@@ -541,6 +559,17 @@ def scraper(province, property_type, num):
         time.sleep(random.uniform(0.3, 0.8))
 
     listing_details_df = pd.DataFrame(data)
+    
+    # Calculate execution metrics
+    execution_time = time.time() - start_time
+    property_count = len(data)
+    
+    # Validate minimum property count
+    if property_count < 40:
+        print(f"WARNING: Low property count - only {property_count} properties found (target: 60-120)")
+    
+    # Log execution metrics for monitoring
+    print(f"Scraper completed: {property_count} properties in {execution_time:.2f}s (early_exit: {early_exit_triggered})")
 
     # TEMP diagnostics: write raw features for label inspection (local only)
     try:
@@ -633,6 +662,28 @@ def scraper(province, property_type, num):
     staging_df.to_csv(path, index=False)
     info_df.to_csv(path_info, index=False)
     amenities_df.to_csv(path_amenities, index=False)
+    
+    # Save diagnostics for monitoring
+    try:
+        diagnostics_data = {
+            'timestamp': [pd.Timestamp.now()],
+            'province': [province],
+            'property_type': [property_type],
+            'requested_count': [num],
+            'property_count': [property_count],
+            'execution_time': [round(execution_time, 2)],
+            'early_exit_triggered': [early_exit_triggered],
+            'pages_scanned': [pages_scanned]
+        }
+        diagnostics_df = pd.DataFrame(diagnostics_data)
+        diagnostics_path = "data/scraped/scraper_diagnostics.csv"
+        # Append to existing file or create new one
+        if os.path.exists(diagnostics_path):
+            diagnostics_df.to_csv(diagnostics_path, mode='a', header=False, index=False)
+        else:
+            diagnostics_df.to_csv(diagnostics_path, index=False)
+    except Exception as e:
+        print(f"Warning: Could not save diagnostics - {e}")
 
     return staging_df
 
