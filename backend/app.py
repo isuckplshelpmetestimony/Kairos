@@ -4,6 +4,7 @@ import sys
 import threading
 import time
 import subprocess
+import requests
 from typing import Any, Dict, List
 
 # Add the current directory to Python path for local modules
@@ -16,15 +17,21 @@ from collections import defaultdict, deque
 
 from psgc_mapper import to_lamudi_province, is_supported
 from src.adapters.lamudi_adapter import scrape_and_normalize
+from supabase_client import update_appraisal, log_error
 
 # -----------------------------------------------------------------------------
 # Flask app setup
 # -----------------------------------------------------------------------------
 app = Flask(__name__)
 
-# CORS: In production, restrict to configured origin via FRONTEND_ORIGIN env
-frontend_origin = os.getenv("FRONTEND_ORIGIN", "*")
-CORS(app, resources={r"/*": {"origins": frontend_origin}})
+# Add CORS - allow requests from frontend
+CORS(app, resources={
+    r"/api/*": {
+        "origins": ["http://localhost:3001", "http://127.0.0.1:3001"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
 
 # Single-flight lock to serialize scrapes
 _scrape_lock = threading.Lock()
@@ -55,6 +62,10 @@ except Exception as e:
 # Config
 MAX_COUNT = int(os.getenv("SCRAPER_MAX_COUNT", "100"))
 SCRAPER_TIMEOUT_SEC = int(os.getenv("SCRAPER_TIMEOUT_SEC", "600"))
+
+# Scraper mode configuration
+SCRAPER_MODE = os.getenv('SCRAPER_MODE', 'local')
+SCRAPER_URL = os.getenv('SCRAPER_URL', 'http://localhost:3000')
 
 
 def check_rate_limit(ip: str, max_requests: int = 100, window_seconds: int = 60) -> bool:
@@ -182,6 +193,7 @@ def cma() -> Any:
     # Validate and sanitize input
     psgc_province_code = str(body.get("psgc_province_code", "")).strip()
     property_type = str(body.get("property_type", "")).strip().lower()
+    appraisal_id = body.get("appraisal_id")
     try:
         count = int(body.get("count", 50))
     except Exception:
@@ -205,7 +217,36 @@ def cma() -> Any:
     if not province:
         return jsonify({"error": "Unsupported province"}), 400
 
-    # Enforce single-flight
+    # ===== Remote mode check =====
+    if SCRAPER_MODE == 'remote':
+        app.logger.info(f"Remote mode: Forwarding scrape request to {SCRAPER_URL}")
+        try:
+            response = requests.post(
+                f"{SCRAPER_URL}/api/cma",
+                json=body,
+                headers={'Content-Type': 'application/json'},
+                timeout=SCRAPER_TIMEOUT_SEC
+            )
+            
+            if response.status_code == 200:
+                app.logger.info("Remote scraper completed successfully")
+            else:
+                app.logger.warning(f"Remote scraper returned status {response.status_code}")
+            
+            return jsonify(response.json()), response.status_code
+            
+        except requests.Timeout:
+            app.logger.error("Remote scraper timeout")
+            return jsonify({"error": "Scraper timeout"}), 504
+        except requests.ConnectionError as e:
+            app.logger.error(f"Cannot connect to remote scraper: {e}")
+            return jsonify({"error": "Scraper service unavailable"}), 503
+        except Exception as e:
+            app.logger.error(f"Remote scraper error: {e}")
+            return jsonify({"error": "Scraper error"}), 500
+    # ===== End remote mode check =====
+
+    # LOCAL MODE: Enforce single-flight
     if not _scrape_lock.acquire(blocking=False):
         return jsonify({"error": "busy"}), 409
 
@@ -347,6 +388,19 @@ def cma() -> Any:
         # Analyze neighborhoods
         neighborhoods = analyze_neighborhoods(properties)
 
+        # Update Supabase with successful completion
+        if appraisal_id:
+            try:
+                update_appraisal(
+                    appraisal_id,
+                    "completed",
+                    completed_at=time.strftime("%Y-%m-%d %H:%M:%S%z"),
+                    properties_found=len(properties),
+                    duration_minutes=int(duration_ms / 60000)
+                )
+            except Exception as e:
+                app.logger.error(f"Failed to update Supabase appraisal {appraisal_id}: {e}")
+
         # Successful response using adapter results
         duration_ms = int((time.time() - start_time) * 1000)
         try:
@@ -373,17 +427,57 @@ def cma() -> Any:
 
     except subprocess.TimeoutExpired as e:
         app.logger.error("scraper_timeout", exc_info=False)
+        
+        # Update Supabase with timeout error
+        if appraisal_id:
+            try:
+                update_appraisal(
+                    appraisal_id,
+                    "failed",
+                    error_type="timeout",
+                    error_message="Scrape timed out"
+                )
+                # Get user_id from appraisal record for error logging
+                # For now, we'll skip the detailed error logging since we don't have user_id
+            except Exception as supabase_error:
+                app.logger.error(f"Failed to update Supabase on timeout: {supabase_error}")
+        
         return jsonify({"error": "Scrape timed out"}), 504
     except subprocess.CalledProcessError as e:
         try:
             _stdout_tail = (e.stdout or b"").decode("utf-8", errors="ignore")[-1000:]
             _stderr_tail = (e.stderr or b"").decode("utf-8", errors="ignore")[-1000:]
             app.logger.error("scraper_failed stdout=%s stderr=%s", _stdout_tail, _stderr_tail)
+            
+            # Update Supabase with scraper error
+            if appraisal_id:
+                try:
+                    update_appraisal(
+                        appraisal_id,
+                        "failed",
+                        error_type="scraper_error",
+                        error_message="Scrape failed"
+                    )
+                except Exception as supabase_error:
+                    app.logger.error(f"Failed to update Supabase on scraper error: {supabase_error}")
         except Exception:
             app.logger.error("scraper_failed (no stdout/stderr)")
         return jsonify({"error": "Scrape failed"}), 502
     except Exception as e:
         app.logger.error("server_error", exc_info=False)
+        
+        # Update Supabase with server error
+        if appraisal_id:
+            try:
+                update_appraisal(
+                    appraisal_id,
+                    "failed",
+                    error_type="server_error",
+                    error_message="Server error"
+                )
+            except Exception as supabase_error:
+                app.logger.error(f"Failed to update Supabase on server error: {supabase_error}")
+        
         # Sanitized generic error
         return jsonify({"error": "Server error"}), 500
     finally:
