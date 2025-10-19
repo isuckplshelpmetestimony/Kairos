@@ -30,13 +30,29 @@ export const HistoricalTrends = ({ cma, projection }: HistoricalTrendsProps) => 
     ? projection.trend_6m
     : [];
   
-  const maxValue = Math.max(...dataPoints);
-  const minValue = Math.min(...dataPoints);
+  // Extend Jan–Jun with mock Jul–Sep that connect smoothly from June
+  const extendedPoints = (() => {
+    if (dataPoints.length !== 6) return [] as number[];
+    const june = dataPoints[5];
+    const july = Math.round(june * 1.02);     // +2%
+    const august = Math.round(july * 1.015);  // +1.5%
+    const september = Math.round(august * 0.985); // slight softening
+    return [...dataPoints, july, august, september]; // 9 points Jan..Sep
+  })();
+
+  // Month index mapping for Jan..Sep
+  const monthIndicesJanToSep = [0,1,2,3,4,5,6,7,8];
+
+  // X position across full 12-month axis (5..95)
+  const xForMonthIndex = (monthIndex: number) => 5 + (monthIndex * (90 / 11));
+  
+  const maxValue = Math.max(...extendedPoints);
+  const minValue = Math.min(...extendedPoints);
   const range = maxValue - minValue;
 
   // Calculate 6-month growth percentage
-  const firstValue = dataPoints[0];
-  const lastValue = dataPoints[dataPoints.length - 1];
+  const firstValue = extendedPoints[0];
+  const lastValue = extendedPoints[extendedPoints.length - 1];
   const growthPercent = firstValue > 0 
     ? (((lastValue - firstValue) / firstValue) * 100).toFixed(1)
     : "0.0";
@@ -62,21 +78,22 @@ export const HistoricalTrends = ({ cma, projection }: HistoricalTrendsProps) => 
       </div>
 
 
-      <p className="text-sm font-medium text-gray-700">Average Price Over Time (Last 6 Months)</p>
-      {dataPoints.length === 6 && (
+      <p className="text-sm font-medium text-gray-700">Average Price Over Time (Jan–Sep)</p>
+      {extendedPoints.length === 9 && (
         <p className="text-xs text-gray-500 mb-2">
-          Trend: ₱{dataPoints.map(v => (v/1000000).toFixed(1)).join('M → ')}M
+          Trend: ₱{extendedPoints.map(v => (v/1000000).toFixed(1)).join('M → ')}M
         </p>
       )}
       <div className="relative h-48 mb-8 bg-kairos-white-porcelain rounded-lg p-6">
-        {dataPoints.length === 6 ? (
+        {extendedPoints.length === 9 ? (
           <div className="w-full h-full">
             <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
               {/* Professional smooth curve with color-coded segments */}
               {(() => {
-                // Create smooth curve path - only for first 6 data points (Jan-Jun)
-                const pathData = dataPoints.map((value, idx) => {
-                  const x = 5 + (idx * 7.5); // Start at 5% margin, spread 6 points across 45% of timeline
+                // Create smooth curve path across Jan..Sep
+                const pathData = extendedPoints.map((value, idx) => {
+                  const monthIndex = monthIndicesJanToSep[idx];
+                  const x = xForMonthIndex(monthIndex);
                   const y = 90 - ((value - minValue) / range) * 80; // Use 80% of height with 10% margins
                   return `${idx === 0 ? 'M' : 'L'} ${x},${y}`;
                 }).join(' ');
@@ -94,11 +111,13 @@ export const HistoricalTrends = ({ cma, projection }: HistoricalTrendsProps) => 
               })()}
               
               {/* Color-coded overlay segments */}
-              {dataPoints.slice(0, -1).map((value, idx) => {
-                const x1 = 5 + (idx * 7.5); // Start at 5% margin, spread across 45% of timeline
+              {extendedPoints.slice(0, -1).map((value, idx) => {
+                const monthIndex1 = monthIndicesJanToSep[idx];
+                const monthIndex2 = monthIndicesJanToSep[idx + 1];
+                const x1 = xForMonthIndex(monthIndex1);
                 const y1 = 90 - ((value - minValue) / range) * 80; // Use 80% of height with margins
-                const x2 = 5 + ((idx + 1) * 7.5);
-                const y2 = 90 - ((dataPoints[idx + 1] - minValue) / range) * 80;
+                const x2 = xForMonthIndex(monthIndex2);
+                const y2 = 90 - ((extendedPoints[idx + 1] - minValue) / range) * 80;
                 
                 // Determine color based on Y position
                 const avgY = (y1 + y2) / 2;
@@ -124,8 +143,9 @@ export const HistoricalTrends = ({ cma, projection }: HistoricalTrendsProps) => 
               })}
               
               {/* Professional data points */}
-              {dataPoints.map((value, idx) => {
-                const x = 5 + (idx * 7.5); // Start at 5% margin, spread across 45% of timeline
+              {extendedPoints.map((value, idx) => {
+                const monthIndex = monthIndicesJanToSep[idx];
+                const x = xForMonthIndex(monthIndex);
                 const y = 90 - ((value - minValue) / range) * 80; // Use 80% of height with margins
                 
                 // Determine color based on Y position
@@ -150,9 +170,9 @@ export const HistoricalTrends = ({ cma, projection }: HistoricalTrendsProps) => 
               })}
             </svg>
             
-            {/* Month labels - all 12 months */}
+            {/* Month labels - only show months with data (Jan-Sep) */}
             <div className="absolute bottom-0 left-0 right-0 flex justify-between px-3 pb-2">
-              {months.map((month, idx) => (
+              {months.slice(0, 9).map((month, idx) => (
                 <span key={idx} className="text-[10px] text-muted-foreground">{month}</span>
               ))}
             </div>
