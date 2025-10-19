@@ -3,21 +3,37 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
-}
+// Graceful demo fallback when Supabase env vars are not provided in prod
+const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
 
 // Create a single instance to avoid multiple GoTrueClient warnings
 let supabaseInstance: any = null
 
+// Minimal no-op shim to avoid runtime crashes when env vars are missing
+const demoShim = {
+  from() {
+    return {
+      insert: async () => ({ data: null, error: { message: 'demo-mode: insert skipped' } }),
+      update: async () => ({ data: null, error: { message: 'demo-mode: update skipped' } }),
+      select: async () => ({ data: null, error: { message: 'demo-mode: select skipped' } }),
+      eq: () => this
+    }
+  }
+}
+
 export const supabase = (() => {
   if (!supabaseInstance) {
-    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: false, // Disable session persistence to avoid conflicts
-        autoRefreshToken: false
-      }
-    })
+    if (isSupabaseConfigured) {
+      supabaseInstance = createClient(supabaseUrl as string, supabaseAnonKey as string, {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false
+        }
+      })
+    } else {
+      // Use shim in environments without Supabase credentials (e.g., public demo)
+      supabaseInstance = demoShim
+    }
   }
   return supabaseInstance
 })()
