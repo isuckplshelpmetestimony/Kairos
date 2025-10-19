@@ -177,7 +177,7 @@ export default function App() {
         body: JSON.stringify({
           psgc_province_code: selectedAddress.location.psgc_province_code,
           property_type: 'condo', // Hardcoded for v1 simplicity
-          count: 50,
+          count: 10,
           appraisal_id: appraisalId // Pass appraisal ID to backend
         }),
       });
