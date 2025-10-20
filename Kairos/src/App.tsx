@@ -273,7 +273,7 @@ export default function App() {
             {/* Toggle Buttons at Bottom */}
             <div className="px-6 flex gap-2" style={{ visibility: FEATURE_FLAGS.COMPARISONS_DROPDOWN ? 'visible' : 'hidden' }}>
               <InlineToggle
-                label="Comparisons"
+                label="Comparables"
                 isSelected={compsSelected}
                 onToggle={() => {
                   setCompsSelected(!compsSelected);
