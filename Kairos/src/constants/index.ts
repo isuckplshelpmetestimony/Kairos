@@ -16,9 +16,10 @@ export const PROPERTY_TYPES = [
 
 export const LOCATIONS = [
   { value: '', label: 'Choose location...' },
-  { value: 'downtown', label: 'Downtown' },
-  { value: 'suburbs', label: 'Suburbs' },
-  { value: 'waterfront', label: 'Waterfront' },
+  { value: 'house-lot', label: 'house & lot' },
+  { value: 'condo', label: 'condo' },
+  { value: 'townhouse', label: 'townhouse' },
+  { value: 'lot-only', label: 'lot only' },
 ] as const;
 
 export const PROPERTY_STATUS_GROUPS = {
