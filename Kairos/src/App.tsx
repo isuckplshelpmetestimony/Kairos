@@ -144,6 +144,16 @@ export default function App() {
       return;
     }
 
+    // Validate selectedAddress data
+    if (!selectedAddress.location.psgc_province_code) {
+      console.error('❌ Missing PSGC province code:', selectedAddress);
+      setError('Invalid address data. Please try selecting the address again.');
+      return;
+    }
+
+    console.log('🚀 Starting CMA generation for:', selectedAddress.full_address);
+    console.log('📍 PSGC Province Code:', selectedAddress.location.psgc_province_code);
+
     setLoading(true);
     setCma(null);
     setError(null);
@@ -169,27 +179,48 @@ export default function App() {
 
       // Use environment variable for API URL or fallback to backend
       const apiUrl = import.meta.env.VITE_API_URL || 'https://cairos.onrender.com';
+      const requestBody = {
+        psgc_province_code: selectedAddress.location.psgc_province_code,
+        property_type: 'condo', // Hardcoded for v1 simplicity
+        count: 10,
+        appraisal_id: appraisalId // Pass appraisal ID to backend
+      };
+      
+      console.log('🌐 API URL:', apiUrl);
+      console.log('📦 Request body:', requestBody);
+      
+      // Test API connectivity first
+      console.log('🔍 Testing API connectivity...');
+      try {
+        const healthResponse = await fetch(`${apiUrl}/api/addresses/search?q=test&limit=1`, {
+          method: 'GET',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+          }
+        });
+        console.log('✅ API health check status:', healthResponse.status);
+      } catch (healthErr) {
+        console.error('❌ API health check failed:', healthErr);
+        throw new Error(`API server is not accessible: ${healthErr instanceof Error ? healthErr.message : String(healthErr)}`);
+      }
       
       // Create AbortController for timeout handling
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
       
+      console.log('📡 Making API request...');
       const response = await fetch(`${apiUrl}/api/cma`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
         },
-        body: JSON.stringify({
-          psgc_province_code: selectedAddress.location.psgc_province_code,
-          property_type: 'condo', // Hardcoded for v1 simplicity
-          count: 10,
-          appraisal_id: appraisalId // Pass appraisal ID to backend
-        }),
+        body: JSON.stringify(requestBody),
         signal: controller.signal
       });
       
       clearTimeout(timeoutId);
+      console.log('📡 API response status:', response.status);
 
       if (response.status === 409) {
         setError('Scraper busy, please try again in a few minutes.');
@@ -222,6 +253,11 @@ export default function App() {
       }
 
     } catch (err) {
+      console.error('❌ CMA generation failed:', err);
+      console.error('❌ Error type:', err instanceof Error ? err.constructor.name : typeof err);
+      console.error('❌ Error message:', err instanceof Error ? err.message : String(err));
+      console.error('❌ Error stack:', err instanceof Error ? err.stack : 'No stack trace');
+      
       let errorMessage = 'Failed to generate CMA. Please try again.';
       
       if (err instanceof Error) {
@@ -234,10 +270,11 @@ export default function App() {
         } else if (err.message.includes('timeout')) {
           errorMessage = 'Request timed out. Please try again.';
         } else {
-          errorMessage = err.message;
+          errorMessage = `Error: ${err.message}`;
         }
       }
       
+      console.error('❌ Setting error message:', errorMessage);
       setError(errorMessage);
 
       // Update appraisal record with failure
