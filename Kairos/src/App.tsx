@@ -199,9 +199,14 @@ export default function App() {
           }
         });
         console.log('✅ API health check status:', healthResponse.status);
+        
+        if (!healthResponse.ok) {
+          throw new Error(`API health check failed with status: ${healthResponse.status}`);
+        }
       } catch (healthErr) {
         console.error('❌ API health check failed:', healthErr);
-        throw new Error(`API server is not accessible: ${healthErr instanceof Error ? healthErr.message : String(healthErr)}`);
+        const healthError = healthErr instanceof Error ? healthErr.message : String(healthErr);
+        throw new Error(`API server is not accessible: ${healthError}`);
       }
       
       // Create AbortController for timeout handling
@@ -275,7 +280,11 @@ export default function App() {
       }
       
       console.error('❌ Setting error message:', errorMessage);
-      setError(errorMessage);
+      
+      // Show detailed error on mobile for debugging
+      const detailedError = `Error: ${errorMessage}\n\nDebug Info:\n- API URL: ${apiUrl}\n- PSGC Code: ${selectedAddress?.location?.psgc_province_code || 'Missing'}\n- Error Type: ${err instanceof Error ? err.constructor.name : typeof err}\n- Error Message: ${err instanceof Error ? err.message : String(err)}`;
+      
+      setError(detailedError);
 
       // Update appraisal record with failure
       if (appraisalId) {
