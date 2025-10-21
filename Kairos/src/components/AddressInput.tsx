@@ -103,6 +103,13 @@ export function AddressInput({
     setSelectedAddress(null);
     clearError();
   };
+
+  // Handle input focus - ensure dropdown opens on Android
+  const handleInputFocus = () => {
+    if (suggestions.length > 0 && !selectedAddress) {
+      setIsDropdownOpen(true);
+    }
+  };
   
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -155,7 +162,7 @@ export function AddressInput({
   }, []);
   
   return (
-    <div className="relative w-full">
+    <div className="relative w-full" style={{ position: 'relative' }}>
       {/* Input Field */}
       <div className="relative">
         <input
@@ -164,6 +171,7 @@ export function AddressInput({
           value={query}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
+          onFocus={handleInputFocus}
           placeholder={placeholder}
           className="w-full h-14 sm:h-16 px-4 sm:px-6 pr-24 sm:pr-32 text-base sm:text-lg bg-transparent border-none outline-none placeholder:text-kairos-charcoal/40 text-kairos-charcoal"
           aria-label="Property address search"
@@ -208,7 +216,15 @@ export function AddressInput({
           ref={dropdownRef}
           id="address-suggestions"
           role="listbox"
-          className="absolute top-full left-0 right-0 mt-2 z-50 bg-kairos-chalk border border-kairos-white-grey rounded-lg shadow-lg max-h-60 sm:max-h-80 overflow-y-auto"
+          className="absolute top-full left-0 right-0 mt-2 z-[9999] bg-kairos-chalk border border-kairos-white-grey rounded-lg shadow-lg max-h-60 sm:max-h-80 overflow-y-auto"
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            zIndex: 9999,
+            marginTop: '8px'
+          }}
         >
           {suggestions.map((suggestion, index) => (
             <button
@@ -217,6 +233,10 @@ export function AddressInput({
               role="option"
               aria-selected={index === focusedIndex}
               onClick={() => handleSelect(suggestion)}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                handleSelect(suggestion);
+              }}
               className={`w-full text-left px-3 sm:px-4 py-2 sm:py-3 transition-colors border-b border-kairos-white-grey last:border-b-0 ${
                 index === focusedIndex 
                   ? 'bg-kairos-base-color' 
@@ -272,7 +292,17 @@ export function AddressInput({
       
       {/* Error Message */}
       {error && (
-        <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-kairos-chalk border border-red-300 rounded-lg shadow-lg p-4">
+        <div 
+          className="absolute top-full left-0 right-0 mt-2 z-[9999] bg-kairos-chalk border border-red-300 rounded-lg shadow-lg p-4"
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            zIndex: 9999,
+            marginTop: '8px'
+          }}
+        >
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-2 flex-1">
               <svg 
@@ -317,7 +347,17 @@ export function AddressInput({
       
       {/* No Results Message */}
       {!isLoading && !error && query.trim().length >= 2 && suggestions.length === 0 && (
-        <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-kairos-chalk border border-kairos-white-grey rounded-lg shadow-lg p-4">
+        <div 
+          className="absolute top-full left-0 right-0 mt-2 z-[9999] bg-kairos-chalk border border-kairos-white-grey rounded-lg shadow-lg p-4"
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            zIndex: 9999,
+            marginTop: '8px'
+          }}
+        >
           <div className="flex items-center gap-2 text-kairos-charcoal/70">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
