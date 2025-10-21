@@ -33,10 +33,10 @@ export const CMASummary = ({ cma, onOpenCMASummary }: CMASummaryProps) => {
   };
 
   return (
-    <Card className="bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-200 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-gray-900">CMA Summary</h3>
-        <div className="flex gap-2">
+    <Card className="bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-200 p-4 sm:p-6">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <h3 className="text-lg sm:text-xl font-semibold text-gray-900">CMA Summary</h3>
+        <div className="flex gap-1 sm:gap-2">
           <Button 
             onClick={(e) => { 
               e.stopPropagation(); 
@@ -44,10 +44,10 @@ export const CMASummary = ({ cma, onOpenCMASummary }: CMASummaryProps) => {
             }}
             variant="ghost" 
             size="sm" 
-            className="h-8 gap-2 text-gray-600 hover:text-gray-900"
+            className="h-8 sm:h-8 px-2 sm:px-3 gap-1 sm:gap-2 text-gray-600 hover:text-gray-900"
           >
-            <Eye className="h-4 w-4" />
-            View
+            <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="text-xs sm:text-sm">View</span>
           </Button>
           <Button 
             onClick={(e) => { 
@@ -56,20 +56,20 @@ export const CMASummary = ({ cma, onOpenCMASummary }: CMASummaryProps) => {
             }}
             variant="ghost" 
             size="sm" 
-            className="h-8 gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+            className="h-8 sm:h-8 px-2 sm:px-3 gap-1 sm:gap-2 text-gray-600 hover:text-gray-900 transition-colors"
           >
-            <Download className="h-4 w-4" />
-            Download
+            <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="text-xs sm:text-sm">Download</span>
           </Button>
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {summaryData.map((item) => (
-          <div key={item.label} className="flex justify-between items-center border-b border-border pb-4 last:border-0">
+          <div key={item.label} className="flex justify-between items-center border-b border-border pb-3 sm:pb-4 last:border-0">
             <p className="text-sm text-muted-foreground">{item.label}</p>
             <div className="text-right">
-              <p className="font-semibold text-lg">{item.value}</p>
+              <p className="font-semibold text-base sm:text-lg">{item.value}</p>
             </div>
           </div>
         ))}

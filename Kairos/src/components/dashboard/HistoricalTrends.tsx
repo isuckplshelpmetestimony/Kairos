@@ -62,17 +62,17 @@ export const HistoricalTrends = ({ cma, projection }: HistoricalTrendsProps) => 
   const peakPrice = cma ? Math.round(cma.stats.max).toLocaleString() : maxValue.toLocaleString();
 
   return (
-    <Card className="bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-200 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-gray-900">Historical Trends</h3>
-        <div className="flex gap-2" style={{ visibility: FEATURE_FLAGS.HISTORICAL_TRENDS_BUTTONS ? 'visible' : 'hidden' }}>
-          <Button variant="ghost" size="sm" className="h-8 gap-2 text-gray-600 hover:text-gray-900">
-            <Eye className="h-4 w-4" />
-            View
+    <Card className="bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-200 p-4 sm:p-6">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Historical Trends</h3>
+        <div className="flex gap-1 sm:gap-2" style={{ visibility: FEATURE_FLAGS.HISTORICAL_TRENDS_BUTTONS ? 'visible' : 'hidden' }}>
+          <Button variant="ghost" size="sm" className="h-8 sm:h-8 px-2 sm:px-3 gap-1 sm:gap-2 text-gray-600 hover:text-gray-900">
+            <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="text-xs sm:text-sm">View</span>
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 gap-2 text-gray-600 hover:text-gray-900">
-            <Download className="h-4 w-4" />
-            Download
+          <Button variant="ghost" size="sm" className="h-8 sm:h-8 px-2 sm:px-3 gap-1 sm:gap-2 text-gray-600 hover:text-gray-900">
+            <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="text-xs sm:text-sm">Download</span>
           </Button>
         </div>
       </div>
@@ -84,7 +84,7 @@ export const HistoricalTrends = ({ cma, projection }: HistoricalTrendsProps) => 
           Trend: ₱{extendedPoints.map(v => (v/1000000).toFixed(1)).join('M → ')}M
         </p>
       )}
-      <div className="relative h-48 mb-8 bg-kairos-white-porcelain rounded-lg p-6">
+      <div className="relative h-32 sm:h-48 mb-6 sm:mb-8 bg-kairos-white-porcelain rounded-lg p-3 sm:p-6">
         {extendedPoints.length === 9 ? (
           <div className="w-full h-full">
             <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
@@ -184,19 +184,19 @@ export const HistoricalTrends = ({ cma, projection }: HistoricalTrendsProps) => 
         )}
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-3 gap-3 sm:gap-6">
         <div className="text-center">
-          <p className="text-2xl font-semibold">₱{currentAvg}</p>
+          <p className="text-lg sm:text-2xl font-semibold">₱{currentAvg}</p>
           <p className="text-xs text-muted-foreground mt-1">Current Avg</p>
         </div>
         <div className="text-center">
-          <p className={`text-2xl font-semibold ${isPositiveGrowth ? 'text-green-600' : 'text-red-600'}`}>
+          <p className={`text-lg sm:text-2xl font-semibold ${isPositiveGrowth ? 'text-green-600' : 'text-red-600'}`}>
             {isPositiveGrowth ? '+' : ''}{growthPercent}%
           </p>
           <p className="text-xs text-muted-foreground mt-1">6-Month Growth</p>
         </div>
         <div className="text-center">
-          <p className="text-2xl font-semibold">₱{peakPrice}</p>
+          <p className="text-lg sm:text-2xl font-semibold">₱{peakPrice}</p>
           <p className="text-xs text-muted-foreground mt-1">Peak Price</p>
         </div>
       </div>
