@@ -169,10 +169,16 @@ export default function App() {
 
       // Use environment variable for API URL or fallback to backend
       const apiUrl = import.meta.env.VITE_API_URL || 'https://cairos.onrender.com';
+      
+      // Create AbortController for timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+      
       const response = await fetch(`${apiUrl}/api/cma`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
         body: JSON.stringify({
           psgc_province_code: selectedAddress.location.psgc_province_code,
@@ -180,7 +186,10 @@ export default function App() {
           count: 10,
           appraisal_id: appraisalId // Pass appraisal ID to backend
         }),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
 
       if (response.status === 409) {
         setError('Scraper busy, please try again in a few minutes.');
@@ -213,7 +222,22 @@ export default function App() {
       }
 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to generate CMA. Please try again.';
+      let errorMessage = 'Failed to generate CMA. Please try again.';
+      
+      if (err instanceof Error) {
+        if (err.name === 'AbortError') {
+          errorMessage = 'Request timed out. Please check your connection and try again.';
+        } else if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+          errorMessage = 'Network error. Please check your internet connection and try again.';
+        } else if (err.message.includes('CORS')) {
+          errorMessage = 'Connection error. Please try again in a moment.';
+        } else if (err.message.includes('timeout')) {
+          errorMessage = 'Request timed out. Please try again.';
+        } else {
+          errorMessage = err.message;
+        }
+      }
+      
       setError(errorMessage);
 
       // Update appraisal record with failure

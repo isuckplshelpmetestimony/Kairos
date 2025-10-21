@@ -24,12 +24,13 @@ from supabase_client import update_appraisal, log_error
 # -----------------------------------------------------------------------------
 app = Flask(__name__)
 
-# Add CORS - allow requests from frontend
+# Add CORS - allow requests from frontend and mobile devices
 CORS(app, resources={
     r"/api/*": {
-        "origins": ["http://localhost:3001", "http://127.0.0.1:3001", "https://kairos-vyu5.onrender.com"],
+        "origins": "*",  # Allow all origins for mobile compatibility
         "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type"]
+        "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+        "supports_credentials": False  # Set to False when using wildcard origins
     }
 })
 
