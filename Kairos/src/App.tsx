@@ -251,17 +251,17 @@ export default function App() {
   return (
     <div className="min-h-screen bg-kairos-chalk" onClick={handleClickOutside}>
       {/* Header with Logo */}
-      <header className="w-full py-6 px-8">
+      <header className="w-full py-4 px-4 sm:py-6 sm:px-8">
         <KairosLogo iconSize="xl" labelSize="xl" />
       </header>
 
       {/* Main Content */}
-      <main className="flex flex-col items-center justify-center px-8 py-16 max-w-4xl mx-auto">
+      <main className="flex flex-col items-center justify-center px-4 py-8 sm:px-8 sm:py-16 max-w-full sm:max-w-4xl mx-auto">
         {/* Hero Section */}
         <HeroSection />
 
         {/* Input Interface with Inline Toggles */}
-        <div className="w-full max-w-4xl">
+        <div className="w-full max-w-full sm:max-w-4xl">
           <div className="relative bg-kairos-white-porcelain border-2 border-kairos-white-grey rounded-3xl shadow-sm focus-within:border-kairos-charcoal transition-colors duration-200 pb-4">
             <div className="relative">
               <AddressInput 
@@ -271,7 +271,7 @@ export default function App() {
             </div>
             
             {/* Toggle Buttons at Bottom */}
-            <div className="px-6 flex gap-2" style={{ visibility: FEATURE_FLAGS.COMPARISONS_DROPDOWN ? 'visible' : 'hidden' }}>
+            <div className="px-4 sm:px-6 flex gap-2" style={{ visibility: FEATURE_FLAGS.COMPARISONS_DROPDOWN ? 'visible' : 'hidden' }}>
               <InlineToggle
                 label="Comparables"
                 isSelected={compsSelected}
@@ -330,9 +330,9 @@ export default function App() {
                 See KAIROS-GUARDRAILS.md > COMPARISONS DROPDOWN DESIGN GUARDRAIL
             ======================================================================== */}
             {FEATURE_FLAGS.COMPARISONS_DROPDOWN && isComparisonsOpen && (
-              <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/95 border border-[#E5E4E6] rounded-3xl shadow-lg">
+              <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/95 border border-[#E5E4E6] rounded-3xl shadow-lg max-h-96 sm:max-h-none overflow-y-auto">
                 {/* Property Type Section */}
-                <div className="p-4 border-b border-[#E5E4E6]">
+                <div className="p-3 sm:p-4 border-b border-[#E5E4E6]">
                   <label className="font-['Avenir'] text-sm text-[#3B3832] mb-2 block">
                     Select Property Type
                   </label>
@@ -370,7 +370,7 @@ export default function App() {
                 </div>
                 
                 {/* Location Section */}
-                <div className="p-4 border-b border-[#E5E4E6]">
+                <div className="p-3 sm:p-4 border-b border-[#E5E4E6]">
                   <label className="font-['Avenir'] text-sm text-[#3B3832] mb-2 block">
                     Select Location
                   </label>
@@ -408,7 +408,7 @@ export default function App() {
                 </div>
                 
                 {/* Results Section */}
-                <div className="flex justify-between items-center px-4 pt-4 no-bottom-padding">
+                <div className="flex justify-between items-center px-3 sm:px-4 pt-3 sm:pt-4 no-bottom-padding">
                   <div className="flex gap-4">
                     <button 
                       className="text-sm text-[#3B3832] hover:underline"
@@ -428,7 +428,7 @@ export default function App() {
                 
                 {/* Status - Dates or Days Section */}
                 <div>
-                  <div className="px-4 pt-4 pb-2 space-y-1">
+                  <div className="px-3 sm:px-4 pt-3 sm:pt-4 pb-2 space-y-1">
                     {renderPropertyStatusGroup(
                       'Active Market Data',
                       PROPERTY_STATUS_GROUPS.activeMarket,
@@ -478,11 +478,11 @@ export default function App() {
             )}
             
             {/* Prominent Search Button */}
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <div className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2">
               <button
                 disabled={!compsSelected || loading}
                 aria-disabled={!compsSelected || loading}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl shadow-md transition-all duration-200 ${
+                className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl shadow-md transition-all duration-200 ${
                   !compsSelected || loading
                     ? 'bg-kairos-white-grey text-kairos-charcoal/40 cursor-not-allowed'
                     : 'bg-black hover:bg-gray-800 text-white hover:shadow-lg'
@@ -492,13 +492,13 @@ export default function App() {
                 {loading ? (
                   <>
                     <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full"></div>
-                    <span className="text-sm font-medium">
+                    <span className="text-xs sm:text-sm font-medium">
                       Generating Reports
                     </span>
                   </>
                 ) : (
                   <>
-                    <span className="text-sm font-medium">
+                    <span className="text-xs sm:text-sm font-medium">
                       Generate Reports
                     </span>
                     <div className="w-5 h-5 flex items-center justify-center">
@@ -518,10 +518,10 @@ export default function App() {
 
         {/* CMA Results Display */}
         {cma && (
-          <div className="min-h-screen bg-kairos-chalk p-8">
+          <div className="min-h-screen bg-kairos-chalk p-4 sm:p-8">
             {cma.stats.count === 0 ? (
               <div className="mx-auto max-w-2xl text-center">
-                <div className="bg-white border border-gray-200 rounded-3xl shadow-sm p-12">
+                <div className="bg-white border border-gray-200 rounded-3xl shadow-sm p-6 sm:p-12">
                   <div className="mx-auto mb-6 inline-block rotate-3">
                     <div className="rounded-2xl border border-gray-200 shadow-sm bg-white p-3">
                       {/* Sad black cat sticker (monochrome to match design system) */}
@@ -548,8 +548,8 @@ export default function App() {
                 </div>
               </div>
             ) : (
-              <div className="mx-auto max-w-7xl space-y-8">
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+              <div className="mx-auto max-w-7xl space-y-6 sm:space-y-8">
+                <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard title="Total Properties" value={cma.stats.count.toString()} />
         <MetricCard title="Avg Price" value={`₱${Math.round(cma.stats.avg).toLocaleString()}`} />
         <MetricCard 
@@ -560,7 +560,7 @@ export default function App() {
                   <MetricCard title="Total Neighborhoods" value={Object.keys(cma.neighborhoods || {}).length.toString()} subtitle="Active areas" />
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
                   <PropertyReport cma={cma} onOpenDataTable={() => setIsDataTableOpen(true)} />
                   <CMASummary cma={cma} onOpenCMASummary={() => setIsCMASummaryOpen(true)} />
                   <MarketActivity cma={cma} projection={currentProjection} onOpenMarketActivity={() => setIsMarketActivityOpen(true)} />
@@ -577,7 +577,7 @@ export default function App() {
 
         {/* Error Display */}
         {error && (
-          <div className="w-full max-w-2xl mt-8 bg-red-50 border border-red-200 rounded-2xl shadow-sm p-6">
+          <div className="w-full max-w-2xl mt-6 sm:mt-8 bg-red-50 border border-red-200 rounded-2xl shadow-sm p-4 sm:p-6">
             <div className="flex items-start gap-3">
               <svg className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

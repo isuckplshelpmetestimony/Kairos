@@ -165,7 +165,7 @@ export function AddressInput({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="w-full h-16 px-6 pr-32 text-lg bg-transparent border-none outline-none placeholder:text-kairos-charcoal/40 text-kairos-charcoal"
+          className="w-full h-14 sm:h-16 px-4 sm:px-6 pr-24 sm:pr-32 text-base sm:text-lg bg-transparent border-none outline-none placeholder:text-kairos-charcoal/40 text-kairos-charcoal"
           aria-label="Property address search"
           aria-autocomplete="list"
           aria-controls="address-suggestions"
@@ -175,7 +175,7 @@ export function AddressInput({
         
         {/* Loading Spinner */}
         {isLoading && (
-          <div className="absolute right-20 top-1/2 -translate-y-1/2">
+          <div className="absolute right-16 sm:right-20 top-1/2 -translate-y-1/2">
             <svg 
               className="animate-spin h-5 w-5 text-kairos-charcoal/60" 
               xmlns="http://www.w3.org/2000/svg" 
@@ -208,7 +208,7 @@ export function AddressInput({
           ref={dropdownRef}
           id="address-suggestions"
           role="listbox"
-          className="absolute top-full left-0 right-0 mt-2 z-50 bg-kairos-chalk border border-kairos-white-grey rounded-lg shadow-lg max-h-80 overflow-y-auto"
+          className="absolute top-full left-0 right-0 mt-2 z-50 bg-kairos-chalk border border-kairos-white-grey rounded-lg shadow-lg max-h-60 sm:max-h-80 overflow-y-auto"
         >
           {suggestions.map((suggestion, index) => (
             <button
@@ -217,7 +217,7 @@ export function AddressInput({
               role="option"
               aria-selected={index === focusedIndex}
               onClick={() => handleSelect(suggestion)}
-              className={`w-full text-left px-4 py-3 transition-colors border-b border-kairos-white-grey last:border-b-0 ${
+              className={`w-full text-left px-3 sm:px-4 py-2 sm:py-3 transition-colors border-b border-kairos-white-grey last:border-b-0 ${
                 index === focusedIndex 
                   ? 'bg-kairos-base-color' 
                   : 'hover:bg-kairos-base-color'

@@ -15,14 +15,16 @@
       target: 'esnext',
       outDir: 'build',
     },
-    server: {
-      port: 3001,
-      open: true,
-      proxy: {
-        '/api': {
-          target: 'http://localhost:3000',
-          changeOrigin: true,
-        },
+  server: {
+    port: 3001,
+    open: true,
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:3000',
+        changeOrigin: true,
+        secure: false,
+        ws: true,
       },
     },
+  },
   });
