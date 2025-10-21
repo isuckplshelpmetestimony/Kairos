@@ -85,9 +85,9 @@ def scraper(province, property_type, num):
     # Track execution time for early exit
     start_time = time.time()
     try:
-        scraper_timeout = int(os.getenv('SCRAPER_TIMEOUT_SEC', '25'))
+        scraper_timeout = int(os.getenv('SCRAPER_TIMEOUT_SEC', '300'))  # 5 minutes default
     except Exception:
-        scraper_timeout = 25
+        scraper_timeout = 300
     early_exit_triggered = False
 
     for page_num in range(1, pages_upper_bound + 1):

@@ -33,8 +33,8 @@ CORS(app, resources={
     }
 })
 
-# Single-flight lock to serialize scrapes
-_scrape_lock = threading.Lock()
+# Semaphore to limit concurrent scrapes (max 3 simultaneous)
+_scrape_semaphore = threading.Semaphore(3)
 _progress_lock = threading.Lock()
 _scrape_progress: Dict[str, Any] = {"active": False, "pages_scanned": 0, "max_pages": None}
 
@@ -246,9 +246,9 @@ def cma() -> Any:
             return jsonify({"error": "Scraper error"}), 500
     # ===== End remote mode check =====
 
-    # LOCAL MODE: Enforce single-flight
-    if not _scrape_lock.acquire(blocking=False):
-        return jsonify({"error": "busy"}), 409
+    # LOCAL MODE: Allow concurrent scrapes with semaphore
+    if not _scrape_semaphore.acquire(blocking=False):
+        return jsonify({"error": "Server busy, please try again in a moment"}), 429
 
     start_time = time.time()
     try:
@@ -481,7 +481,7 @@ def cma() -> Any:
         # Sanitized generic error
         return jsonify({"error": "Server error"}), 500
     finally:
-        _scrape_lock.release()
+        _scrape_semaphore.release()
         with _progress_lock:
             _scrape_progress["active"] = False
         # Cleanup partial output if needed
