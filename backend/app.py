@@ -43,6 +43,10 @@ _scrape_progress: Dict[str, Any] = {"active": False, "pages_scanned": 0, "max_pa
 _rate_limit_storage = defaultdict(deque)
 _rate_limit_lock = threading.Lock()
 
+# Simple cache for address search results (max 100 entries)
+_address_cache = {}
+_cache_lock = threading.Lock()
+
 # Paths
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BACKEND_DIR, "data")
@@ -153,16 +157,28 @@ def search_addresses() -> Any:
     
     start_time = time.time()
     
+    # Check cache first
+    cache_key = f"{query.lower()}:{limit}"
+    with _cache_lock:
+        if cache_key in _address_cache:
+            cached_result = _address_cache[cache_key]
+            # Return cached result with fresh timestamp
+            cached_result["query_time_ms"] = int((time.time() - start_time) * 1000)
+            return jsonify(cached_result)
+    
     try:
-        # Perform case-insensitive search
+        # Perform case-insensitive search with early termination
         lower_query = query.lower()
         addresses = _address_database.get("addresses", [])
         
-        # Filter addresses that match the query
+        # Filter addresses that match the query with early termination
         matches = []
         for address in addresses:
             if lower_query in address["full_address"].lower():
                 matches.append(address)
+                # Early termination if we have enough high-confidence matches
+                if len(matches) >= limit * 2:  # Get 2x limit for better sorting
+                    break
         
         # Sort by confidence level (high > medium > low) and limit results
         confidence_order = {"high": 3, "medium": 2, "low": 1}
@@ -176,6 +192,14 @@ def search_addresses() -> Any:
             "total": len(suggestions),
             "query_time_ms": query_time_ms
         }
+        
+        # Cache the result (limit cache to 100 entries)
+        with _cache_lock:
+            if len(_address_cache) >= 100:
+                # Remove oldest entry (simple FIFO)
+                oldest_key = next(iter(_address_cache))
+                del _address_cache[oldest_key]
+            _address_cache[cache_key] = response.copy()
         
         return jsonify(response)
         
