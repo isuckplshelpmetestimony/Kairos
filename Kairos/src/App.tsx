@@ -31,6 +31,7 @@ import { createAppraisalRecord, updateAppraisalRecord, trackEvent } from './lib/
 // ============================================================================
 // Set to true to enable, false to hide. No code deletion required.
 const FEATURE_FLAGS = {
+  PROPERTY_TYPE_DROPDOWN: false, // Set to true to show property type selection
   COMPARISONS_DROPDOWN: true, // Enable when 5+ clients request this feature
 };
 // ============================================================================
@@ -402,42 +403,44 @@ export default function App() {
             {FEATURE_FLAGS.COMPARISONS_DROPDOWN && isComparisonsOpen && (
               <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/95 border border-[#E5E4E6] rounded-3xl shadow-lg max-h-96 sm:max-h-none overflow-y-auto">
                 {/* Property Type Section */}
-                <div className="p-3 sm:p-4 border-b border-[#E5E4E6]">
-                  <label className="font-['Avenir'] text-sm text-[#3B3832] mb-2 block">
-                    Select Property Type
-                  </label>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setIsPropertyTypeOpen(o => !o)}
-                      className="w-full h-10 px-3 pr-10 text-left border border-[#E5E4E6] rounded bg-[#F3F3F2]"
-                    >
-                      <span className={`${selectedPropertyType ? 'text-[#3B3832]' : 'text-[#7A7873]'}`}>
-                        {selectedPropertyType ? PROPERTY_TYPES.find(o => o.value === selectedPropertyType)?.label : 'Choose property type...'}
-                      </span>
-                      <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                        <svg className={`w-3.5 h-3.5 text-[#6B7280] transition-transform ${isPropertyTypeOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                          <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
-                        </svg>
-                      </span>
-                    </button>
-                    {isPropertyTypeOpen && (
-                      <ul className="absolute z-50 top-full left-0 right-0 mt-2 max-h-60 overflow-auto rounded-2xl border border-[#E5E4E6] bg-white/95 shadow-lg">
-                        {PROPERTY_TYPES.map((opt) => (
-                          <li key={opt.value}>
-                            <button
-                              type="button"
-                              className={`w-full text-left px-3 py-2 hover:bg-[#E7E7EB] ${opt.value === selectedPropertyType ? 'bg-[#F3F3F2]' : ''}`}
-                              onClick={() => { setSelectedPropertyType(opt.value); setIsPropertyTypeOpen(false); }}
-                            >
-                              {opt.label}
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                {FEATURE_FLAGS.PROPERTY_TYPE_DROPDOWN && (
+                  <div className="p-3 sm:p-4 border-b border-[#E5E4E6]">
+                    <label className="font-['Avenir'] text-sm text-[#3B3832] mb-2 block">
+                      Select Property Type
+                    </label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setIsPropertyTypeOpen(o => !o)}
+                        className="w-full h-10 px-3 pr-10 text-left border border-[#E5E4E6] rounded bg-[#F3F3F2]"
+                      >
+                        <span className={`${selectedPropertyType ? 'text-[#3B3832]' : 'text-[#7A7873]'}`}>
+                          {selectedPropertyType ? PROPERTY_TYPES.find(o => o.value === selectedPropertyType)?.label : 'Choose property type...'}
+                        </span>
+                        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                          <svg className={`w-3.5 h-3.5 text-[#6B7280] transition-transform ${isPropertyTypeOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
+                          </svg>
+                        </span>
+                      </button>
+                      {isPropertyTypeOpen && (
+                        <ul className="absolute z-50 top-full left-0 right-0 mt-2 max-h-60 overflow-auto rounded-2xl border border-[#E5E4E6] bg-white/95 shadow-lg">
+                          {PROPERTY_TYPES.map((opt) => (
+                            <li key={opt.value}>
+                              <button
+                                type="button"
+                                className={`w-full text-left px-3 py-2 hover:bg-[#E7E7EB] ${opt.value === selectedPropertyType ? 'bg-[#F3F3F2]' : ''}`}
+                                onClick={() => { setSelectedPropertyType(opt.value); setIsPropertyTypeOpen(false); }}
+                              >
+                                {opt.label}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
                 
                 {/* Location Section */}
                 <div className="p-3 sm:p-4 border-b border-[#E5E4E6]">
