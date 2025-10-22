@@ -84,10 +84,10 @@ export function AddressInput({
     setIsDropdownOpen(false);
     setFocusedIndex(-1);
     
-    // Small delay to ensure state is set before calling onSelect (mobile race condition fix)
+    // Longer delay to ensure state is set before calling onSelect (mobile race condition fix)
     setTimeout(() => {
       onSelect(kairosOutput);
-    }, 10);
+    }, 50);
   };
   
   // Handle clear button

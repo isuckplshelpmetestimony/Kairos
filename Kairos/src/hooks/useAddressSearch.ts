@@ -98,7 +98,7 @@ interface UseAddressSearchReturn {
  */
 export function useAddressSearch(
   query: string,
-  debounceMs: number = 150
+  debounceMs: number = 100
 ): UseAddressSearchReturn {
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -116,22 +116,24 @@ export function useAddressSearch(
       return;
     }
     
-    // Set loading state immediately for UX feedback
+    // Check cache first - instant results for cached data
+    const cached = getCachedResult(query);
+    if (cached) {
+      setSuggestions(cached.suggestions);
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
+    
+    // Set loading state for new searches
     setIsLoading(true);
     setError(null);
     
-    // Debounce: Wait 150ms before searching (faster for mobile)
+    // Debounce: Wait 100ms before searching (even faster for mobile)
     const debounceTimer = setTimeout(async () => {
       latestQueryRef.current = query;
       
       try {
-        // Check cache first
-        const cached = getCachedResult(query);
-        if (cached) {
-          setSuggestions(cached.suggestions);
-          setIsLoading(false);
-          return;
-        }
         
         // API call to backend address search endpoint
         const apiUrl = import.meta.env.VITE_API_URL || 'https://cairos.onrender.com';

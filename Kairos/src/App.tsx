@@ -158,6 +158,12 @@ export default function App() {
       return;
     }
 
+    // Extra validation to prevent race conditions
+    if (!selectedAddress.location.coordinates.latitude || !selectedAddress.location.coordinates.longitude) {
+      setError('Invalid coordinates. Please select the address again.');
+      return;
+    }
+
     console.log('🚀 Starting CMA generation for:', selectedAddress.full_address);
     console.log('📍 PSGC Province Code:', selectedAddress.location.psgc_province_code);
 
@@ -567,8 +573,11 @@ export default function App() {
                     : 'bg-black hover:bg-gray-800 text-white hover:shadow-lg'
                 }`}
                 onClick={async () => {
-                  // Small delay to ensure state is properly set on mobile
-                  await new Promise(resolve => setTimeout(resolve, 50));
+                  // Prevent double-clicks and ensure state is set
+                  if (loading) return;
+                  
+                  // Longer delay to ensure state is properly set on mobile
+                  await new Promise(resolve => setTimeout(resolve, 100));
                   generate();
                 }}
               >
