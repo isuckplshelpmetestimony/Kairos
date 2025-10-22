@@ -15,9 +15,6 @@
       target: 'esnext',
       outDir: 'build',
     },
-    define: {
-      __BUILD_TIME__: JSON.stringify(new Date().toISOString())
-    },
   server: {
     port: 3001,
     open: true,

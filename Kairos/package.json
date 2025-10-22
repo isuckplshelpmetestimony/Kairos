@@ -1,6 +1,6 @@
 {
       "name": "Kairos",
-      "version": "0.1.2",
+      "version": "0.1.2-uuid-fix",
       "private": true,
       "type": "module",
       "dependencies": {

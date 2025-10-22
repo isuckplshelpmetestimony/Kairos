@@ -173,8 +173,11 @@ export default function App() {
 
     let appraisalId: string | null = null;
     
-    // Use environment variable for API URL or fallback to backend
-    const apiUrl = import.meta.env.VITE_API_URL || 'https://cairos.onrender.com';
+  // Use environment variable for API URL or fallback to backend
+  const apiUrl = import.meta.env.VITE_API_URL || 'https://cairos.onrender.com';
+  
+  // Force cache bust - this ensures we get the latest version
+  console.log('🔄 Frontend version: 2025-10-22-06:50 - UUID fix deployed');
 
     try {
       // Create initial appraisal record

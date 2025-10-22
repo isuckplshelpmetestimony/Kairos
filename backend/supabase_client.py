@@ -11,8 +11,7 @@ def create_supabase_client() -> Client:
     supabase_service_key = os.getenv("SUPABASE_SERVICE_KEY")
     
     if not supabase_url or not supabase_service_key:
-        print("Warning: Supabase environment variables not set, returning None")
-        return None
+        raise ValueError("Missing Supabase environment variables")
     
     return create_client(supabase_url, supabase_service_key)
 
@@ -20,9 +19,6 @@ def update_appraisal(appraisal_id: str, status: str, **kwargs):
     """Update an appraisal record with completion data"""
     try:
         supabase = create_supabase_client()
-        if not supabase:
-            print("Supabase not available, skipping appraisal update")
-            return True  # Return True to not break the flow
         
         update_data = {"status": status}
         update_data.update(kwargs)
@@ -44,9 +40,6 @@ def log_error(user_id: str, error_type: str, error_message: str, stack_trace: st
     """Log an error to activity_logs"""
     try:
         supabase = create_supabase_client()
-        if not supabase:
-            print("Supabase not available, skipping error logging")
-            return True  # Return True to not break the flow
         
         error_data = {
             "user_id": user_id,
