@@ -28,4 +28,4 @@ Create a `.env` file with `VITE_API_URL=http://localhost:3000`
 ## Legal Notice
 
 **Evaluation Version**: This v1 release uses an open-source web scraper for evaluation purposes only. The data collection methods are intended for demonstration and validation of market demand. Official API integration with licensed data providers is planned upon securing buyer interest and funding. This version should not be used for commercial purposes or high-frequency data collection. Users are responsible for complying with applicable terms of service and data usage policies.
-  
+  # Force frontend redeploy Wed Oct 22 14:26:51 PST 2025
