@@ -565,19 +565,19 @@ export default function App() {
             {/* Prominent Search Button */}
             <div className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2">
               <button
-                disabled={!compsSelected || loading}
-                aria-disabled={!compsSelected || loading}
+                disabled={!compsSelected || loading || !selectedAddress}
+                aria-disabled={!compsSelected || loading || !selectedAddress}
                 className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl shadow-md transition-all duration-200 ${
-                  !compsSelected || loading
+                  !compsSelected || loading || !selectedAddress
                     ? 'bg-kairos-white-grey text-kairos-charcoal/40 cursor-not-allowed'
                     : 'bg-black hover:bg-gray-800 text-white hover:shadow-lg'
                 }`}
                 onClick={async () => {
-                  // Prevent double-clicks and ensure state is set
-                  if (loading) return;
+                  // Button is now properly disabled, so we can trust the state
+                  if (loading || !selectedAddress) return;
                   
-                  // Longer delay to ensure state is properly set on mobile
-                  await new Promise(resolve => setTimeout(resolve, 100));
+                  // Small delay to ensure state is properly set on mobile
+                  await new Promise(resolve => setTimeout(resolve, 50));
                   generate();
                 }}
               >
