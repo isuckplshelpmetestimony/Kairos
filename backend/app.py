@@ -177,7 +177,7 @@ def search_addresses() -> Any:
             if lower_query in address["full_address"].lower():
                 matches.append(address)
                 # Early termination if we have enough high-confidence matches
-                if len(matches) >= limit * 2:  # Get 2x limit for better sorting
+                if len(matches) >= limit * 3:  # Get 3x limit for better sorting
                     break
         
         # Sort by confidence level (high > medium > low) and limit results

@@ -98,7 +98,7 @@ interface UseAddressSearchReturn {
  */
 export function useAddressSearch(
   query: string,
-  debounceMs: number = 100
+  debounceMs: number = 50
 ): UseAddressSearchReturn {
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -129,7 +129,7 @@ export function useAddressSearch(
     setIsLoading(true);
     setError(null);
     
-    // Debounce: Wait 100ms before searching (even faster for mobile)
+    // Debounce: Wait 50ms before searching (ultra-fast for all devices)
     const debounceTimer = setTimeout(async () => {
       latestQueryRef.current = query;
       
