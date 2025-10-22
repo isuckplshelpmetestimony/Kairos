@@ -25,6 +25,7 @@ import { loadProjections, formatProjectionLabel, findProjectionByName } from './
 import type { ProjectionData } from './types/projection';
 import { useAuth } from './hooks/useAuth';
 import { createAppraisalRecord, updateAppraisalRecord, trackEvent } from './lib/supabase';
+import { FORCE_REBUILD } from './force-rebuild';
 
 // ============================================================================
 // FEATURE FLAGS
@@ -177,7 +178,7 @@ export default function App() {
   const apiUrl = import.meta.env.VITE_API_URL || 'https://cairos.onrender.com';
   
   // Force cache bust - this ensures we get the latest version
-  console.log('🔄 Frontend version: 2025-10-22-06:50 - UUID fix deployed');
+  console.log('🔄 Frontend version:', FORCE_REBUILD);
 
     try {
       // Create initial appraisal record
