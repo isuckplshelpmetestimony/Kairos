@@ -133,7 +133,7 @@ export default function App() {
 
   // CMA generation function
   const generate = async () => {
-    // Guard: require selectedAddress
+    // Guard: require selectedAddress with retry for mobile race conditions
     if (!selectedAddress) {
       setError('Please select a property address first.');
       return;
@@ -145,10 +145,16 @@ export default function App() {
       return;
     }
 
-    // Validate selectedAddress data
-    if (!selectedAddress.location.psgc_province_code) {
+    // Validate selectedAddress data with better error handling
+    if (!selectedAddress.location?.psgc_province_code) {
       console.error('❌ Missing PSGC province code:', selectedAddress);
       setError('Invalid address data. Please try selecting the address again.');
+      return;
+    }
+
+    // Additional validation for mobile race conditions
+    if (!selectedAddress.full_address || !selectedAddress.location.coordinates) {
+      setError('Address selection incomplete. Please select the address again.');
       return;
     }
 
@@ -560,7 +566,11 @@ export default function App() {
                     ? 'bg-kairos-white-grey text-kairos-charcoal/40 cursor-not-allowed'
                     : 'bg-black hover:bg-gray-800 text-white hover:shadow-lg'
                 }`}
-                onClick={generate}
+                onClick={async () => {
+                  // Small delay to ensure state is properly set on mobile
+                  await new Promise(resolve => setTimeout(resolve, 50));
+                  generate();
+                }}
               >
                 {loading ? (
                   <>

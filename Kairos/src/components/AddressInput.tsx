@@ -76,14 +76,18 @@ export function AddressInput({
     }
   }, [suggestions, selectedAddress]);
   
-  // Handle address selection
+  // Handle address selection with mobile optimization
   const handleSelect = (suggestion: AddressSuggestion) => {
     const kairosOutput = transformToKairosOutput(suggestion);
     setSelectedAddress(kairosOutput);
     setQuery(suggestion.full_address);
     setIsDropdownOpen(false);
     setFocusedIndex(-1);
-    onSelect(kairosOutput);
+    
+    // Small delay to ensure state is set before calling onSelect (mobile race condition fix)
+    setTimeout(() => {
+      onSelect(kairosOutput);
+    }, 10);
   };
   
   // Handle clear button
