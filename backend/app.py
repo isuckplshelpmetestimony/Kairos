@@ -25,9 +25,10 @@ from supabase_client import update_appraisal, log_error
 app = Flask(__name__)
 
 # Add CORS - allow requests from frontend and mobile devices
+frontend_origin = os.getenv("FRONTEND_ORIGIN", "*")
 CORS(app, resources={
     r"/api/*": {
-        "origins": "*",  # Allow all origins for mobile compatibility
+        "origins": frontend_origin.split(',') if ',' in frontend_origin else [frontend_origin],
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
         "supports_credentials": False  # Set to False when using wildcard origins
