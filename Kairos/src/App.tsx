@@ -172,15 +172,21 @@ export default function App() {
     setError(null);
 
     let appraisalId: string | null = null;
+    
+    // Use environment variable for API URL or fallback to backend
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://cairos.onrender.com';
 
     try {
       // Create initial appraisal record
-      appraisalId = await createAppraisalRecord(
+      const appraisalRecord = await createAppraisalRecord(
         user.id,
         selectedAddress.full_address,
-        selectedAddress.location.municipality || '',
-        selectedAddress.location.province || ''
+        '', // Municipality not available in current address type
+        ''  // Province not available in current address type
       );
+
+      // Extract ID from the returned object
+      appraisalId = appraisalRecord?.id || null;
 
       if (!appraisalId) {
         console.warn('⚠️ No appraisal ID returned, continuing without tracking')
@@ -189,9 +195,6 @@ export default function App() {
 
       // Track login event
       await trackEvent(user.id, 'login', 'User logged in');
-
-      // Use environment variable for API URL or fallback to backend
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://cairos.onrender.com';
       const requestBody = {
         psgc_province_code: selectedAddress.location.psgc_province_code,
         property_type: 'condo', // Hardcoded for v1 simplicity

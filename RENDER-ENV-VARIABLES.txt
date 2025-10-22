@@ -1,0 +1,75 @@
+# ==============================================================================
+# COPY-PASTE THESE INTO RENDER DASHBOARD
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# BACKEND (kairos-backend) - Add these 2 environment variables
+# ------------------------------------------------------------------------------
+# Go to: https://dashboard.render.com → kairos-backend → Environment → Add Environment Variable
+
+Key: SUPABASE_URL
+Value: https://snrtbdvmvpdfruzxftpj.supabase.co
+
+Key: SUPABASE_SERVICE_KEY
+Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNucnRiZHZtdnBkZnJ1enhmdHBqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDQ3NTcwOCwiZXhwIjoyMDc2MDUxNzA4fQ.-H_kOlPBdRRHvuOIHCkOJEVaSfPzH29J34xvtYfOAhE
+
+# ------------------------------------------------------------------------------
+# FRONTEND (kairos-frontend) - Add these 2 environment variables
+# ------------------------------------------------------------------------------
+# Go to: https://dashboard.render.com → kairos-frontend → Environment → Add Environment Variable
+
+Key: VITE_SUPABASE_URL
+Value: https://snrtbdvmvpdfruzxftpj.supabase.co
+
+Key: VITE_SUPABASE_ANON_KEY
+Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNucnRiZHZtdnBkZnJ1enhmdHBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0NzU3MDgsImV4cCI6MjA3NjA1MTcwOH0.l65zFX2cozry3KFuLoAtCRjii8UfHMc9fxQrT6ckgHk
+
+# ==============================================================================
+# AFTER SETTING ENVIRONMENT VARIABLES, RUN THIS SQL IN SUPABASE
+# ==============================================================================
+# Go to: https://supabase.com/dashboard/project/snrtbdvmvpdfruzxftpj/sql
+# Click "New Query" and paste this entire SQL block:
+
+CREATE TABLE appraisals (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id TEXT NOT NULL,
+  property_address TEXT NOT NULL,
+  municipality TEXT,
+  province TEXT,
+  started_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  completed_at TIMESTAMP WITH TIME ZONE,
+  status TEXT DEFAULT 'started',
+  properties_found INTEGER,
+  duration_minutes INTEGER,
+  error_type TEXT,
+  error_message TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_appraisals_user_id ON appraisals(user_id);
+CREATE INDEX idx_appraisals_created_at ON appraisals(created_at DESC);
+
+CREATE TABLE activity_logs (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id TEXT NOT NULL,
+  event_type TEXT NOT NULL,
+  event_description TEXT,
+  metadata JSONB,
+  error_type TEXT,
+  error_message TEXT,
+  stack_trace TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_activity_logs_user_id ON activity_logs(user_id);
+CREATE INDEX idx_activity_logs_event_type ON activity_logs(event_type);
+CREATE INDEX idx_activity_logs_created_at ON activity_logs(created_at DESC);
+
+# ==============================================================================
+# THEN DEPLOY
+# ==============================================================================
+# Run in terminal:
+# git add .
+# git commit -m "Fix Supabase configuration"
+# git push origin main
+
